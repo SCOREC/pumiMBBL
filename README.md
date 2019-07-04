@@ -2,9 +2,9 @@ Derived from: https://cmake.org/examples/
 
 ## layout
 
-- src - source codes, `pumi_mesh1D.h` is the public header and will be installed with `make
-install`
-- test - example code that exercises APIs in the public header
+- src - source codes (will be installed with `make
+install`)
+- test - example code that exercises APIs
 - CMakeLists.txt - cmake files that specify how to build the library and test
 
 ## setup
