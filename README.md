@@ -1,5 +1,3 @@
-Derived from: https://cmake.org/examples/
-
 ## layout
 
 - src - source codes (will be installed with `make
