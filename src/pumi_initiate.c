@@ -6,11 +6,11 @@
 #include <string.h>
 #include "pumi_initiate.h"
 
-pumi_mesh_t* pumi_initiate(int PUMI_INITIATE_FLAG, pumi_initiate_input_t pumi_inputs){
+pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs){
 
   pumi_mesh_t* pumi_mesh = (pumi_mesh_t*) malloc(sizeof(pumi_mesh_t));
 
-  if (PUMI_INITIATE_FLAG == 0){
+  if (pumi_input_initiate_flag == 0){
     int dimension;
     int submesh_num;
     double **submesh_params;
@@ -21,24 +21,33 @@ pumi_mesh_t* pumi_initiate(int PUMI_INITIATE_FLAG, pumi_initiate_input_t pumi_in
     if (pumi_mesh->ndim == 1){
       pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh1D_t));
     }
+    else{
+      printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+      exit(0);
+    }
     for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
       pumi_setsubmesh(pumi_mesh, isubmesh, submesh_params[isubmesh][0], submesh_params[isubmesh][1], submesh_flag[isubmesh], (int) submesh_params[isubmesh][2], submesh_params[isubmesh][3], submesh_params[isubmesh][4], (int) submesh_params[isubmesh][5], submesh_params[isubmesh][6], submesh_params[isubmesh][7], (int) submesh_params[isubmesh][8]);
     }
+    deallocate_submesh_flag(submesh_flag);
+    deallocate_submesh_param(pumi_mesh->nsubmeshes, submesh_params);
+
   }
-  else if (PUMI_INITIATE_FLAG == 1){
+  else if (pumi_input_initiate_flag == 1){
     //only use this if pumi_initiate_input struct members are populated accordingly
-    pumi_mesh->ndim = pumi_inputs.ndim;
-    pumi_mesh->nsubmeshes = pumi_inputs.nsubmeshes;
+    pumi_mesh->ndim = pumi_inputs->ndim;
+    pumi_mesh->nsubmeshes = pumi_inputs->nsubmeshes;
     if (pumi_mesh->ndim == 1){
       pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh1D_t));
     }
+    else{
+      printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+      exit(0);
+    }
     for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-      char flagstring[30];
-      strcpy(flagstring, pumi_inputs.type_flag[isubmesh]);
-      int n = strlen(flagstring);
-      flagstring[n]='L'; // add this dummy letter to the string because the string is one charecter smaller than usual i.e. pumi_getmeshparameters_from_terminal  
+      char flagstring[SUBMESH_FLAGSTRING_LENGTH];
+      strcpy(flagstring, pumi_inputs->type_flag[isubmesh]);
       unsigned int submesh_flag = pumi_getsubmeshflag(flagstring);
-      pumi_setsubmesh(pumi_mesh, isubmesh, *(pumi_inputs.x_left + isubmesh), *(pumi_inputs.x_right + isubmesh), submesh_flag, *(pumi_inputs.uniform_Nel + isubmesh), *(pumi_inputs.left_T + isubmesh), *(pumi_inputs.left_r + isubmesh), *(pumi_inputs.left_Nel + isubmesh), *(pumi_inputs.right_T + isubmesh), *(pumi_inputs.right_r + isubmesh), *(pumi_inputs.right_Nel + isubmesh));
+      pumi_setsubmesh(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
     }
   }
 
@@ -81,23 +90,23 @@ void pumi_getmeshparameters_from_terminal (int *dimension, int *submesh_num, dou
 
   for (int isubmesh=0; isubmesh<m; isubmesh++){
       tmp_param[isubmesh] = (double*) malloc(9*sizeof(double));
-      char flagstring[30];
-      for (int j=2; j<9; j++){
-        tmp_param[isubmesh][j] = 0.0; // default value for all struct members
-      }
+      char flagstring[SUBMESH_FLAGSTRING_LENGTH];
+
       printf("\n\nSUBMESH %d :",isubmesh+1 );
       printf("\nCoordinates of left end point of the submesh (%d) : ",isubmesh+1);
       scanf("%lf", &tmp_param[isubmesh][0]); //user supplied
       printf("\nCoordinates of right end point of the submesh (%d) : ",isubmesh+1);
       scanf("%lf", &tmp_param[isubmesh][1]); //user supplied
       printf("\nEnter the active flags (uniform, leftBL, rightBL -- separated by '&') for submesh (%d) : ",isubmesh+1);
-      fgetc(stdin);
-      fgets(flagstring, sizeof flagstring, stdin);
+      scanf("%s", flagstring);
       tmp_flag[isubmesh] = pumi_getsubmeshflag(flagstring); //user supplied
 
       if (tmp_flag[isubmesh] & uniform){
         printf("\nNumber of elements in uniform mesh region: ");
         scanf("%lf", &tmp_param[isubmesh][2]); //user supplied
+      }
+      else {
+        tmp_param[isubmesh][2] = DEFAULT_PARAM_VAL;
       }
       if (tmp_flag[isubmesh] & leftBL){
         printf("\nThickness of (left) graded mesh region: ");
@@ -107,6 +116,11 @@ void pumi_getmeshparameters_from_terminal (int *dimension, int *submesh_num, dou
         printf("\nNumber of elements in the (left) graded mesh region: ");
         scanf("%lf", &tmp_param[isubmesh][5]); //user supplied
       }
+      else {
+        tmp_param[isubmesh][3] = DEFAULT_PARAM_VAL;
+        tmp_param[isubmesh][4] = DEFAULT_PARAM_VAL;
+        tmp_param[isubmesh][5] = DEFAULT_PARAM_VAL;
+      }
       if (tmp_flag[isubmesh] & rightBL){
         printf("\nThickness of (right) graded mesh region: ");
         scanf("%lf", &tmp_param[isubmesh][6]); //user supplied
@@ -115,34 +129,26 @@ void pumi_getmeshparameters_from_terminal (int *dimension, int *submesh_num, dou
         printf("\nNumber of elements in the (right) graded mesh region: ");
         scanf("%lf", &tmp_param[isubmesh][8]); //user supplied
       }
+      else {
+        tmp_param[isubmesh][6] = DEFAULT_PARAM_VAL;
+        tmp_param[isubmesh][7] = DEFAULT_PARAM_VAL;
+        tmp_param[isubmesh][8] = DEFAULT_PARAM_VAL;
+      }
   }
   *submesh_flag = tmp_flag;
   *submesh_params = tmp_param;
-
-  // deallocate_tmp_flag(tmp_flag);
-  // deallocate_tmp_param(m, tmp_param);
-
 }
 
-unsigned int pumi_getsubmeshflag(char flagstring[30]){
+unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
+  char newflagstring[SUBMESH_MAX_SEGMENTS][SEGMENT_STRING_LENGTH];
+  char flagtypes[SUBMESH_MAX_SEGMENTS][SEGMENT_STRING_LENGTH] = {"uniform","leftBL","rightBL"};
 
-  int n = strlen(flagstring);
-  flagstring[n-1]='&';
-
-  char newflagstring[3][10];
-  char flagtypes[3][10] = {"uniform","leftBL","rightBL"};
-  int j=0;
+  char *tok = strtok(flagstring, "&");
   int numstring=0;
-  for (int i=0;i<(strlen(flagstring));i++){
-    if (flagstring[i]=='&'){
-      newflagstring[numstring][j] = '\0';
-      numstring++;
-      j=0;
-    }
-    else{
-      newflagstring[numstring][j] = flagstring[i];
-      j++;
-    }
+  while (tok != NULL){
+    strcpy (newflagstring[numstring], tok);
+    tok = strtok(NULL, "&");
+    numstring++;
   }
 
   unsigned int intflag = 0x00;
@@ -152,31 +158,68 @@ unsigned int pumi_getsubmeshflag(char flagstring[30]){
     int l3 = strcmp(newflagstring[i],flagtypes[2]);
     if (l1*l2*l3 != 0){
       printf("Invalid flag input -- Terminating\n");
-      printf("Valid input(s): leftBL&uniform or rightBL&uniform or leftBL&rightBL or uniform&leftBL&rightBL\n");
+      printf("Valid input(s):\nuniform\nleftBL\nrightBL\nleftBL&uniform\nrightBL&uniform\nleftBL&rightBL\nuniform&leftBL&rightBL\n");
       exit(0);
     }
     if (strcmp(newflagstring[i],flagtypes[0])==0){
-      intflag =  intflag + 0x01;
+      intflag =  intflag + uniform;
     }
     if (strcmp(newflagstring[i],flagtypes[1])==0){
-      intflag = intflag + 0x02;
+      intflag = intflag + leftBL;
     }
     if (strcmp(newflagstring[i],flagtypes[2])==0){
-      intflag = intflag + 0x04;
+      intflag = intflag + rightBL;
     }
   }
     return intflag;
 }
-/*
-void deallocate_tmp_flag(unsigned int *tmp_flag){
-  free(tmp_flag);
+
+void pumi_initiate_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+  pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->type_flag = (char**) malloc(nsubmeshes*sizeof(char*));
+  for (int i=0; i<nsubmeshes; i++){
+    pumi_inputs->type_flag[i] = (char*) malloc(SUBMESH_FLAGSTRING_LENGTH);
+  }
+  pumi_inputs->left_T = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->left_r = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->left_Nel = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->right_T = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->right_r = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->right_Nel = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->uniform_Nel = malloc(nsubmeshes*sizeof(int));
 }
 
-void deallocate_tmp_param(int dim, double **tmp_param){
+void pumi_initiate_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+  free(pumi_inputs->x_left);
+  free(pumi_inputs->x_right);
+  free(pumi_inputs->left_T);
+  free(pumi_inputs->left_r);
+  free(pumi_inputs->left_Nel);
+  free(pumi_inputs->right_T);
+  free(pumi_inputs->right_r);
+  free(pumi_inputs->right_Nel);
+  free(pumi_inputs->uniform_Nel);
+  for (int i=0; i<nsubmeshes; i++){
+    free(pumi_inputs->type_flag[i]);
+  }
+  free(pumi_inputs->type_flag);
+  free(pumi_inputs);
+}
+
+void pumi_finalize(pumi_mesh_t* pumi_mesh){
+  free(pumi_mesh->pumi_submeshes);
+  free(pumi_mesh);
+}
+
+void deallocate_submesh_flag(unsigned int *submesh_flag){
+  free(submesh_flag);
+}
+
+void deallocate_submesh_param(int dim, double **submesh_param){
   int i;
   for (i=0; i<dim; i++){
-      free(tmp_param[i]);
+      free(submesh_param[i]);
   }
-  free(tmp_param);
+  free(submesh_param);
 }
-*/
