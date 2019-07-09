@@ -8,38 +8,30 @@
 
 int main()
 {
-  pumi_initiate_input_t pumi_inputs;
-  //pumi_mesh_t *pumi_mesh = pumi_initiate(INITIATE_FROM_TERMINAL, pumi_inputs);
+  pumi_initiate_input_t *pumi_inputs;
+  //pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_terminal, pumi_inputs);
 
-  // assing vals to struct pumi_initiate_input members
-  pumi_inputs.ndim = 1;
-  pumi_inputs.nsubmeshes = 1;
-  pumi_inputs.x_left = malloc(pumi_inputs.nsubmeshes*sizeof(double));
-  *(pumi_inputs.x_left + 0) = 0.0;
-  pumi_inputs.x_right = malloc(pumi_inputs.nsubmeshes*sizeof(double));
-  *(pumi_inputs.x_right + 0) = 1.0;
+  // assigning vals to struct pumi_initiate_input members
+  pumi_inputs = malloc(sizeof(pumi_initiate_input_t));
+  pumi_inputs->ndim = 1;
+  pumi_inputs->nsubmeshes = 1;
+  pumi_initiate_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
 
-  pumi_inputs.type_flag = malloc(pumi_inputs.nsubmeshes*sizeof(char*));
-  pumi_inputs.type_flag[0] = malloc(30);
-  pumi_inputs.type_flag[0] = "uniform&rightBL";
-
-  pumi_inputs.left_T = malloc(pumi_inputs.nsubmeshes*sizeof(double));
-  *(pumi_inputs.left_T + 0) = 0.0; //value zero needs to be assigned for inactive flag parameters
-  pumi_inputs.left_r = malloc(pumi_inputs.nsubmeshes*sizeof(double));
-  *(pumi_inputs.left_r + 0) = 0.0;
-  pumi_inputs.left_Nel = malloc(pumi_inputs.nsubmeshes*sizeof(int));
-  *(pumi_inputs.left_Nel + 0) = 0;
-  pumi_inputs.right_T = malloc(pumi_inputs.nsubmeshes*sizeof(double));
-  *(pumi_inputs.right_T + 0) = 0.5;
-  pumi_inputs.right_r = malloc(pumi_inputs.nsubmeshes*sizeof(double));
-  *(pumi_inputs.right_r + 0) = 1.2;
-  pumi_inputs.right_Nel = malloc(pumi_inputs.nsubmeshes*sizeof(int));
-  *(pumi_inputs.right_Nel + 0) = 10;
-  pumi_inputs.uniform_Nel = malloc(pumi_inputs.nsubmeshes*sizeof(int));
-  *(pumi_inputs.uniform_Nel + 0) = 10;
+  *(pumi_inputs->x_left + 0) = 0.0;
+  *(pumi_inputs->x_right + 0) = 1.0;
+  strcpy(pumi_inputs->type_flag[0], "uniform&rightBL");
+  *(pumi_inputs->left_T + 0) = 0.0; //value zero needs to be assigned for inactive flag parameters
+  *(pumi_inputs->left_r + 0) = 0.0;
+  *(pumi_inputs->left_Nel + 0) = 0;
+  *(pumi_inputs->right_T + 0) = 0.5;
+  *(pumi_inputs->right_r + 0) = 1.2;
+  *(pumi_inputs->right_Nel + 0) = 10;
+  *(pumi_inputs->uniform_Nel + 0) = 10;
 
   // the pumi_initiate_input struct NEEDS TO BE POPULATED before calling this function
-  pumi_mesh_t *pumi_mesh = pumi_initiate(INITIATE_FROM_COMMANDLINE_INPUTS, pumi_inputs);
+  pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
+  pumi_initiate_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
+
 
   // calculating total number of elements in the mesh
   int Nel_total = pumi_total_elements_1D(pumi_mesh);
@@ -82,6 +74,12 @@ int main()
     charge_density[i] = grid_weights[i]/covolume[i];
     printf("Charge density at node %d is %lf\n", i, charge_density[i]);
   }
+
+  free(coordinates);
+  free(grid_weights);
+  free(covolume);
+  pumi_finalize(pumi_mesh); //deallocates pumi_mesh object
+
 
   return 0;
 }
