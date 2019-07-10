@@ -35,11 +35,10 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 void pumi_initiate_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes);
 void pumi_initiate_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes);
 void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, double ***submesh_params, unsigned int **submesh_flag);
+void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag);
 void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag,
   int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
 unsigned int pumi_getsubmeshflag(char flagstring[30]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
-void deallocate_submesh_flag(unsigned int *submesh_flag);
-void deallocate_submesh_param(int dim, double **submesh_param);
 
 #endif /* pumi_initiate_h */
