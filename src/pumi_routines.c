@@ -32,6 +32,10 @@ void pumi_locatepoint(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *p
   if (pumi_mesh->ndim == 1){
     pumi_locatepoint_1D(pumi_mesh, particle_coordinate, particle_cell, cell_weight);
   }
+  else {
+    printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+    exit(0);
+  }
 }
 
 void pumi_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *particle_cell, double *cell_weight){
