@@ -2,6 +2,7 @@
 #define pumi_mesh1D_h
 
 typedef enum pumi_meshflag{
+  unassigned = 0x00,
   uniform = 0x01,
   leftBL = 0x02,
   rightBL = 0x04,
