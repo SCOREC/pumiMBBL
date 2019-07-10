@@ -10,7 +10,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 
   pumi_mesh_t* pumi_mesh = (pumi_mesh_t*) malloc(sizeof(pumi_mesh_t));
 
-  if (pumi_input_initiate_flag == 0){
+  if (pumi_input_initiate_flag == initiate_from_terminal){
     int dimension;
     int submesh_num;
     double **submesh_params;
@@ -28,11 +28,10 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
       pumi_setsubmesh(pumi_mesh, isubmesh, submesh_params[isubmesh][0], submesh_params[isubmesh][1], submesh_flag[isubmesh], (int) submesh_params[isubmesh][2], submesh_params[isubmesh][3], submesh_params[isubmesh][4], (int) submesh_params[isubmesh][5], submesh_params[isubmesh][6], submesh_params[isubmesh][7], (int) submesh_params[isubmesh][8]);
     }
-    deallocate_submesh_flag(submesh_flag);
-    deallocate_submesh_param(pumi_mesh->nsubmeshes, submesh_params);
+    pumi_freemeshparameters_from_terminal(pumi_mesh->nsubmeshes, submesh_params, submesh_flag);
 
   }
-  else if (pumi_input_initiate_flag == 1){
+  else if (pumi_input_initiate_flag == initiate_from_commandline_inputs){
     //only use this if pumi_initiate_input struct members are populated accordingly
     pumi_mesh->ndim = pumi_inputs->ndim;
     pumi_mesh->nsubmeshes = pumi_inputs->nsubmeshes;
@@ -151,12 +150,13 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
     numstring++;
   }
 
-  unsigned int intflag = 0x00;
+  unsigned int intflag = unassigned;
   for (int i=0; i<numstring; i++){
     int l1 = strcmp(newflagstring[i],flagtypes[0]);
     int l2 = strcmp(newflagstring[i],flagtypes[1]);
     int l3 = strcmp(newflagstring[i],flagtypes[2]);
-    if (l1*l2*l3 != 0){
+    int l123 = l1*l2*l3;
+    if (l123 != 0){
       printf("Invalid flag input -- Terminating\n");
       printf("Valid input(s):\nuniform\nleftBL\nrightBL\nleftBL&uniform\nrightBL&uniform\nleftBL&rightBL\nuniform&leftBL&rightBL\n");
       exit(0);
@@ -212,14 +212,10 @@ void pumi_finalize(pumi_mesh_t* pumi_mesh){
   free(pumi_mesh);
 }
 
-void deallocate_submesh_flag(unsigned int *submesh_flag){
+void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag){
   free(submesh_flag);
-}
-
-void deallocate_submesh_param(int dim, double **submesh_param){
-  int i;
-  for (i=0; i<dim; i++){
-      free(submesh_param[i]);
+  for (int i=0; i<nsubmeshes; i++){
+      free(submesh_params[i]);
   }
-  free(submesh_param);
+  free(submesh_params);
 }
