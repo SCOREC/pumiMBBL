@@ -1,46 +1,61 @@
-#ifndef pumi_mesh1D_h
-#define pumi_mesh1D_h
+/*!
+* \author Vignesh Vittal-Srinivasaragavan
+* \date 07-11-2019
+* \mainpage Multi-block Boundary Layer PUMI mesh
+*/
 
+#ifndef pumiMBBL_h
+#define pumiMBBL_h
+
+/*!
+* \brief Mesh flag enum that defines the types of meshing in each segment of the submesh block
+*/
 typedef enum pumi_meshflag{
-  unassigned = 0x00,
-  uniform = 0x01,
-  leftBL = 0x02,
-  rightBL = 0x04,
+  unassigned = 0x00, //!< Default flag for each submesh block
+  uniform = 0x01, //!< Inidicates the presence of uniform mesh segment in a submesh block
+  leftBL = 0x02, //!< Inidicates the presence of left Boundary Layer (BL) segment in a submesh block
+  rightBL = 0x04, //!< Inidicates the presence of rigth BL segment in a submesh block
 } pumi_meshflag_t;
 
+/*!
+* \brief Contains the parameters used to define a submesh
+*/
 typedef struct pumi_submesh1D{
-  double x_left; //coordinate of left end of submesh
-  double x_right; //coordinate of right end of submesh
+  double x_left; //!< coordinate of left end of submesh block
+  double x_right; //!< coordinate of right end of submesh block
 
-  int uniform_Nel; // number of elements in the uniform mesh
-  double uniform_x_left; // (dependent variable) coordinate of left end of uniform mesh region inside submesh
-  double uniform_x_right; // (dependent variable)coordinate of right end of uniform mesh reion inside submesh
-  double uniform_t0; // (dependent variable) cell sizes in uniform mesh region inside submesh
+  int uniform_Nel; //!< number of elements in the uniform mesh segment block
+  double uniform_x_left; //!< (dependent variable) coordinate of left end of uniform mesh segment inside the submesh block
+  double uniform_x_right; //!< (dependent variable) coordinate of right end of uniform mesh segment inside the submesh block
+  double uniform_t0; //!< (dependent variable) element sizes in uniform mesh segment inside the submesh block
 
-  double left_T; // left BL thickness
-  double left_r; // growth ratio for left BL mesh
-  int left_Nel; // number of elements in the graded mesh from left
-  double lBL_x_right; // (dependent variable) coordinate of right end of left graded mesh region inside submesh
-  double lBL_t0; // (dependent variable) size of first (leftmost) cell in the left graded mesh region inside submesh
+  double left_T; //!< left Boundary Layer (BL) thickness
+  double left_r; //!< growth ratio for left BL mesh
+  int left_Nel; //!< number of elements in the left BL segment
+  double lBL_x_right; //!< (dependent variable) coordinate of right end of left BL segment inside the submesh block
+  double lBL_t0; //!< (dependent variable) size of first (leftmost) element in the left BL segment inside the submesh block
 
-  double right_T; // right BL thickness
-  double right_r; //  growth ratio for right BL mesh
-  int right_Nel; // number of elements in the graded mesh from right
-  double rBL_x_left; // (dependent variable) coordinate of left end of right graded mesh region inside submesh
-  double rBL_t0; // (dependent variable) size of first (rightmost) cell in the right graded mesh region inside submesh
+  double right_T; //!< right BL thickness
+  double right_r; //!<  growth ratio for right BL segment
+  int right_Nel; //!< number of elements in the right BL segment
+  double rBL_x_left; //!< (dependent variable) coordinate of left end of right graded mesh region inside the submesh block
+  double rBL_t0; //!< (dependent variable) size of first (rightmost) element in the right BL segment inside the submesh block
 
-  int submesh_total_Nel; // (dependent variable) total number of elements/cells in the submesh
+  int submesh_total_Nel; //!< (dependent variable) total number of elements in the submesh block
 
-  pumi_meshflag_t pumi_flag; // flag for mesh type (uniform mesh, right BL graded mesh or left BL graded mesh)
+  pumi_meshflag_t pumi_flag; //!< flag for types of mesh segments(i.e. uniform mesh segment, right BL segment or left BL segment) available in the submesh block
 } pumi_submesh1D_t;
 
+/*!
+* \brief Contains parameters that defines the mesh
+*/
 typedef struct pumi_mesh{
-  int nsubmeshes; // number of submeshes
-  int ndim; // number of dimensions
-  void *pumi_submeshes;
+  int nsubmeshes; //!< number of submesh blocks in the domain
+  int ndim; //!< number of physical dimensions of the problem space
+  void *pumi_submeshes; //!< pointer object to access members of the structs pumi_submesh1D and pumi_submesh2D
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"
 #include "pumi_routines.h"
 
-#endif /* pumi_mesh1D_h */
+#endif /* pumiMBBL_h */

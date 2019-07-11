@@ -3,32 +3,36 @@
 
 #include "pumiMBBL.h"
 
-#define SUBMESH_FLAGSTRING_LENGTH 23
-#define SUBMESH_MAX_SEGMENTS 3
-#define SEGMENT_STRING_LENGTH 8
+#define SUBMESH_FLAGSTRING_LENGTH 23 //!< Maximum length of the mesh flag string input for each submesh block (corresponds to "uniform&leftBL&rightBL")
+#define SUBMESH_MAX_SEGMENTS 3 //!< Maximum number of segments allowed in submesh block
+#define SEGMENT_STRING_LENGTH 8 //!< Maximum length of string that defines the mesh type in a segment of a submesh block
 
-#define DEFAULT_PARAM_VAL 0.0
+#define DEFAULT_PARAM_VAL 0.0 //!< Default values assigned to submesh parameters
 
+/*!
+* \brief Initiate flag enum, possible ways to set the mesh parameters
+*/
 typedef enum pumi_initiate_flag{
-  initiate_from_terminal, //inputs supplied by user in the terminal. The user will be prompted to input mesh parameters
-  initiate_from_commandline_inputs, //mesh parameters will be read from the 'command line inputs'
-  // of the hpic code and assigned to struct pumi_initiate_input members
+  initiate_from_terminal, //!< Inputs supplied by user in the terminal. The user will be prompted to input mesh parameters
+  initiate_from_commandline_inputs, //!< Mesh parameters will be read from the 'command line inputs' of the hpic code and assigned to struct pumi_initiate_input members
 } pumi_initiate_flag_t;
 
-
+/*!
+* \brief Contains the parameters inputs to the mesh which will be passed as arguments to pumi_initiate()
+*/
 typedef struct pumi_initiate_input{
-  int ndim; // numnber of dimensions of physical space
-  int nsubmeshes; // number of submeshes required
-  char **type_flag; //submesh flag as a string
-  double *x_left; //coordinate of left end of submesh
-  double *x_right; //coordinate of right end of submesh
-  int *uniform_Nel; // number of elements in the uniform mesh
-  double *left_T; // left BL thickness
-  double *left_r; // growth ratio for left BL mesh
-  int *left_Nel; // number of elements in the graded mesh from left
-  double *right_T; // right BL thickness
-  double *right_r; //  growth ratio for right BL mesh
-  int *right_Nel; // number of elements in the graded mesh from right
+  int ndim; //!< number of physical dimensions of the problem space
+  int nsubmeshes; //!< number of submesh blocks in the domain
+  char **type_flag; //!< pointer to array of mesh flag strings of each submesh block
+  double *x_left; //!< pointer to array of left end coordinates of each submesh block
+  double *x_right; //!< pointer to array of right end coordinates of each submesh block
+  int *uniform_Nel; //!< pointer to array of number of elements in the uniform mesh segment for each submesh block
+  double *left_T; //!< pointer to array of left BL segment thickness for each submesh block
+  double *left_r; //!< pointer to array of growth ratios in the left BL segment for each block
+  int *left_Nel; //!< pointer to array of number of elements in the left BL segment for each block
+  double *right_T; //!< pointer to array of right BL segment thickness for each submesh block
+  double *right_r; //!<  pointer to array of growth ratios in the right BL segment for each block
+  int *right_Nel; //!< pointer to array of number of elements in the right BL segment for each block
 } pumi_initiate_input_t;
 
 pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs);
@@ -38,7 +42,7 @@ void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, doub
 void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag);
 void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag,
   int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
-unsigned int pumi_getsubmeshflag(char flagstring[30]);
+unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
 
 #endif /* pumi_initiate_h */

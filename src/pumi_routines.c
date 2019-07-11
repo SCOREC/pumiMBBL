@@ -6,6 +6,10 @@
 #include <string.h>
 #include "pumi_routines.h"
 
+/*
+* \brief Computes and returns the total number of elements in the mesh
+* \param *pumi_mesh pointer object to struct pumi_mesh
+*/
 int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
 {
   int Nel_total = 0;
@@ -15,18 +19,33 @@ int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
   return Nel_total;
 }
 
+/*
+* \brief Computes and returns the coordinate of the left endpoint of the mesh
+* \param *pumi_mesh pointer object to struct pumi_mesh
+*/
 double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh)
 {
   double global_x_left = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + 0)->x_left;
   return global_x_left;
 }
 
+/*
+* \brief Computes and returns the coordinate of the right endpoint of the mesh
+* \param *pumi_mesh pointer object to struct pumi_mesh
+*/
 double pumi_global_x_right_1D(pumi_mesh_t *pumi_mesh)
 {
   double global_x_right = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes - 1))->x_right;
   return global_x_right;
 }
 
+/*
+* \brief Calls the appropriate subroutine (based on the dimension of the problem) to locate the cell number of a particle
+* \param[in] *pumi_mesh pointer object to struct pumi_mesh
+* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[out] *particle_cell address of the variable where the particle cell is to be stored
+* \param[out] *cell_weight address of the variable where the local weight is to be stored
+*/
 void pumi_locatepoint(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *particle_cell, double *cell_weight)
 {
   if (pumi_mesh->ndim == 1){
@@ -38,6 +57,13 @@ void pumi_locatepoint(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *p
   }
 }
 
+/*
+* \brief Locates the particle in a submesh segment and calls appropriate subroutine to obtain the local cell number of the particle inside the segment
+* \param[in] *pumi_mesh pointer object to struct pumi_mesh
+* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[out] *particle_cell address of the variable where the particle cell is to be stored
+* \param[out] *cell_weight address of the variable where the local weight is to be stored
+*/
 void pumi_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *particle_cell, double *cell_weight){
   int N_cumulative[pumi_mesh->nsubmeshes];
   N_cumulative[0] = 0;
@@ -83,15 +109,39 @@ void pumi_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int
   }
 }
 
-void pumi_locatepoint_uniform_1D(int *cell, double *weight, double coord, double uniform_x_left, double uniform_t0, int uniform_Nel){
+/*
+* \brief Computes the local cell number and weight of a particle located in the uniform mesh segment of a submesh block
+* \param[out] *cell address of the variable where the local particle cell (w.r.t to the uniform mesh segment) is to be stored
+* \param[out] *weight address of the variable where the local weight (based on linear weighting) in the located cell is to be stored
+* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] uniform_x_left left end coordinate of the uniform mesh segment in the submesh block
+* \param[in] uniform_t0 size of elements in uniform mesh segment of the submesh block
+* \param[in] uniform_Nel number of elements in the uniform mesh segment of the submesh block
+*/
+void pumi_locatepoint_uniform_1D(int *cell, double *weight, double coord, double uniform_x_left, double uniform_t0, int uniform_Nel)
+{
    *cell = ((coord-uniform_x_left)/uniform_t0);
    if (*cell == uniform_Nel){ // when particle is at uniform_x_right
      *cell = *cell-1;
    }
    *weight = (coord - (uniform_x_left + uniform_t0*(*cell)))/uniform_t0; //local weight due to the charge in the cell
- }
+}
 
-void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_end, double r, double t0, int local_Nel, pumi_meshflag_t pumi_flag){
+ /*
+ * \brief Computes the local cell number and weight of a particle located in the left/right BL segment of a submesh block
+ * \param[out] *cell address of the variable where the local particle cell (w.r.t to the left/right BL segment) is to be stored
+ * \param[out] *weight address of the variable where the local weight (based on linear weighting) in the located cell is to be stored
+ * \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
+ * \param[in] x_end right/left end coordinate of the left/right BL segment in the submesh block respectivley
+ * \param[in] r growth ratio of the elements in the left/right BL segment of the submesh block
+ * \param[in] t0 size of first (leftmost/rightmost) element in the left/right BL segment inside the submesh block respectivley
+ * \param[in] local_Nel number of elements in the left/right BL segment of the submesh block
+ * \param[in] pumi_flag Mesh flag enum that defines the types of meshing in each segment of the submesh block
+ * \details The particle cell number calculations are adjusted based on the pumi_flag that is passed to the routine. For this routine, leftBL and rightBL are the only valid inputs
+ for pumi_flag
+ */
+void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_end, double r, double t0, int local_Nel, pumi_meshflag_t pumi_flag)
+{
    *cell = log(1 + (fabs(x_end-coord))*(r-1)/t0)/log(r);
    if (*cell == local_Nel){ // when particle is at lBL_x_right or rBL_x_left
      *cell = *cell-1;
@@ -103,10 +153,16 @@ void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_en
    if (pumi_flag == rightBL){
      *weight = 1 - ((x_end - t0*(pow(r,*cell)-1)/(r-1)) - coord)/(t0*pow(r,*cell)); //local weight due to the charge in the cell
    }
- }
+}
 
-void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int N_total, double *covolume){
-   for (int inode=0; inode<N_total+1; inode++){
+ /*
+ * \brief Computes the covolume at each node in the mesh
+ * \param[in] *pumi_mesh pointer object to struct pumi_mesh
+ * \param[in] Nel_total Total number of elements in the mesh
+ * \param[out] pointer to array of nodal covolume (to be populated after this function call)
+ */
+void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *covolume){
+   for (int inode=0; inode<Nel_total+1; inode++){
      covolume[inode] = 0.0;
    }
    int N_cumulative[pumi_mesh->nsubmeshes];
