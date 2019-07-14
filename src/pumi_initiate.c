@@ -57,6 +57,17 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
       pumi_setsubmesh(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
     }
   }
+  printf("PUMI mesh parameter info :\n\n");
+  for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    printf("\tSUBMESH %d parameters:\n", isubmesh+1 );
+    printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel);
+    printf("\t left_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_T);
+    printf("\t left_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r);
+    printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel);
+    printf("\t right_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T);
+    printf("\t right_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r);
+    printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel);
+  }
 
   return (pumi_mesh);
 }
@@ -278,4 +289,40 @@ void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_para
       free(submesh_params[i]);
   }
   free(submesh_params);
+}
+
+/*!
+* \brief Computes a new grading ratio for left/right BL segment if a valid BL mesh with grading ratio 1.2 cannot be constructed with hpic inputs
+* \param p1_lr number of debye lenghts in the left/right BL segment
+* \param p2 number of grid cells per debye length in the uniform region
+* \param BL_nel number of elements in the left/right BL segment
+* \details This routine will only be called inside the hpic code when the inputs to hpic does
+not correspond to a valid BL mesh with grading ratio 1.2. The routine returns a new grading ratio that will satisfy
+the hpic inputs.
+*/
+double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel){
+  double tol = 1e-5;
+  double r = 1.2;
+  if (BL_Nel == 0){
+    r = 0.0;
+    return r;
+  }
+  else{
+    double del_r = 1.0;
+    int iter = 0;
+    int max_iter = 10000;
+    double f, f_r;
+    while (fabs(del_r) > tol){
+      f = (double) (p1_lr*p2-1.0)*pow(r,BL_Nel) - (p1_lr*p2)*pow(r,BL_Nel-1) + 1.0;
+      f_r = (double) BL_Nel*(p1_lr*p2-1.0)*pow(r,BL_Nel-1) - (BL_Nel-1)*(p1_lr*p2)*pow(r,BL_Nel-2);
+      del_r = f/f_r;
+      r -= del_r;
+      iter++;
+      if (iter > max_iter){
+        printf("Cannot compute grading ratio. Solver not converging\n" );
+        exit(0);
+      }
+    }
+    return r;
+  }  
 }

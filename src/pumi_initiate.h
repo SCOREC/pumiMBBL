@@ -23,6 +23,7 @@ typedef enum pumi_initiate_flag{
 typedef struct pumi_initiate_input{
   int ndim; //!< number of physical dimensions of the problem space
   int nsubmeshes; //!< number of submesh blocks in the domain
+  int Nel_max; //!< maximum number of elements in the mesh
   char **type_flag; //!< pointer to array of mesh flag strings of each submesh block
   double *x_left; //!< pointer to array of left end coordinates of each submesh block
   double *x_right; //!< pointer to array of right end coordinates of each submesh block
@@ -44,5 +45,6 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
+double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel);
 
 #endif /* pumi_initiate_h */
