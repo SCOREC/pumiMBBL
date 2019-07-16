@@ -24,6 +24,8 @@ typedef struct pumi_initiate_input{
   int ndim; //!< number of physical dimensions of the problem space
   int nsubmeshes; //!< number of submesh blocks in the domain
   int Nel_max; //!< maximum number of elements in the mesh
+  double alpha; //!< Multiplicative factor to determine Nel_max
+  int Nel_max_FLAG; //!< Flag to specify type of input for Nel_max i.e with or without alpha
   char **type_flag; //!< pointer to array of mesh flag strings of each submesh block
   double *x_left; //!< pointer to array of left end coordinates of each submesh block
   double *x_right; //!< pointer to array of right end coordinates of each submesh block
