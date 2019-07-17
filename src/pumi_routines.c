@@ -7,7 +7,24 @@
 #include "pumi_routines.h"
 
 /*
-* \brief Computes and returns the total number of elements in the mesh
+* \brief Call appropriate subroutine (based on the dimension of the problem) to compute the total number of elements in the mesh
+* \param *pumi_mesh pointer object to struct pumi_mesh
+*/
+int pumi_total_elements(pumi_mesh_t *pumi_mesh)
+{
+  int Nel_total;
+  if (pumi_mesh->ndim == 1){
+    Nel_total = pumi_total_elements_1D(pumi_mesh);
+  }
+  else {
+    printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+    exit(0);
+  }
+  return Nel_total;
+}
+
+/*
+* \brief Computes and returns the total number of elements in the mesh for 1D domain
 * \param *pumi_mesh pointer object to struct pumi_mesh
 */
 int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
