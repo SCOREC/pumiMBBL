@@ -3,6 +3,7 @@
 
 #include "pumiMBBL.h"
 
+int pumi_total_elements(pumi_mesh_t *pumi_mesh);
 int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh);
 double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh);
 double pumi_global_x_right_1D(pumi_mesh_t *pumi_mesh);
