@@ -34,7 +34,7 @@ int main()
 
 
   // calculating total number of elements in the mesh
-  int Nel_total = pumi_total_elements_1D(pumi_mesh);
+  int Nel_total = pumi_total_elements(pumi_mesh);
   double X_LEFT = pumi_global_x_left_1D(pumi_mesh); //Global x_left
   double X_RIGHT = pumi_global_x_right_1D(pumi_mesh); //Global x_right
 
