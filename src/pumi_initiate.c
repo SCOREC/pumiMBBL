@@ -60,15 +60,33 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   printf("PUMI mesh parameter info :\n\n");
   for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("\tSUBMESH %d parameters:\n", isubmesh+1 );
-    printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel);
+
+    printf("\n\t submeshflag = ");
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+      printf("leftBL&");
+    }
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
+      printf("uniform");
+    }
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+      printf("&rightBL");
+    }
+
+    printf("\n\n\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel);
+    printf("\t uniform_dx  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0);
+
+    printf("\t left_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0);
     printf("\t left_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_T);
     printf("\t left_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r);
-    printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel);
+    printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel);
+
+    printf("\t right_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0);
     printf("\t right_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T);
     printf("\t right_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r);
     printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel);
   }
 
+  pumi_print_node_coordinates(pumi_mesh);
   return (pumi_mesh);
 }
 
@@ -324,5 +342,62 @@ double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel){
       }
     }
     return r;
-  }  
+  }
+}
+
+/*!
+* \brief Prints the coordinates of the nodes (for diagnostics purposes)
+* \param *pumi_mesh pointer object to struct pumi_initiate
+*/
+void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
+  int N_cumulative[pumi_mesh->nsubmeshes];
+  N_cumulative[0] = 0;
+  for (int isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
+  }
+
+  int inode = 0;
+  double coord;
+  printf("\nPrinting the coordinates of the nodes in the pumi mesh:\n\n");
+  for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    printf("SUBMESH %d:\n", isubmesh+1 );
+
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+      printf("\tLeft BL segment:\n");
+      inode = N_cumulative[isubmesh]+1;
+      coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;
+      printf("\t\tNode %6d: %2.4e\n", inode, coord );
+      for (int i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; i++ ){
+        inode++;
+        coord += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r,i);
+        printf("\t\tNode %6d: %2.4e\n", inode, coord );
+      }
+    }
+
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
+      printf("\tUniform segment:\n");
+      inode = N_cumulative[isubmesh] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + 1;
+      coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left;
+      double dx_uniform = (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_right-((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel;
+      printf("\t\tNode %6d: %2.4e\n", inode, coord );
+      for (int i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; i++ ){
+        inode++;
+        coord += dx_uniform;
+        printf("\t\tNode %6d: %2.4e\n", inode, coord );
+      }
+    }
+
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+      printf("\tRight BL segment:\n");
+      inode = N_cumulative[isubmesh] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel + 1;
+      coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_x_left;
+      printf("\t\tNode %6d: %2.4e\n", inode, coord );
+      for (int i=((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1; i>=0; i-- ){
+        inode++;
+        coord += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,i);
+        printf("\t\tNode %6d: %2.4e\n", inode, coord );
+      }
+    }
+    printf("\n");
+  }
 }
