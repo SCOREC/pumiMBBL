@@ -241,18 +241,21 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
     int l3 = strcmp(newflagstring[i],flagtypes[2]);
     int l123 = l1*l2*l3;
     if (l123 != 0){
-      printf("Invalid flag input -- Terminating\n");
-      printf("Valid input(s):\nuniform\nleftBL\nrightBL\nleftBL&uniform\nrightBL&uniform\nleftBL&rightBL\nuniform&leftBL&rightBL\n");
-      exit(0);
+      printf("\n\tInvalid flag input\n");
+      printf("\tList of valid input(s):\n\tuniform\n\tleftBL\n\trightBL\n\tleftBL&uniform\n\trightBL&uniform\n\tleftBL&rightBL\n\tuniform&leftBL&rightBL\n\n");
+      printf("\tAssigning \"leftBL&uniform&rightBL\" (default input) to submesh flag...\n\n");
+      intflag = uniform+leftBL+rightBL;
     }
-    if (strcmp(newflagstring[i],flagtypes[0])==0){
-      intflag =  intflag + uniform;
-    }
-    if (strcmp(newflagstring[i],flagtypes[1])==0){
-      intflag = intflag + leftBL;
-    }
-    if (strcmp(newflagstring[i],flagtypes[2])==0){
-      intflag = intflag + rightBL;
+    else{
+      if (strcmp(newflagstring[i],flagtypes[0])==0){
+        intflag =  intflag + uniform;
+      }
+      if (strcmp(newflagstring[i],flagtypes[1])==0){
+        intflag = intflag + leftBL;
+      }
+      if (strcmp(newflagstring[i],flagtypes[2])==0){
+        intflag = intflag + rightBL;
+      }
     }
   }
     return intflag;
