@@ -50,6 +50,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
 double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel);
+void pumi_verify_params(pumi_mesh_t *pumi_mesh);
 void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh);
 
 #endif /* pumi_initiate_h */
