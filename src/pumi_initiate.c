@@ -127,11 +127,13 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel = N_left;
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_x_right = xleft + T_left; // (dependent variable)
   if (submeshflag & leftBL){
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = T_left*(r_left-1)/(pow(r_left,N_left)-1); // (dependent variable)
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = T_left*(r_left-1.0)/(pow(r_left,N_left)-1.0); // (dependent variable)
   }
   else{
     ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = 0.0; // (dependent variable)
   }
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_left_r = log(r_left);
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r_lBL_t0_ratio = (r_left-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T = T_right;
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r = r_right;
@@ -143,6 +145,9 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   else{
     ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0 = 0.0;// (dependent variable)
   }
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r = log(r_right);
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio = (r_right-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0;
+
 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel = N_uniform + N_left + N_right; // (dependent variable)
 }
