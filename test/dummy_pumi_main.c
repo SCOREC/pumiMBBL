@@ -221,7 +221,8 @@ int main(int argc, char *argv[])
   double charge_density[Nel_total+1];
   for (int i=0; i<(Nel_total+1); i++){
     charge_density[i] = grid_weights[i]/covolume[i];
-    printf("Charge density at node %d is %lf\n", i, charge_density[i]);
+    //printf("Co-volume at node %d is %2.4e\n",i+1, covolume[i] );
+    printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);
   }
 
   free(coordinates);
