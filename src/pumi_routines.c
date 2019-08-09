@@ -95,7 +95,7 @@ void pumi_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int
           int local_lBL_cell;
           double local_lBL_weight;
           pumi_meshflag_t submeshflag = leftBL;
-          pumi_locatepoint_BL_1D(&local_lBL_cell, &local_lBL_weight, particle_coordinate, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel, submeshflag );
+          pumi_locatepoint_BL_1D(&local_lBL_cell, &local_lBL_weight, particle_coordinate, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_left_r, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r_lBL_t0_ratio, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel, submeshflag );
           *particle_cell = N_cumulative[isubmesh]+local_lBL_cell;
           *cell_weight = local_lBL_weight;
           break;
@@ -116,7 +116,7 @@ void pumi_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int
           int local_rBL_cell;
           double local_rBL_weight;
           pumi_meshflag_t submeshflag = rightBL;
-          pumi_locatepoint_BL_1D(&local_rBL_cell, &local_rBL_weight, particle_coordinate, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel, submeshflag );
+          pumi_locatepoint_BL_1D(&local_rBL_cell, &local_rBL_weight, particle_coordinate, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel, submeshflag );
           *particle_cell = N_cumulative[isubmesh]+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel +((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel - local_rBL_cell - 1;
           *cell_weight = local_rBL_weight;
           break;
@@ -157,18 +157,19 @@ void pumi_locatepoint_uniform_1D(int *cell, double *weight, double coord, double
  * \details The particle cell number calculations are adjusted based on the pumi_flag that is passed to the routine. For this routine, leftBL and rightBL are the only valid inputs
  for pumi_flag
  */
-void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_end, double r, double t0, int local_Nel, pumi_meshflag_t pumi_flag)
+void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_end, double r, double t0, double log_r, double r_t0_ratio, int local_Nel, pumi_meshflag_t pumi_flag)
 {
-   *cell = log(1 + (fabs(x_end-coord))*(r-1)/t0)/log(r);
+   *cell = log(1 + (fabs(x_end-coord))*r_t0_ratio)/log_r;
    if (*cell == local_Nel){ // when particle is at lBL_x_right or rBL_x_left
      *cell = *cell-1;
    }
+   double r_power_cell = pow(r,*cell);
 
    if (pumi_flag == leftBL){
-     *weight = (coord - (x_end + t0*(pow(r,*cell)-1)/(r-1)))/(t0*pow(r,*cell)); //local weight due to the charge in the cell
+     *weight = (coord - (x_end + (r_power_cell-1)/r_t0_ratio)/(t0*r_power_cell)); //local weight due to the charge in the cell
    }
    if (pumi_flag == rightBL){
-     *weight = 1 - ((x_end - t0*(pow(r,*cell)-1)/(r-1)) - coord)/(t0*pow(r,*cell)); //local weight due to the charge in the cell
+     *weight = 1 - ((x_end - (r_power_cell-1)/r_t0_ratio - coord)/(t0*r_power_cell)); //local weight due to the charge in the cell
    }
 }
 
@@ -190,7 +191,7 @@ void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *cov
 
    for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
      double tmp_submesh_elem[((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel];
-     
+
      tmp_submesh_elem[0] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
      for (int iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; iCell++){
        tmp_submesh_elem[iCell] = tmp_submesh_elem[iCell-1]*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
