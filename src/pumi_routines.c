@@ -166,10 +166,10 @@ void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_en
    double r_power_cell = pow(r,*cell);
 
    if (pumi_flag == leftBL){
-     *weight = (coord - (x_end + (r_power_cell-1)/r_t0_ratio)/(t0*r_power_cell)); //local weight due to the charge in the cell
+     *weight = (coord - (x_end + (r_power_cell-1.0)/r_t0_ratio))/(t0*r_power_cell);
    }
    if (pumi_flag == rightBL){
-     *weight = 1 - ((x_end - (r_power_cell-1)/r_t0_ratio - coord)/(t0*r_power_cell)); //local weight due to the charge in the cell
+     *weight = 1 - ((x_end - (r_power_cell-1.0)/r_t0_ratio) - coord)/(t0*r_power_cell);
    }
 }
 
