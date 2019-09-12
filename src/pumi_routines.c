@@ -178,7 +178,7 @@ void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_en
  * \param[in] *pumi_mesh pointer object to struct pumi_mesh
  * \param[in] Nel_total Total number of elements in the mesh
  * \param[out] pointer to array of nodal covolume (to be populated after this function call)
- */
+
 void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *covolume){
    for (int inode=0; inode<Nel_total+1; inode++){
      covolume[inode] = 0.0;
@@ -216,4 +216,60 @@ void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *cov
        }
      }
    }
+}
+*/
+
+/*
+* \brief Computes and returns the covolume for a given node in the mesh
+* \param[in] node number
+* \param[in] Nel_total Total number of elements in the mesh
+* \param[in] pointer to array of element sizes
+*/
+double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize){
+  double covolume;
+  if (inode == 0){
+    covolume = elemsize[inode]/2.0;
+  }
+  else if (inode == Nel_total){
+    covolume = elemsize[Nel_total-1]/2.0;
+  }
+  else if (inode > 0 && inode < Nel_total){
+    covolume = (elemsize[inode-1]+elemsize[inode])/2.0;
+  }
+  else{
+    printf("\tInvalid node number for covolume\n");
+    exit(0);
+  }
+  return covolume;
+}
+
+/*
+* \brief Computes the element sizes in the mesh
+* \param[in] *pumi_mesh pointer object to struct pumi_mesh
+* \param[in] Nel_total Total number of elements in the mesh
+* \param[out] pointer to array of element size (to be populated after this function call)
+*/
+void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *elemsize){
+  for (int iel=0; iel<Nel_total; iel++){
+    elemsize[iel] = 0.0;
+  }
+  int N_cumulative[pumi_mesh->nsubmeshes];
+  N_cumulative[0] = 0;
+  for (int isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
+  }
+
+  for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    elemsize[N_cumulative[isubmesh]+0] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
+    for (int iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; iCell++){
+      elemsize[N_cumulative[isubmesh]+iCell] = elemsize[N_cumulative[isubmesh]+iCell-1]*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
+    }
+    for (int iCell=0; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; iCell++){
+      elemsize[N_cumulative[isubmesh]+iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
+    }
+    elemsize[N_cumulative[isubmesh]+0+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);
+    for (int iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel; iCell++){
+      elemsize[N_cumulative[isubmesh]+iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel] = elemsize[N_cumulative[isubmesh]+iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel-1]/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
+    }
+  }
 }
