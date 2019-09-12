@@ -215,19 +215,23 @@ int main(int argc, char *argv[])
     printf("node=%d   gridweight=%lf\n", i, grid_weights[i]);
   }
 
-  double *covolume = (double*) malloc((Nel_total+1)*sizeof(double));
-  pumi_compute_covolume_1D(pumi_mesh, Nel_total, covolume); //populates the variable covolume
+  //double *covolume = (double*) malloc((Nel_total+1)*sizeof(double));
+  //pumi_compute_covolume_1D(pumi_mesh, Nel_total, covolume); //populates the variable covolume
+
+  double *elemsize = (double*) malloc((Nel_total)*sizeof(double));
+  pumi_compute_elemsize_1D(pumi_mesh, Nel_total, elemsize);
 
   double charge_density[Nel_total+1];
   for (int i=0; i<(Nel_total+1); i++){
-    charge_density[i] = grid_weights[i]/covolume[i];
-    //printf("Co-volume at node %d is %2.4e\n",i+1, covolume[i] );
-    printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);
+    charge_density[i] = grid_weights[i]/pumi_compute_covolume_1D(i, Nel_total, elemsize);
+    printf("Co-volume at node %d is %2.4e\n",i+1, pumi_compute_covolume_1D(i, Nel_total, elemsize) );
+    //printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);
   }
 
   free(coordinates);
   free(grid_weights);
-  free(covolume);
+  //free(covolume);
+  free(elemsize);
   pumi_finalize(pumi_mesh); //deallocates pumi_mesh object
 
 
