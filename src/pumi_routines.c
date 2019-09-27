@@ -273,3 +273,16 @@ void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *ele
     }
   }
 }
+
+
+/*
+* \brief Computes the grading ratio array
+* \param[in] pointer to array of element size
+* \param[in] Nel_total Total number of elements in the mesh
+* \param[out] pointer to array of grading ratios (to be populated after this function call)
+*/
+void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double *gradingratio){
+  for (int i=0; i<Nel_total-1; i++){
+    gradingratio[i] = elemsize[i+1]/elemsize[i];
+  }
+}
