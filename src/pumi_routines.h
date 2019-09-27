@@ -15,5 +15,6 @@ void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_en
 //void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *covolume);
 double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize);
 void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *elemsize);
+void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double *gradingratio);
 
 #endif /* pumi_routines_h */
