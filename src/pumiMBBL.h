@@ -36,6 +36,8 @@ typedef struct pumi_submesh1D{
   double lBL_t0; //!< (dependent variable) size of first (leftmost) element in the left BL segment inside the submesh block
   double log_left_r;//!< (dependent variable) log(left_r) -- value used in pumi_locatepoint_BL_1D algo
   double left_r_lBL_t0_ratio;//!< (dependent variable) (left_r-1)/lBL_t0 -- value used in pumi_locatepoint_1D algo
+  double *leftBL_elemsize;//!< pointer to array that stores elem size in leftBL
+  int leftBL_elemsize_calc_flag; // !< leftBL elem size calculation flag variable. 0=>BL elemsize array not computed, 1=>BL elemsize array computed
 
   double right_T; //!< right BL thickness
   double right_r; //!<  growth ratio for right BL segment
@@ -44,8 +46,11 @@ typedef struct pumi_submesh1D{
   double rBL_t0; //!< (dependent variable) size of first (rightmost) element in the right BL segment inside the submesh block
   double log_right_r;//!< (dependent variable) log(right_r) -- value used in pumi_locatepoint_BL_1D algo
   double right_r_rBL_t0_ratio;//!< (dependent variable) (right_r-1)/rBL_t0 -- value used in pumi_locatepoint_1D algo
+  double *rightBL_elemsize;//!< pointer to array that stores elem size in rightBL
+  int rightBL_elemsize_calc_flag; // !< rightBL elem size calculation flag variable. 0=>BL elemsize array not computed, 1=>BL elemsize array computed
 
   int submesh_total_Nel; //!< (dependent variable) total number of elements in the submesh block
+  int Nel_cumulative; //!< (dependent variable) total number of elements in the previous submeshes
 
   pumi_meshflag_t pumi_flag; //!< flag for types of mesh segments(i.e. uniform mesh segment, right BL segment or left BL segment) available in the submesh block
 } pumi_submesh1D_t;

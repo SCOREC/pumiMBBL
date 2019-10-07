@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
   pumi_initiate_input_t    *pumi_inputs;
   //pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_terminal, pumi_inputs);
 
+  ///*
   if (argc < 6){
     printf("Execute the code with the following command line arguments -- \n\n" );
     printf("\t ./install/bin/pumiMBBL_Demo p1 p2 \"typeflag\" Nel_max_FLAG alpha-or-Nel_max\n\n");
@@ -180,12 +181,18 @@ int main(int argc, char *argv[])
   // the pumi_initiate_input struct NEEDS TO BE POPULATED before calling this function
   pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
   pumi_initiate_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
-
+  //*/
+  pumi_BL_elemsize_ON(pumi_mesh);
 
   // calculating total number of elements in the mesh
   int Nel_total = pumi_total_elements(pumi_mesh);
   double X_LEFT = pumi_global_x_left_1D(pumi_mesh); //Global x_left
   double X_RIGHT = pumi_global_x_right_1D(pumi_mesh); //Global x_right
+
+  for (int i=1; i<Nel_total; i++){
+    double r = pumi_return_gradingratio(pumi_mesh, i);
+    printf("Node %d = %2.4e\n", i+1, r);
+  }
 
   int num_particles;
   printf("\nEnter number of particles : ");
@@ -222,11 +229,13 @@ int main(int argc, char *argv[])
   pumi_compute_elemsize_1D(pumi_mesh, Nel_total, elemsize);
 
   double charge_density[Nel_total+1];
-  for (int i=0; i<(Nel_total+1); i++){
-    charge_density[i] = grid_weights[i]/pumi_compute_covolume_1D(i, Nel_total, elemsize);
-    printf("Co-volume at node %d is %2.4e\n",i+1, pumi_compute_covolume_1D(i, Nel_total, elemsize) );
-    //printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);
+  for (int i=0; i<(Nel_total); i++){
+    //printf("Element size of element %d is %2.4e\n", i, pumi_return_elemsize(pumi_mesh, i, 0) );
+    charge_density[i] = grid_weights[i]/pumi_return_covolume_1D(pumi_mesh, i);
+    printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);
   }
+
+  pumi_BL_elemsize_OFF(pumi_mesh);
 
   free(coordinates);
   free(grid_weights);
