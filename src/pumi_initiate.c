@@ -279,7 +279,7 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
 * \param *pumi_inputs pointer object to struct pumi_initiate_input
 * \param nsubmeshes number of submesh blocks
 */
-void pumi_initiate_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+void pumi_input_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->type_flag = (char**) malloc(nsubmeshes*sizeof(char*));
@@ -300,7 +300,7 @@ void pumi_initiate_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \param *pumi_inputs pointer object to struct pumi_initiate_input
 * \param nsubmeshes number of submesh blocks
 */
-void pumi_initiate_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+void pumi_input_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   free(pumi_inputs->x_left);
   free(pumi_inputs->x_right);
   free(pumi_inputs->left_T);

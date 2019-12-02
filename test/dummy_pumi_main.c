@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   pumi_inputs = malloc(sizeof(pumi_initiate_input_t));
   pumi_inputs->ndim = 1; // Fixed pumi input
   pumi_inputs->nsubmeshes = 1; // Fixed pumi input
-  pumi_initiate_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
+  pumi_input_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
   int isubmesh = 0;
   strcpy(pumi_inputs->type_flag[isubmesh], argv[3]);
   pumi_inputs->Nel_max_FLAG = atoi( argv[4] );
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 
   // the pumi_initiate_input struct NEEDS TO BE POPULATED before calling this function
   pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
-  pumi_initiate_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
+  pumi_input_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
   //*/
   pumi_BL_elemsize_ON(pumi_mesh);
 
