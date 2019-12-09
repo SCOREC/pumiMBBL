@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
     exit(0);
   }
 
+  // necessary hpic parameters needed for pumi mesh
   int NumberDebyeLengthsInDomain = atoi ( argv[1] );
   int NumberPointsPerDebyeLength = atoi ( argv[2] );
   int Ncells = NumberDebyeLengthsInDomain*NumberPointsPerDebyeLength;
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])
   pumi_inputs = malloc(sizeof(pumi_initiate_input_t));
   pumi_inputs->ndim = 1; // Fixed pumi input
   pumi_inputs->nsubmeshes = 1; // Fixed pumi input
-  pumi_input_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
+  pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
   int isubmesh = 0;
   strcpy(pumi_inputs->type_flag[isubmesh], argv[3]);
   pumi_inputs->Nel_max_FLAG = atoi( argv[4] );
@@ -66,10 +67,12 @@ int main(int argc, char *argv[])
     pumi_inputs->Nel_max = floor( pumi_inputs->alpha*NumberDebyeLengthsInDomain*NumberPointsPerDebyeLength );
   }
 
+  // more hpic parameters
   double lambda_D = 3.3246e-04;
   double x1_min = 0.0;
   double x1_max = lambda_D*NumberDebyeLengthsInDomain;
 
+  // calculating all nec\ pumi_inputs to initiate the mesh
   *(pumi_inputs->x_left + isubmesh) = x1_min;
   *(pumi_inputs->x_right + isubmesh) = x1_max;
   char tmp_typeflag_string[SUBMESH_FLAGSTRING_LENGTH];
@@ -170,6 +173,7 @@ int main(int argc, char *argv[])
     }
   }
 
+  // all pumi_inputs are calculated
   *(pumi_inputs->uniform_Nel + isubmesh) = uniform_Nel;
   *(pumi_inputs->left_T + isubmesh)      = left_T;
   *(pumi_inputs->left_r + isubmesh)      = left_r;
@@ -178,10 +182,12 @@ int main(int argc, char *argv[])
   *(pumi_inputs->right_r + isubmesh)     = right_r;
   *(pumi_inputs->right_Nel + isubmesh)   = right_Nel;
 
-  // the pumi_initiate_input struct NEEDS TO BE POPULATED before calling this function
+  // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
   pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
-  pumi_input_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
-  //*/
+  // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
+  pumi_inputs_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
+  // Call this function if BL element sizes are to be precomputed
+  // HIGHLY RECOMMENDED to call this function to ensure log and power functions are not used to locate particle in BL
   pumi_BL_elemsize_ON(pumi_mesh);
 
   // calculating total number of elements in the mesh
@@ -190,6 +196,7 @@ int main(int argc, char *argv[])
   double X_RIGHT = pumi_global_x_right_1D(pumi_mesh); //Global x_right
 
   for (int i=1; i<Nel_total; i++){
+    // pumi_return_gradingratio() returns the grading ratio for given node 'i'
     double r = pumi_return_gradingratio(pumi_mesh, i);
     printf("Node %d = %2.4e\n", i+1, r);
   }
@@ -222,25 +229,28 @@ int main(int argc, char *argv[])
     printf("node=%d   gridweight=%lf\n", i, grid_weights[i]);
   }
 
-  //double *covolume = (double*) malloc((Nel_total+1)*sizeof(double));
-  //pumi_compute_covolume_1D(pumi_mesh, Nel_total, covolume); //populates the variable covolume
-
-  double *elemsize = (double*) malloc((Nel_total)*sizeof(double));
-  pumi_compute_elemsize_1D(pumi_mesh, Nel_total, elemsize);
+  for (int i=0; i<Nel_total; i++){
+    // pumi_return_elemsize()  returns elemtent size for given element idex 'i' [offset=0].
+    // nodal index can also be specified but appropriate offset to be supplied with it
+    printf("Element size of element %d is %2.4e\n", i, pumi_return_elemsize(pumi_mesh, i, 0) );
+  }
 
   double charge_density[Nel_total+1];
-  for (int i=0; i<(Nel_total); i++){
-    //printf("Element size of element %d is %2.4e\n", i, pumi_return_elemsize(pumi_mesh, i, 0) );
+  for (int i=0; i<(Nel_total+1); i++){
+    // pumi_return_covolume_1D() retruns covolume of a given node
     charge_density[i] = grid_weights[i]/pumi_return_covolume_1D(pumi_mesh, i);
     printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);
   }
 
+  // always call this function if pumi_BL_elemsize_ON() is previously calculated
+  // This function is to be called towards the end of the code (after the simulation is completed and before
+  // hpic_finalize() is called)
   pumi_BL_elemsize_OFF(pumi_mesh);
 
+  // free allocated memory
   free(coordinates);
   free(grid_weights);
-  //free(covolume);
-  free(elemsize);
+
   pumi_finalize(pumi_mesh); //deallocates pumi_mesh object
 
 
