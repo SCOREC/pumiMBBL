@@ -195,6 +195,8 @@ int main(int argc, char *argv[])
   double X_LEFT = pumi_global_x_left_1D(pumi_mesh); //Global x_left
   double X_RIGHT = pumi_global_x_right_1D(pumi_mesh); //Global x_right
 
+  printf("Smallest element size is %2.4e\n", pumi_return_smallest_elemsize(pumi_mesh));
+
   for (int i=1; i<Nel_total; i++){
     // pumi_return_gradingratio() returns the grading ratio for given node 'i'
     double r = pumi_return_gradingratio(pumi_mesh, i);
