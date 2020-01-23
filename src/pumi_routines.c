@@ -572,3 +572,45 @@ double pumi_return_1D_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
     }
   }
 }
+
+/*
+* \brief Returns smallest element size in the mesh
+* \param *pumi_mesh pointer object to struct pumi_mesh
+*/
+double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh){
+  double smallest_elemsize;
+  int isubmesh = 0;
+
+  if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+    smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->lBL_t0;
+  }
+  else{
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+      smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->rBL_t0;
+    }
+    else{
+      smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
+    }
+  }
+
+  for (int isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    double new_smallest_elemsize;
+    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+      new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->lBL_t0;
+    }
+    else{
+      if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+        new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->rBL_t0;
+      }
+      else{
+        new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
+      }
+    }
+
+    if (new_smallest_elemsize < smallest_elemsize){
+      smallest_elemsize = new_smallest_elemsize;
+    }
+  }
+
+  return smallest_elemsize;
+}

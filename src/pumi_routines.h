@@ -35,5 +35,6 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node);
 double pumi_return_1D_gradingratio(pumi_mesh_t* pumi_mesh, int node);
 double pumi_return_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
 double pumi_return_1D_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
+double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 
 #endif /* pumi_routines_h */
