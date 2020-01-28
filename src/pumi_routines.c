@@ -174,51 +174,6 @@ void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_en
    }
 }
 
- /*
- * \brief Computes the covolume at each node in the mesh
- * \param[in] *pumi_mesh pointer object to struct pumi_mesh
- * \param[in] Nel_total Total number of elements in the mesh
- * \param[out] pointer to array of nodal covolume (to be populated after this function call)
-
-void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *covolume){
-   for (int inode=0; inode<Nel_total+1; inode++){
-     covolume[inode] = 0.0;
-   }
-   int N_cumulative[pumi_mesh->nsubmeshes];
-   N_cumulative[0] = 0;
-   for (int isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-     N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
-   }
-
-   for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-     double tmp_submesh_elem[((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel];
-
-     tmp_submesh_elem[0] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
-     for (int iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; iCell++){
-       tmp_submesh_elem[iCell] = tmp_submesh_elem[iCell-1]*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
-     }
-     for (int iCell=0; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; iCell++){
-       tmp_submesh_elem[iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
-     }
-     tmp_submesh_elem[0+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);
-     for (int iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel; iCell++){
-       tmp_submesh_elem[iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel] = tmp_submesh_elem[iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel-1]/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
-     }
-
-     for (int inode=0; inode<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel+1; inode++){
-       if (inode==0){
-         covolume[N_cumulative[isubmesh]+inode] += tmp_submesh_elem[inode]/2;
-       }
-       else if (inode==((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel){
-         covolume[N_cumulative[isubmesh]+inode] += tmp_submesh_elem[inode-1]/2;
-       }
-       else{
-         covolume[N_cumulative[isubmesh]+inode] = (tmp_submesh_elem[inode-1]+tmp_submesh_elem[inode])/2;
-       }
-     }
-   }
-}
-*/
 
 /*
 * \brief Computes and returns the covolume for a given node in the mesh
@@ -227,6 +182,8 @@ void pumi_compute_covolume_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *cov
 * \param[in] pointer to array of element sizes
 */
 double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize){
+  printf("WARNING: This function is deprecated. Use pumi_return_covolume() instead. Exiting...\n" );
+  exit(0);
   double covolume;
   if (inode == 0){
     covolume = elemsize[inode]/2.0;
@@ -243,6 +200,22 @@ double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize){
   }
   return covolume;
 }
+
+/*
+* \brief Call appropriate subroutine (based on the dimension of the problem) and returns covolume for given node
+* \param *pumi_mesh pointer object to struct pumi_mesh
+* \param node number
+*/
+double pumi_return_covolume(pumi_mesh_t* pumi_mesh, int inode){
+  if (pumi_mesh->ndim == 1){
+    return pumi_return_covolume_1D(pumi_mesh, inode);
+  }
+  else {
+    printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+    exit(0);
+  }
+}
+
 
 /*
 * \brief Computes and returns the covolume for a given node in the mesh
@@ -274,6 +247,8 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
 * \param[out] pointer to array of element size (to be populated after this function call)
 */
 void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *elemsize){
+  printf("WARNING: This function is deprecated. Use pumi_return_elemsize() instead. Exiting...\n" );
+  exit(0);
   for (int iel=0; iel<Nel_total; iel++){
     elemsize[iel] = 0.0;
   }
@@ -306,6 +281,8 @@ void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *ele
 * \param[out] pointer to array of grading ratios (to be populated after this function call)
 */
 void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double *gradingratio){
+  printf("WARNING: This function is deprecated. Use pumi_return_gradingratio() instead. Exiting...\n" );
+  exit(0);
   for (int i=0; i<Nel_total-1; i++){
     gradingratio[i] = elemsize[i+1]/elemsize[i];
   }
