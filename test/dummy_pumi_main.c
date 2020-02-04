@@ -197,6 +197,12 @@ int main(int argc, char *argv[])
 
   printf("Smallest element size is %2.4e\n", pumi_return_smallest_elemsize(pumi_mesh));
 
+  //double *elemsize;
+  //double *gradingratio;
+  //pumi_compute_elemsize_1D(pumi_mesh, Nel_total, elemsize);
+  //pumi_compute_covolume_1D(0, Nel_total, elemsize);
+  //pumi_compute_nodal_gradingratio_1D(elemsize, Nel_total, gradingratio);
+
   for (int i=1; i<Nel_total; i++){
     // pumi_return_gradingratio() returns the grading ratio for given node 'i'
     double r = pumi_return_gradingratio(pumi_mesh, i);
