@@ -176,7 +176,7 @@ void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_en
 
 
 /*
-* \brief Computes and returns the covolume for a given node in the mesh
+* \brief [DEPRECATED] Computes and returns the covolume for a given node in the mesh
 * \param[in] node number
 * \param[in] Nel_total Total number of elements in the mesh
 * \param[in] pointer to array of element sizes
@@ -241,7 +241,7 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
 }
 
 /*
-* \brief Computes the element sizes in the mesh
+* \brief [DEPRECATED] Computes the element sizes in the mesh
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] Nel_total Total number of elements in the mesh
 * \param[out] pointer to array of element size (to be populated after this function call)
@@ -275,7 +275,7 @@ void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *ele
 
 
 /*
-* \brief Computes the grading ratio array
+* \brief [DEPRECATED] Computes the grading ratio array
 * \param[in] pointer to array of element size
 * \param[in] Nel_total Total number of elements in the mesh
 * \param[out] pointer to array of grading ratios (to be populated after this function call)
