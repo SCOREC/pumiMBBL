@@ -21,9 +21,9 @@ void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double 
 * \brief elemsize index offset enum, possible ways to call pumi_return_elemsize()
 */
 typedef enum pumi_elemsize_index_offset{
-  elem_input_offset = 0, //!< no offset for direct element input
-  node_input_right_elem_offset = 0, //!< no offset for node input and querying right element size
-  node_input_left_elem_offset = -1, //!< -1 offset for node input and querying left element size
+  pumi_elem_input_offset = 0, //!< no offset for direct element input
+  pumi_elem_on_right_offset = 0, //!< no offset for node input and querying right element size
+  pumi_elem_on_left_offset = -1, //!< -1 offset for node input and querying left element size
 } pumi_elemsize_index_offset_t;
 
 void pumi_BL_elemsize_ON(pumi_mesh_t *pumi_mesh);

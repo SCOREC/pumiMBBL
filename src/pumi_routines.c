@@ -225,13 +225,13 @@ double pumi_return_covolume(pumi_mesh_t* pumi_mesh, int inode){
 double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
   double covolume;
   if (inode == 0){
-    covolume = pumi_return_elemsize(pumi_mesh, inode, node_input_right_elem_offset)/2.0;
+    covolume = pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_right_offset)/2.0;
   }
-  else if (inode == pumi_total_elements(pumi_mesh)){
-    covolume = pumi_return_elemsize(pumi_mesh, inode, node_input_left_elem_offset)/2.0;
+  else if (inode == pumi_mesh->pumi_Nel_total){
+    covolume = pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_left_offset)/2.0;
   }
-  else if (inode > 0 && inode < pumi_total_elements(pumi_mesh)){
-    covolume = pumi_return_elemsize(pumi_mesh, inode, node_input_left_elem_offset)/2.0 + pumi_return_elemsize(pumi_mesh, inode, node_input_right_elem_offset)/2.0;
+  else if (inode > 0 && inode < pumi_mesh->pumi_Nel_total){
+    covolume = pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_left_offset)/2.0 + pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_right_offset)/2.0;
   }
   else{
     printf("\tInvalid node number for covolume\n");
@@ -395,7 +395,7 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node){
 */
 double pumi_return_1D_gradingratio(pumi_mesh_t *pumi_mesh, int node){
 
-  if (node == 0 || node == pumi_total_elements(pumi_mesh)){
+  if (node == 0 || node == pumi_mesh->pumi_Nel_total){
     printf("Grading ratio not defined for the first and last node of the domain -- Terminating \n");
     exit(0);
   }
@@ -498,6 +498,13 @@ double pumi_return_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
 */
 double pumi_return_1D_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
   int elem = index+offset;
+
+  if (elem < 0){
+    elem = 0;
+  }
+  if (elem > pumi_mesh->pumi_Nel_total){
+    elem = pumi_mesh->pumi_Nel_total;
+  }
 
   for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     int submesh_left_elem = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative;

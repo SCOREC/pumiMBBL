@@ -43,6 +43,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     //only use this if pumi_initiate_input struct members are populated accordingly
     pumi_mesh->ndim = pumi_inputs->ndim;
     pumi_mesh->nsubmeshes = pumi_inputs->nsubmeshes;
+    pumi_mesh->pumi_Nel_total = 0;
     if (pumi_mesh->ndim == 1){
       pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh1D_t));
     }
@@ -58,6 +59,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     }
   }
   printf("PUMI mesh parameter info :\n\n");
+  printf("\tTotal elements in mesh = %d\n\n", pumi_mesh->pumi_Nel_total);
   for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("\tSUBMESH %d parameters:\n", isubmesh+1 );
 
@@ -157,7 +159,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   else{
     ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
   }
-
+  pumi_mesh->pumi_Nel_total += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;
 }
 
 /*!

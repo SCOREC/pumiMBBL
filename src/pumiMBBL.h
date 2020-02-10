@@ -62,6 +62,7 @@ typedef struct pumi_mesh{
   int nsubmeshes; //!< number of submesh blocks in the domain
   int ndim; //!< number of physical dimensions of the problem space
   void *pumi_submeshes; //!< pointer object to access members of the structs pumi_submesh1D and pumi_submesh2D
+  int pumi_Nel_total; //!< total number of elements in the mesh
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"
