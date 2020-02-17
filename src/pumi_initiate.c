@@ -282,6 +282,10 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
 * \param nsubmeshes number of submesh blocks
 */
 void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+  pumi_inputs->Nel_max_FLAG = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->Nel_max = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->p1_i = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->alpha = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->type_flag = (char**) malloc(nsubmeshes*sizeof(char*));
@@ -303,6 +307,10 @@ void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \param nsubmeshes number of submesh blocks
 */
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+  free(pumi_input->Nel_max_FLAG);
+  free(pumi_input->Nel_max);
+  free(pumi_input->p1_i);
+  free(pumi_input->alpha);
   free(pumi_inputs->x_left);
   free(pumi_inputs->x_right);
   free(pumi_inputs->left_T);
@@ -495,7 +503,8 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
 
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
       FILE *lBL_fptr;
-      char lBL_coord_file[] = "coord_leftBL.txt";
+      char lBL_coord_file[30];
+      sprintf(lBL_coord_file,"submesh%d_coord_leftBL.txt",isubmesh+1);
       lBL_fptr = fopen(lBL_coord_file,"w");
       printf("\tLeft BL segment:\n");
       inode = N_cumulative[isubmesh]+1;
@@ -516,7 +525,8 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
 
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
       FILE *uni_fptr;
-      char uni_coord_file[] = "coord_uniform.txt";
+      char uni_coord_file[30];
+      sprintf(uni_coord_file,"submesh%d_coord_uniform.txt",isubmesh+1);
       uni_fptr = fopen(uni_coord_file,"w");
       printf("\tUniform segment:\n");
       inode = N_cumulative[isubmesh] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + 1;
@@ -536,7 +546,8 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
 
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
       FILE *rBL_fptr;
-      char rBL_coord_file[] = "coord_rightBL.txt";
+      char rBL_coord_file[30];
+      sprintf(rBL_coord_file,"submesh%d_coord_rightBL.txt",isubmesh+1);
       rBL_fptr = fopen(rBL_coord_file,"w");
       printf("\tRight BL segment:\n");
       inode = N_cumulative[isubmesh] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel + 1;

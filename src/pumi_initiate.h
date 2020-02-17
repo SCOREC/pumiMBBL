@@ -23,9 +23,10 @@ typedef enum pumi_initiate_flag{
 typedef struct pumi_initiate_input{
   int ndim; //!< number of physical dimensions of the problem space
   int nsubmeshes; //!< number of submesh blocks in the domain
-  int Nel_max; //!< maximum number of elements in the mesh
-  double alpha; //!< Multiplicative factor to determine Nel_max
-  int Nel_max_FLAG; //!< Flag to specify type of input for Nel_max i.e with or without alpha
+  int *Nel_max; //!< maximum number of elements in a submesh mesh
+  double *alpha; //!< Multiplicative factor to determine Nel_max for a submesh
+  int *Nel_max_FLAG; //!< Flag to specify type of input for Nel_max i.e with or without alpha for a submesh
+  int *p1_i;//! Number of debye lenghts in a submesh
   int p1_l;//!< Number of debye lengths in leftBL segment
   int p1_r;//!< Number of debye lengths in rightBL segment
   char **type_flag; //!< pointer to array of mesh flag strings of each submesh block
