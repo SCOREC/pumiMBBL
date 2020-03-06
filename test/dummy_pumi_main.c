@@ -77,7 +77,8 @@ int main(int argc, char *argv[])
   }
 
   int p1_check=0;
-  for (int j=0; j<i_submesh; j++){
+  int j;
+  for (j=0; j<i_submesh; j++){
       p1_check += atoi(each_p1_submesh[j]);
   }
   if (p1_check != NumberDebyeLengthsInDomain){
@@ -299,7 +300,7 @@ int main(int argc, char *argv[])
   pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
   // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
   pumi_inputs_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
-  
+
   // Call this function if BL element sizes are to be precomputed
   // HIGHLY RECOMMENDED to call this function to ensure log and power functions are not used to locate particle in BL
   pumi_BL_elemsize_ON(pumi_mesh);
@@ -316,8 +317,8 @@ int main(int argc, char *argv[])
   //pumi_compute_elemsize_1D(pumi_mesh, Nel_total, elemsize);
   //pumi_compute_covolume_1D(0, Nel_total, elemsize);
   //pumi_compute_nodal_gradingratio_1D(elemsize, Nel_total, gradingratio);
-
-  for (int i=1; i<Nel_total; i++){
+  int i;
+  for (i=1; i<Nel_total; i++){
     // pumi_return_gradingratio() returns the grading ratio for given node 'i'
     double r = pumi_return_gradingratio(pumi_mesh, i);
     printf("Node %d = %2.4e\n", i+1, r);
@@ -330,15 +331,16 @@ int main(int argc, char *argv[])
   double *coordinates = (double*) malloc(num_particles * sizeof(double));
 
   srand48(time(NULL));
-  for (int i=0; i<num_particles; i++){
+  for (i=0; i<num_particles; i++){
     coordinates[i] = X_LEFT + (X_RIGHT-X_LEFT)*drand48(); //generates random coordinates within the global domain for each particle
   }
 
   double *grid_weights = (double*) malloc((Nel_total+1)*sizeof(double));
-  for (int i=0; i<= Nel_total; i++){
+  for (i=0; i<= Nel_total; i++){
     grid_weights[i] = 0.0; //intialize charge to be zero at all nodes
   }
-  for (int iparticle=0; iparticle<num_particles; iparticle++){ //loop over all particles
+  int iparticle;
+  for (iparticle=0; iparticle<num_particles; iparticle++){ //loop over all particles
     int kcell;
     double Wgh1, Wgh2;
     pumi_locatepoint(pumi_mesh, coordinates[iparticle], &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
@@ -347,18 +349,18 @@ int main(int argc, char *argv[])
     grid_weights[kcell+1] += Wgh2; //accumulate the weights for each particle
   }
 
-  for (int i=0; i<(Nel_total+1); i++){
+  for (i=0; i<(Nel_total+1); i++){
     printf("node=%d   gridweight=%lf\n", i, grid_weights[i]);
   }
 
-  for (int i=0; i<Nel_total; i++){
+  for (i=0; i<Nel_total; i++){
     // pumi_return_elemsize()  returns elemtent size for given element idex 'i' [offset=0].
     // nodal index can also be specified but appropriate offset to be supplied with it
     printf("Element size of element %d is %2.4e\n", i, pumi_return_elemsize(pumi_mesh, i, 0) );
   }
 
   double charge_density[Nel_total+1];
-  for (int i=0; i<(Nel_total+1); i++){
+  for (i=0; i<(Nel_total+1); i++){
     // pumi_return_covolume_1D() retruns covolume of a given node
     charge_density[i] = grid_weights[i]/pumi_return_covolume_1D(pumi_mesh, i);
     printf("Charge density at node %d is %2.4e\n", i+1, charge_density[i]);

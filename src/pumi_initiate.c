@@ -33,7 +33,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
       printf("Multi dimension pumi mesh not implemented -- Terminating\n");
       exit(0);
     }
-    for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    int isubmesh;
+    for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
       pumi_setsubmesh(pumi_mesh, isubmesh, submesh_params[isubmesh][0], submesh_params[isubmesh][1], submesh_flag[isubmesh], (int) submesh_params[isubmesh][2], submesh_params[isubmesh][3], submesh_params[isubmesh][4], (int) submesh_params[isubmesh][5], submesh_params[isubmesh][6], submesh_params[isubmesh][7], (int) submesh_params[isubmesh][8]);
     }
     pumi_freemeshparameters_from_terminal(pumi_mesh->nsubmeshes, submesh_params, submesh_flag);
@@ -51,7 +52,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
       printf("Multi dimension pumi mesh not implemented -- Terminating\n");
       exit(0);
     }
-    for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    int isubmesh;
+    for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
       char flagstring[SUBMESH_FLAGSTRING_LENGTH];
       strcpy(flagstring, pumi_inputs->type_flag[isubmesh]);
       unsigned int submesh_flag = pumi_getsubmeshflag(flagstring);
@@ -60,7 +62,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   }
   printf("PUMI mesh parameter info :\n\n");
   printf("\tTotal elements in mesh = %d\n\n", pumi_mesh->pumi_Nel_total);
-  for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+  int isubmesh;
+  for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("\tSUBMESH %d parameters:\n", isubmesh+1 );
 
     printf("\n\t submeshflag = ");
@@ -180,8 +183,8 @@ void pumi_getmeshparameters_from_terminal (int *dimension, int *submesh_num, dou
   int m = (int) *submesh_num;
   double **tmp_param = (double **) malloc( m * sizeof(**tmp_param));
   unsigned int *tmp_flag = malloc (m * sizeof(*tmp_flag));
-
-  for (int isubmesh=0; isubmesh<m; isubmesh++){
+  int isubmesh;
+  for (isubmesh=0; isubmesh<m; isubmesh++){
       tmp_param[isubmesh] = (double*) malloc(9*sizeof(double));
       char flagstring[SUBMESH_FLAGSTRING_LENGTH];
 
@@ -250,7 +253,8 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
   }
 
   unsigned int intflag = unassigned;
-  for (int i=0; i<numstring; i++){
+  int i;
+  for (i=0; i<numstring; i++){
     int l1 = strcmp(newflagstring[i],flagtypes[0]);
     int l2 = strcmp(newflagstring[i],flagtypes[1]);
     int l3 = strcmp(newflagstring[i],flagtypes[2]);
@@ -289,7 +293,8 @@ void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->type_flag = (char**) malloc(nsubmeshes*sizeof(char*));
-  for (int i=0; i<nsubmeshes; i++){
+  int i;
+  for (i=0; i<nsubmeshes; i++){
     pumi_inputs->type_flag[i] = (char*) malloc(SUBMESH_FLAGSTRING_LENGTH);
   }
   pumi_inputs->left_T = malloc(nsubmeshes*sizeof(double));
@@ -307,10 +312,10 @@ void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \param nsubmeshes number of submesh blocks
 */
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
-  free(pumi_input->Nel_max_FLAG);
-  free(pumi_input->Nel_max);
-  free(pumi_input->p1_i);
-  free(pumi_input->alpha);
+  free(pumi_inputs->Nel_max_FLAG);
+  free(pumi_inputs->Nel_max);
+  free(pumi_inputs->p1_i);
+  free(pumi_inputs->alpha);
   free(pumi_inputs->x_left);
   free(pumi_inputs->x_right);
   free(pumi_inputs->left_T);
@@ -320,7 +325,8 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   free(pumi_inputs->right_r);
   free(pumi_inputs->right_Nel);
   free(pumi_inputs->uniform_Nel);
-  for (int i=0; i<nsubmeshes; i++){
+  int i;
+  for (i=0; i<nsubmeshes; i++){
     free(pumi_inputs->type_flag[i]);
   }
   free(pumi_inputs->type_flag);
@@ -344,7 +350,8 @@ void pumi_finalize(pumi_mesh_t* pumi_mesh){
 */
 void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag){
   free(submesh_flag);
-  for (int i=0; i<nsubmeshes; i++){
+  int i;
+  for (i=0; i<nsubmeshes; i++){
       free(submesh_params[i]);
   }
   free(submesh_params);
@@ -392,7 +399,8 @@ double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel){
 void pumi_verify_params(pumi_mesh_t *pumi_mesh){
   printf("\tVerifying valdity of pumi parameters for\n");
   int flag = 0;
-  for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+  int isubmesh;
+  for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("\tSUBMESH %d:\n", isubmesh+1 );
 
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
@@ -491,14 +499,15 @@ void pumi_verify_params(pumi_mesh_t *pumi_mesh){
 void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
   int N_cumulative[pumi_mesh->nsubmeshes];
   N_cumulative[0] = 0;
-  for (int isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+  int isubmesh;
+  for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
   }
 
   int inode = 0;
   double coord, elem_size;
   printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
-  for (int isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+  for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("SUBMESH %d:\n", isubmesh+1 );
 
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
@@ -512,7 +521,8 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
       printf("\t\tNode %6d: %2.4e\n", inode, coord );
       fprintf(lBL_fptr, "%2.4e\n", coord );
-      for (int i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; i++ ){
+      int i;
+      for (i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; i++ ){
         inode++;
         coord += elem_size;
         printf("\t\tNode %6d: %2.4e\n", inode, coord );
@@ -534,7 +544,8 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       double dx_uniform = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
       printf("\t\tNode %6d: %2.4e\n", inode, coord );
       fprintf(uni_fptr, "%2.4e\n", coord );
-      for (int i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; i++ ){
+      int i;
+      for (i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; i++ ){
         inode++;
         coord += dx_uniform;
         printf("\t\tNode %6d: %2.4e\n", inode, coord );
@@ -555,7 +566,8 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);
       printf("\t\tNode %6d: %2.4e\n", inode, coord );
       fprintf(rBL_fptr, "%2.4e\n", coord );
-      for (int i=((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1; i>=0; i-- ){
+      int i;
+      for (i=((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1; i>=0; i-- ){
         inode++;
         coord += elem_size;
         printf("\t\tNode %6d: %2.4e\n", inode, coord );
