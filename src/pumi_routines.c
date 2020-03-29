@@ -109,79 +109,7 @@ void pumiMBBL_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate,
     *particle_cell = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + particle_submesh)->Nel_cumulative + local_cell;
     *cell_weight = local_weight;
 }
-/*
-* \brief Computes the local cell number and weight of a particle located in the uniform mesh segment of a submesh block
-* \param[out] *cell address of the variable where the local particle cell (w.r.t to the uniform mesh segment) is to be stored
-* \param[out] *weight address of the variable where the local weight (based on linear weighting) in the located cell is to be stored
-* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
-* \param[in] uniform_x_left left end coordinate of the uniform mesh segment in the submesh block
-* \param[in] uniform_t0 size of elements in uniform mesh segment of the submesh block
-* \param[in] uniform_Nel number of elements in the uniform mesh segment of the submesh block
-*/
-void pumi_locatepoint_uniform_1D(int *cell, double *weight, double coord, double uniform_x_left, double uniform_t0, int uniform_Nel)
-{
-   *cell = ((coord-uniform_x_left)/uniform_t0);
-   if (*cell == uniform_Nel){ // when particle is at uniform_x_right
-     *cell = *cell-1;
-   }
-   *weight = (coord - (uniform_x_left + uniform_t0*(*cell)))/uniform_t0; //local weight due to the charge in the cell
-}
 
- /*
- * \brief Computes the local cell number and weight of a particle located in the left/right BL segment of a submesh block
- * \param[out] *cell address of the variable where the local particle cell (w.r.t to the left/right BL segment) is to be stored
- * \param[out] *weight address of the variable where the local weight (based on linear weighting) in the located cell is to be stored
- * \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
- * \param[in] x_end right/left end coordinate of the left/right BL segment in the submesh block respectivley
- * \param[in] r growth ratio of the elements in the left/right BL segment of the submesh block
- * \param[in] t0 size of first (leftmost/rightmost) element in the left/right BL segment inside the submesh block respectivley
- * \param[in] local_Nel number of elements in the left/right BL segment of the submesh block
- * \param[in] pumi_flag Mesh flag enum that defines the types of meshing in each segment of the submesh block
- * \details The particle cell number calculations are adjusted based on the pumi_flag that is passed to the routine. For this routine, leftBL and rightBL are the only valid inputs
- for pumi_flag
- */
-void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_end, double r, double t0, double log_r, double r_t0_ratio, int local_Nel, pumi_meshflag_t pumi_flag)
-{
-   *cell = log(1 + (fabs(x_end-coord))*r_t0_ratio)/log_r;
-   if (*cell == local_Nel){ // when particle is at lBL_x_right or rBL_x_left
-     *cell = *cell-1;
-   }
-   double r_power_cell = pow(r,*cell);
-
-   if (pumi_flag == leftBL){
-     *weight = (coord - (x_end + (r_power_cell-1.0)/r_t0_ratio))/(t0*r_power_cell);
-   }
-   if (pumi_flag == rightBL){
-     *weight = 1 - ((x_end - (r_power_cell-1.0)/r_t0_ratio) - coord)/(t0*r_power_cell);
-   }
-}
-
-
-/*
-* \brief [DEPRECATED] Computes and returns the covolume for a given node in the mesh
-* \param[in] node number
-* \param[in] Nel_total Total number of elements in the mesh
-* \param[in] pointer to array of element sizes
-*/
-double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize){
-  printf("WARNING: This function is deprecated. Use pumi_return_covolume() instead. Exiting...\n" );
-  exit(0);
-  double covolume;
-  if (inode == 0){
-    covolume = elemsize[inode]/2.0;
-  }
-  else if (inode == Nel_total){
-    covolume = elemsize[Nel_total-1]/2.0;
-  }
-  else if (inode > 0 && inode < Nel_total){
-    covolume = (elemsize[inode-1]+elemsize[inode])/2.0;
-  }
-  else{
-    printf("\tInvalid node number for covolume\n");
-    exit(0);
-  }
-  return covolume;
-}
 
 /*
 * \brief Call appropriate subroutine (based on the dimension of the problem) and returns covolume for given node
@@ -220,58 +148,6 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
     exit(0);
   }
   return covolume;
-}
-
-/*
-* \brief [DEPRECATED] Computes the element sizes in the mesh
-* \param[in] *pumi_mesh pointer object to struct pumi_mesh
-* \param[in] Nel_total Total number of elements in the mesh
-* \param[out] pointer to array of element size (to be populated after this function call)
-*/
-void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *elemsize){
-  printf("WARNING: This function is deprecated. Use pumi_return_elemsize() instead. Exiting...\n" );
-  exit(0);
-  int iel;
-  for (iel=0; iel<Nel_total; iel++){
-    elemsize[iel] = 0.0;
-  }
-  int N_cumulative[pumi_mesh->nsubmeshes];
-  N_cumulative[0] = 0;
-  int isubmesh;
-  for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-    N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
-  }
-
-  for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-    elemsize[N_cumulative[isubmesh]+0] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
-    int iCell;
-    for (iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; iCell++){
-      elemsize[N_cumulative[isubmesh]+iCell] = elemsize[N_cumulative[isubmesh]+iCell-1]*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
-    }
-    for (iCell=0; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; iCell++){
-      elemsize[N_cumulative[isubmesh]+iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
-    }
-    elemsize[N_cumulative[isubmesh]+0+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel] = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);
-    for (iCell=1; iCell<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel; iCell++){
-      elemsize[N_cumulative[isubmesh]+iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel] = elemsize[N_cumulative[isubmesh]+iCell+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel-1]/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
-    }
-  }
-}
-
-
-/*
-* \brief [DEPRECATED] Computes the grading ratio array
-* \param[in] pointer to array of element size
-* \param[in] Nel_total Total number of elements in the mesh
-* \param[out] pointer to array of grading ratios (to be populated after this function call)
-*/
-void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double *gradingratio){
-  printf("WARNING: This function is deprecated. Use pumi_return_gradingratio() instead. Exiting...\n" );
-  exit(0);
-  int i;
-  for (i=0; i<Nel_total-1; i++){
-    gradingratio[i] = elemsize[i+1]/elemsize[i];
-  }
 }
 
 /*

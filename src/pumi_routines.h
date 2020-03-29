@@ -15,10 +15,6 @@ void pumi_locate_in_leftBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, i
 void pumi_locate_in_rightBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 void pumi_dummylocate(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 
-double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize)__attribute__((deprecated("Use pumi_return_covolume() instead")));
-void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *elemsize)__attribute__((deprecated("Use pumi_return_elemsize() instead")));
-void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double *gradingratio)__attribute__((deprecated("Use pumi_return_gradingratio() instead")));
-
 /*!
 * \brief elemsize index offset enum, possible ways to call pumi_return_elemsize()
 */
