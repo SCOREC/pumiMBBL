@@ -37,5 +37,5 @@ double pumi_return_covolume(pumi_mesh_t* pumi_mesh, int inode);
 double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode);
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 int pumi_locate_submesh_1D(pumi_mesh_t *pumi_mesh, double coords);
-
+int pumi_update_submesh_1D(pumi_mesh_t *pumi_mesh, double coords, int isubmesh);
 #endif /* pumi_routines_h */
