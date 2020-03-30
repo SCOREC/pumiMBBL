@@ -105,8 +105,8 @@ void (*pumi_locate_arr[])(pumi_mesh_t*, int, double, int*, double*) = {pumi_dumm
 void pumiMBBL_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int particle_submesh, int *particle_cell, double *cell_weight){
     int local_cell;
     double local_weight;
-    (*pumi_locate_arr[((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + particle_submesh)->pumi_flag])(pumi_mesh, particle_submesh, particle_coordinate, &local_cell, &local_weight);
-    *particle_cell = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + particle_submesh)->Nel_cumulative + local_cell;
+    (*pumi_locate_arr[((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (particle_submesh-1))->pumi_flag])(pumi_mesh, particle_submesh-1, particle_coordinate, &local_cell, &local_weight);
+    *particle_cell = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (particle_submesh-1))->Nel_cumulative + local_cell;
     *cell_weight = local_weight;
 }
 
@@ -463,4 +463,37 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh){
   }
 
   return smallest_elemsize;
+}
+
+
+int pumi_locate_submesh_1D(pumi_mesh_t *pumi_mesh, double coords){
+    if (pumi_mesh->nsubmeshes == 1){
+        return (pumi_mesh->nsubmeshes);
+    }
+    else{
+        int isubmesh;
+        for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+            if (coords/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative <= 1.0){
+                return (isubmesh);
+            }
+        }
+        return (pumi_mesh->nsubmeshes);
+    }
+}
+
+
+int pumi_update_submesh_1D(pumi_mesh_t *pumi_mesh, double coords, int isubmesh){
+    if (pumi_mesh->nsubmeshes == 1){
+        return (pumi_mesh->nsubmeshes);
+    }
+    else{
+        if (isubmesh == pumi_mesh->nsubmeshes){
+            isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Length_cumulative/coords);
+            return isubmesh;
+        }
+        else{
+            isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Length_cumulative/coords) + (int) (coords/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->Length_cumulative);
+            return isubmesh;
+        }
+    }
 }

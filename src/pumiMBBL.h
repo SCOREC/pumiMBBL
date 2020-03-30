@@ -50,7 +50,10 @@ typedef struct pumi_submesh1D{
   int rightBL_elemsize_calc_flag; // !< rightBL elem size calculation flag variable. 0=>BL elemsize array not computed, 1=>BL elemsize array computed
 
   int submesh_total_Nel; //!< (dependent variable) total number of elements in the submesh block
+  double submesh_total_length; //!< (dependant variable) length of the submesh
+
   int Nel_cumulative; //!< (dependent variable) total number of elements in the previous submeshes
+  double Length_cumulative;//!< (dependant variable) total length spanned by all previous submeshes
 
   pumi_meshflag_t pumi_flag; //!< flag for types of mesh segments(i.e. uniform mesh segment, right BL segment or left BL segment) available in the submesh block
 } pumi_submesh1D_t;

@@ -212,7 +212,8 @@ int main(int argc, char *argv[])
         int j;
         for(j=0; j<numparticle_submesh;j++){
             coordinates[iparticle] = submesh_xleft + submesh_L*drand48();
-            particle_isactive[iparticle] = isubmesh;
+            //particle_isactive[iparticle] = isubmesh+1;
+            particle_isactive[iparticle] = pumi_locate_submesh_1D(pumi_mesh, coordinates[iparticle]);
             iparticle++;
         }
     }
