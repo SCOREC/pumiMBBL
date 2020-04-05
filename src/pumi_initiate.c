@@ -92,6 +92,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   }
   pumi_verify_params(pumi_mesh);
   pumi_print_node_coordinates(pumi_mesh);
+  pumi_BL_elemsize_ON(pumi_mesh);
+  pumi_initialize_locate_functions(pumi_mesh);
   return (pumi_mesh);
 }
 
@@ -345,6 +347,8 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
 void pumi_finalize(pumi_mesh_t* pumi_mesh){
+  pumi_finalize_locate_functions();
+  pumi_BL_elemsize_OFF(pumi_mesh);
   free(pumi_mesh->pumi_submeshes);
   free(pumi_mesh);
 }

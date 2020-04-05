@@ -8,13 +8,14 @@ int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh);
 double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh);
 double pumi_global_x_right_1D(pumi_mesh_t *pumi_mesh);
 
-void pumi_locatepoint(pumi_mesh_t *pumi_mesh, double particle_coordinate, int particle_submesh, int *particle_cell, double *cell_weight);
-void pumiMBBL_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int particle_submesh, int *particle_cell, double *cell_weight);
 void pumi_locate_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 void pumi_locate_in_leftBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 void pumi_locate_in_rightBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
-void pumi_dummylocate(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 
+typedef void (*pumi_locate_ptr)(pumi_mesh_t*, int, double, int*, double*);
+pumi_locate_ptr *pumi_locate_function;
+void pumi_initialize_locate_functions(pumi_mesh_t *pumi_mesh);
+void pumi_finalize_locate_functions();
 /*!
 * \brief elemsize index offset enum, possible ways to call pumi_return_elemsize()
 */

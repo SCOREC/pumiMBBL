@@ -184,12 +184,9 @@ int main(int argc, char *argv[])
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
+    pumi_submesh1D_t pumi_submesh;
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
-
-    // Call this function if BL element sizes are to be precomputed
-    // HIGHLY RECOMMENDED to call this function to ensure log and power functions are not used to locate particle in BL
-    pumi_BL_elemsize_ON(pumi_mesh);
 
     int Nel_total = pumi_total_elements(pumi_mesh);
 
@@ -223,11 +220,13 @@ int main(int argc, char *argv[])
     for (i=0; i<= Nel_total; i++){
       grid_weights[i] = 0.0; //intialize charge to be zero at all nodes
     }
+    int kcell;
+    double Wgh1, Wgh2;
 
     for (iparticle=0; iparticle<num_particles; iparticle++){ //loop over all particles
-      int kcell;
-      double Wgh1, Wgh2;
-      pumiMBBL_locatepoint_1D(pumi_mesh, coordinates[iparticle], particle_isactive[iparticle], &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
+      isubmesh = particle_isactive[iparticle];
+      //pumiMBBL_locatepoint_1D(pumi_mesh, coordinates[iparticle], isubmesh, &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
+      pumi_locate_function[isubmesh](pumi_mesh, isubmesh, coordinates[iparticle], &kcell, &Wgh2);
       Wgh1 = 1.0 - Wgh2;
       grid_weights[kcell]   += Wgh1;
       grid_weights[kcell+1] += Wgh2; //accumulate the weights for each particle
@@ -242,10 +241,6 @@ int main(int argc, char *argv[])
     free(coordinates);
     free(particle_isactive);
     free(grid_weights);
-
-
-    pumi_finalize(pumi_mesh); //deallocates pumi_mesh object
-
 
     return 0;
 }
