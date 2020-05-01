@@ -8,15 +8,14 @@ int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh);
 double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh);
 double pumi_global_x_right_1D(pumi_mesh_t *pumi_mesh);
 
-void pumi_locatepoint(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *particle_cell, double *cell_weight);
-void pumi_locatepoint_1D(pumi_mesh_t *pumi_mesh, double particle_coordinate, int *particle_cell, double *cell_weight);
-void pumi_locatepoint_uniform_1D(int *cell, double *weight, double coord, double uniform_x_left, double uniform_t0, int uniform_Nel);
-void pumi_locatepoint_BL_1D(int *cell, double *weight, double coord, double x_end, double r, double t0, double log_r, double r_t0_ratio, int local_Nel, pumi_meshflag_t pumi_flag);
+void pumi_locate_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
+void pumi_locate_in_leftBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
+void pumi_locate_in_rightBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 
-double pumi_compute_covolume_1D(int inode, int Nel_total, double *elemsize)__attribute__((deprecated("Use pumi_return_covolume() instead")));
-void pumi_compute_elemsize_1D(pumi_mesh_t *pumi_mesh, int Nel_total, double *elemsize)__attribute__((deprecated("Use pumi_return_elemsize() instead")));
-void pumi_compute_nodal_gradingratio_1D(double *elemsize, int Nel_total, double *gradingratio)__attribute__((deprecated("Use pumi_return_gradingratio() instead")));
-
+typedef void (*pumi_locate_ptr)(pumi_mesh_t*, int, double, int*, double*);
+pumi_locate_ptr *pumi_locate_function;
+void pumi_initialize_locate_functions(pumi_mesh_t *pumi_mesh);
+void pumi_finalize_locate_functions();
 /*!
 * \brief elemsize index offset enum, possible ways to call pumi_return_elemsize()
 */
@@ -38,5 +37,6 @@ double pumi_return_1D_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
 double pumi_return_covolume(pumi_mesh_t* pumi_mesh, int inode);
 double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode);
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
-
+int pumi_locate_submesh_1D(pumi_mesh_t *pumi_mesh, double coords);
+int pumi_update_submesh_1D(pumi_mesh_t *pumi_mesh, double coords, int isubmesh);
 #endif /* pumi_routines_h */

@@ -92,6 +92,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   }
   pumi_verify_params(pumi_mesh);
   pumi_print_node_coordinates(pumi_mesh);
+  pumi_BL_elemsize_ON(pumi_mesh);
+  pumi_initialize_locate_functions(pumi_mesh);
   return (pumi_mesh);
 }
 
@@ -116,6 +118,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag = submeshflag;
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left = xleft;
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right = xright;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_length = xright-xleft;
 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel = N_uniform;
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left = xleft + T_left; // (dependent variable)
@@ -158,9 +161,11 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel = N_uniform + N_left + N_right; // (dependent variable)
   if (isubmesh==0){
     ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = 0;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative = 0.0;
   }
   else{
     ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Length_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_length;
   }
   pumi_mesh->pumi_Nel_total += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;
 }
@@ -289,6 +294,9 @@ void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   pumi_inputs->Nel_max_FLAG = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->Nel_max = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->p1_i = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->Nel_i = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->p2max_i = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->p2min_i = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->alpha = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
@@ -315,6 +323,9 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   free(pumi_inputs->Nel_max_FLAG);
   free(pumi_inputs->Nel_max);
   free(pumi_inputs->p1_i);
+  free(pumi_inputs->Nel_i);
+  free(pumi_inputs->p2max_i);
+  free(pumi_inputs->p2min_i);
   free(pumi_inputs->alpha);
   free(pumi_inputs->x_left);
   free(pumi_inputs->x_right);
@@ -331,6 +342,7 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   }
   free(pumi_inputs->type_flag);
   free(pumi_inputs);
+
 }
 
 /*!
@@ -338,6 +350,8 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
 void pumi_finalize(pumi_mesh_t* pumi_mesh){
+  pumi_finalize_locate_functions();
+  pumi_BL_elemsize_OFF(pumi_mesh);
   free(pumi_mesh->pumi_submeshes);
   free(pumi_mesh);
 }
@@ -355,6 +369,27 @@ void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_para
       free(submesh_params[i]);
   }
   free(submesh_params);
+}
+
+double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel){
+    double tol = 1e-5;
+    double r = 1.5;
+    double del_r = 1.0;
+    int iter = 0;
+    int max_iter = 10000;
+    double f, f_r;
+    while (fabs(del_r) > tol){
+        f = BL_t0*pow(r,BL_Nel) - BL_T*r + (BL_T-BL_t0);
+        f_r = BL_Nel*BL_t0*pow(r,BL_Nel-1) - BL_T;
+        del_r = f/f_r;
+        r -= del_r;
+        iter++;
+        if (iter > max_iter){
+          printf("Cannot compute grading ratio. Solver not converging\n" );
+          exit(0);
+        }
+    }
+    return r;
 }
 
 /*!
@@ -502,6 +537,7 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
   int isubmesh;
   for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
+    printf("cumulative_length[%d]=%.16e\n",isubmesh, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative);
   }
 
   int inode = 0;
@@ -519,14 +555,14 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       inode = N_cumulative[isubmesh]+1;
       coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;
       elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
-      printf("\t\tNode %6d: %2.4e\n", inode, coord );
-      fprintf(lBL_fptr, "%2.4e\n", coord );
+      printf("\t\tNode %6d: %2.8e\n", inode, coord );
+      fprintf(lBL_fptr, "%.16e\n", coord );
       int i;
       for (i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel; i++ ){
         inode++;
         coord += elem_size;
-        printf("\t\tNode %6d: %2.4e\n", inode, coord );
-        fprintf(lBL_fptr, "%2.4e\n", coord );
+        printf("\t\tNode %6d: %2.8e\n", inode, coord );
+        fprintf(lBL_fptr, "%.16e\n", coord );
         elem_size = elem_size*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
       }
       printf("\tLeftBL coordinates written to the file \"%s\"\n\n",lBL_coord_file );
@@ -542,14 +578,14 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       inode = N_cumulative[isubmesh] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + 1;
       coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left;
       double dx_uniform = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
-      printf("\t\tNode %6d: %2.4e\n", inode, coord );
-      fprintf(uni_fptr, "%2.4e\n", coord );
+      printf("\t\tNode %6d: %2.8e\n", inode, coord );
+      fprintf(uni_fptr, "%.16e\n", coord );
       int i;
       for (i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel; i++ ){
         inode++;
         coord += dx_uniform;
-        printf("\t\tNode %6d: %2.4e\n", inode, coord );
-        fprintf(uni_fptr, "%2.4e\n", coord );
+        printf("\t\tNode %6d: %2.8e\n", inode, coord );
+        fprintf(uni_fptr, "%.16e\n", coord );
       }
       printf("\tUniform segemnt coordinates written to the file \"%s\"\n\n",uni_coord_file );
       fclose(uni_fptr);
@@ -564,14 +600,14 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       inode = N_cumulative[isubmesh] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel + 1;
       coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_x_left;
       elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);
-      printf("\t\tNode %6d: %2.4e\n", inode, coord );
-      fprintf(rBL_fptr, "%2.4e\n", coord );
+      printf("\t\tNode %6d: %2.8e\n", inode, coord );
+      fprintf(rBL_fptr, "%.16e\n", coord );
       int i;
       for (i=((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1; i>=0; i-- ){
         inode++;
         coord += elem_size;
-        printf("\t\tNode %6d: %2.4e\n", inode, coord );
-        fprintf(rBL_fptr, "%2.4e\n", coord );
+        printf("\t\tNode %6d: %2.8e\n", inode, coord );
+        fprintf(rBL_fptr, "%.16e\n", coord );
         elem_size = elem_size/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
       }
       printf("\tRightBL coordinates written to the file \"%s\"\n\n",rBL_coord_file );
