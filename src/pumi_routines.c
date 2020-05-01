@@ -98,12 +98,15 @@ void pumi_initialize_locate_functions(pumi_mesh_t *pumi_mesh){
     for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
             pumi_locate_function[isubmesh] = &pumi_locate_in_leftBL;
+            printf("submesh=%d -- leftBL routine initialized\n",isubmesh );
         }
         else if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
             pumi_locate_function[isubmesh] = &pumi_locate_in_rightBL;
+            printf("submesh=%d -- rightBL routine initialized\n",isubmesh );
         }
         else if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
             pumi_locate_function[isubmesh] = &pumi_locate_in_uni;
+            printf("submesh=%d -- uniform routine initialized\n",isubmesh );
         }
         else{
             printf("Error in meshtype for submesh %d \n", isubmesh);
@@ -478,7 +481,7 @@ int pumi_locate_submesh_1D(pumi_mesh_t *pumi_mesh, double coords){
     else{
         int isubmesh;
         for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-            if (coords/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative <= 1.0){
+            if (coords < ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative){
                 return (isubmesh-1);
             }
         }
@@ -492,13 +495,34 @@ int pumi_update_submesh_1D(pumi_mesh_t *pumi_mesh, double coords, int isubmesh){
         return 0;
     }
     else{
-        if (isubmesh == pumi_mesh->nsubmeshes){
-            isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative/coords);
-            return isubmesh;
+        int left = 0;
+        int right = 0;
+        int curr_submesh = isubmesh;
+        if (isubmesh == pumi_mesh->nsubmeshes-1){
+            //isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative>coords);
+            //return isubmesh;
+            while(coords<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + curr_submesh)->Length_cumulative){
+                curr_submesh--;
+                left -= 1;
+            }
+            return (isubmesh+left);
         }
         else{
-            isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative/coords) + (int) (coords/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh+1))->Length_cumulative);
-            return isubmesh;
+            //isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative>coords) + (int) (coords>((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh+1))->Length_cumulative);
+            //return isubmesh;
+            while(coords<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + curr_submesh)->Length_cumulative){
+                curr_submesh--;
+                left -= 1;
+            }
+
+            while(coords>((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (curr_submesh+1))->Length_cumulative){
+                curr_submesh++;
+                right += 1;
+                if (curr_submesh == pumi_mesh->nsubmeshes-1){
+                    break;
+                }
+            }
+            return (isubmesh+left+right);
         }
     }
 }

@@ -27,8 +27,9 @@ typedef struct pumi_initiate_input{
   double *alpha; //!< Multiplicative factor to determine Nel_max for a submesh
   int *Nel_max_FLAG; //!< Flag to specify type of input for Nel_max i.e with or without alpha for a submesh
   int *p1_i;//! Number of debye lenghts in a submesh
-  int *p2max_i;//!< Number of maximum size cells in a Debye Length
-  int *p2min_i;//!< Number of minimum size cells in a Debye Length
+  int *Nel_i;
+  double *p2max_i;//!< Number of maximum size cells in a Debye Length
+  double *p2min_i;//!< Number of minimum size cells in a Debye Length
   int p1_l;//!< Number of debye lengths in leftBL segment
   int p1_r;//!< Number of debye lengths in rightBL segment
   char **type_flag; //!< pointer to array of mesh flag strings of each submesh block
@@ -52,6 +53,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
+double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel);
 double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel);
 void pumi_verify_params(pumi_mesh_t *pumi_mesh);
 void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh);

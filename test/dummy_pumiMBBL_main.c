@@ -15,14 +15,13 @@ int main(int argc, char *argv[])
       printf("\t ./install/bin/pumiMBBL_Demo N \"typeflag_i\" \"p1_i\" \"p2_max_i\" \"p2_min_i\"\n\n\n");
       printf("\t N     \t\t\t Total Number of submeshes in the domain \n\n");
       printf("\t \"typeflag_i\" \t\t Active mesh type segment in i-th submesh\n\n" );
-      printf("\t \"p1_i\"  \t\t Number of Debye Lengths In i-th submesh \n\n");
-      printf("\t \"p2_max_i\"  \t\t For leftBL/rightBL, Number of maximum size cells in a Debye Length for i-th submesh \n");
-      printf("\t \t  \t\t For uniform, Number of cells in a Debye Length for i-th submesh \n\n");
+      printf("\t \"p1_i\"  \t\t Number of Debye Lengths in i-th submesh \n\n");
+      printf("\t \"Nel_i\" \t\t Number of elements in i-th submesh \n");
       printf("\t \"p2_min_i\"  \t\t For leftBL/rightBL, Number of minimum size cells in a Debye Length for i-th submesh \n");
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
       printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
       printf("  E.g.\n\n");
-      printf("    ./install/bin/pumiMBBL_Demo 3 \"leftBL,uniform,rightBL\" \"10,25,15\" \"1,1,1\" \"10,0,10\"\n");
+      printf("    ./install/bin/pumiMBBL_Demo 3 \"leftBL,uniform,rightBL\" \"20,60,20\" \"12,23,12\" \"10,0,10\"\n");
       exit(0);
     }
 
@@ -69,20 +68,20 @@ int main(int argc, char *argv[])
 
 
     //reading submesh max elemsize
-    char all_p2max_submesh[MAX_SUBMESHES*2];
-    char each_p2max_submesh[MAX_SUBMESHES][2];
-    strcpy(all_p2max_submesh, argv[4]);
+    char all_Nel_submesh[MAX_SUBMESHES*4];
+    char each_Nel_submesh[MAX_SUBMESHES][4];
+    strcpy(all_Nel_submesh, argv[4]);
 
-    tok = strtok(all_p2max_submesh, ",");
+    tok = strtok(all_Nel_submesh, ",");
     isubmesh=0;
     while (tok != NULL){
-      strcpy (each_p2max_submesh[isubmesh], tok);
+      strcpy (each_Nel_submesh[isubmesh], tok);
       tok = strtok(NULL, ",");
       isubmesh++;
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmeshes){
-        printf("ERROR: Number of p2max_i arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of Nel_i arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
@@ -106,15 +105,15 @@ int main(int argc, char *argv[])
 
     pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
 
-    double lambda_D = 3.3246e-04;
+    double lambda_D = 1.4868e-04;
     double x1_min = 0.0;
     int NumberDebyeLengthsInDomain=0;
     for(isubmesh=0; isubmesh<pumi_inputs->nsubmeshes; isubmesh++){
         strcpy(pumi_inputs->type_flag[isubmesh], each_submesh_flag[isubmesh]);
         *(pumi_inputs->p1_i + isubmesh) = atoi( each_p1_submesh[isubmesh]);
         NumberDebyeLengthsInDomain += *(pumi_inputs->p1_i + isubmesh);
-        *(pumi_inputs->p2max_i + isubmesh) = atoi( each_p2max_submesh[isubmesh]);
-        *(pumi_inputs->p2min_i + isubmesh) = atoi( each_p2min_submesh[isubmesh]);
+        *(pumi_inputs->Nel_i + isubmesh) = atoi( each_Nel_submesh[isubmesh]);
+        *(pumi_inputs->p2min_i + isubmesh) = atof( each_p2min_submesh[isubmesh]);
 
         // calculating all pumi_inputs to initiate the mesh
         if (isubmesh == 0){
@@ -150,26 +149,21 @@ int main(int argc, char *argv[])
 
         if (typeflag & leftBL){// set values if leftBL flag is active
           left_T = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
-          double left_tmax = lambda_D/(*(pumi_inputs->p2max_i + isubmesh));
           left_t0 = lambda_D/(*(pumi_inputs->p2min_i + isubmesh));
-          left_r = (left_T-left_t0)/(left_T-left_tmax);
-          left_Nel = 1 + floor( log(left_tmax/left_t0)/log(left_r) );
-          left_r = pumi_compute_grading_ratio(*(pumi_inputs->p1_i + isubmesh), *(pumi_inputs->p2max_i + isubmesh), left_Nel);
+          left_Nel = *(pumi_inputs->Nel_i + isubmesh);
+          left_r = pumi_compute_grading_ratio_new(left_T, left_t0, left_Nel);
         }
 
         if (typeflag & rightBL){// set values if leftBL flag is active
-          right_T = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
-          double right_tmax = lambda_D/(*(pumi_inputs->p2max_i + isubmesh));
-          right_t0 = lambda_D/(*(pumi_inputs->p2min_i + isubmesh));
-          right_r = (right_T-right_t0)/(right_T-right_tmax);
-          right_Nel = 1 + floor( log(right_tmax/right_t0)/log(right_r) );
-          right_r = pumi_compute_grading_ratio(*(pumi_inputs->p1_i + isubmesh), *(pumi_inputs->p2max_i + isubmesh), right_Nel);
+            right_T = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
+            right_t0 = lambda_D/(*(pumi_inputs->p2min_i + isubmesh));
+            right_Nel = *(pumi_inputs->Nel_i + isubmesh);
+            right_r = pumi_compute_grading_ratio_new(right_T, right_t0, right_Nel);
         }
 
         if (typeflag & uniform){
           uniform_L = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
-          uniform_dx1 = lambda_D/(*(pumi_inputs->p2max_i + isubmesh));
-          uniform_Nel = floor (uniform_L/uniform_dx1);
+          uniform_Nel = *(pumi_inputs->Nel_i + isubmesh);
         }
 
         // all pumi_inputs are calculated
@@ -184,10 +178,10 @@ int main(int argc, char *argv[])
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
-    pumi_submesh1D_t pumi_submesh;
+
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
-
+    //exit(0);
     int Nel_total = pumi_total_elements(pumi_mesh);
 
     int num_particles_per_debyelength;
