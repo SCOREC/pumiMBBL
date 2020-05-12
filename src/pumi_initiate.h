@@ -27,7 +27,7 @@ typedef struct pumi_initiate_input{
   double *alpha; //!< Multiplicative factor to determine Nel_max for a submesh
   int *Nel_max_FLAG; //!< Flag to specify type of input for Nel_max i.e with or without alpha for a submesh
   int *p1_i;//! Number of debye lenghts in a submesh
-  int *Nel_i;
+  int *Nel_i;//!< Number of cells in a submesh block
   double *p2max_i;//!< Number of maximum size cells in a Debye Length
   double *p2min_i;//!< Number of minimum size cells in a Debye Length
   int p1_l;//!< Number of debye lengths in leftBL segment

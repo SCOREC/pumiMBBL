@@ -371,6 +371,13 @@ void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_para
   free(submesh_params);
 }
 
+/*!
+* \brief Computes a new grading ratio for left/right BL blocks
+* \param BL_T thickness of left/right BL blocks
+* \param BL_t0 first layer thickness in BL
+* \param BL_Nel number of elements in the left/right BL block
+* \details This routine will only be called inside the hpic initialize code 
+*/
 double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel){
     double tol = 1e-5;
     double r = 1.5;
