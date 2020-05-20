@@ -43,7 +43,7 @@ typedef struct pumi_initiate_input{
   double *right_r; //!<  pointer to array of growth ratios in the right BL segment for each block
   int *right_Nel; //!< pointer to array of number of elements in the right BL segment for each block
 } pumi_initiate_input_t;
-
+// remove unwanted variables and do more optimizations
 pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs);
 void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes);
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes);
