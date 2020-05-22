@@ -18,6 +18,14 @@ typedef enum pumi_initiate_flag{
 } pumi_initiate_flag_t;
 
 /*!
+* \brief options to calculate the BL element sizes
+*/
+typedef enum pumi_cache_BL_elemsize{
+  pumi_cache_BL_elemsize_OFF = 0, //!< no caching of BL element sizes (will be calculated on-the-fly)
+  pumi_cache_BL_elemsize_ON = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
+} pumi_cache_BL_elemsize_t;
+
+/*!
 * \brief Contains the parameters inputs to the mesh which will be passed as arguments to pumi_initiate()
 */
 typedef struct pumi_initiate_input{
@@ -44,7 +52,7 @@ typedef struct pumi_initiate_input{
   int *right_Nel; //!< pointer to array of number of elements in the right BL segment for each block
 } pumi_initiate_input_t;
 // remove unwanted variables and do more optimizations
-pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs);
+pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs, int BL_caching_flag);
 void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes);
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes);
 void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, double ***submesh_params, unsigned int **submesh_flag);
@@ -52,7 +60,7 @@ void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_para
 void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag,
   int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
-void pumi_finalize(pumi_mesh_t* pumi_mesh);
+void pumi_finalize(pumi_mesh_t* pumi_mesh, int BL_caching_flag);
 double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel);
 double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel);
 void pumi_verify_params(pumi_mesh_t *pumi_mesh);

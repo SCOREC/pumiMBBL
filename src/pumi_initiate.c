@@ -14,7 +14,7 @@
 If the flag is set to initiate_from_commandline_inputs, the members of pumi_initiate_input has to populated by the user (based on command line arguments of hpic main code) before this function call.
 
 */
-pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs){
+pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs, int BL_caching_flag){
 
   pumi_mesh_t* pumi_mesh = (pumi_mesh_t*) malloc(sizeof(pumi_mesh_t));
 
@@ -68,32 +68,33 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 
     printf("\n\t submeshflag = ");
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-      printf("leftBL&");
+      printf("leftBL\n");
+      printf("\t left_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0);
+      printf("\t left_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_T);
+      printf("\t left_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r);
+      printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel);
     }
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
-      printf("uniform");
+      printf("uniform\n");
+      printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel);
+      printf("\t uniform_dx  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0);
     }
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-      printf("&rightBL");
+      printf("rightBL\n");
+      printf("\t right_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0);
+      printf("\t right_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T);
+      printf("\t right_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r);
+      printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel);
     }
 
-    printf("\n\n\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel);
-    printf("\t uniform_dx  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0);
-
-    printf("\t left_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0);
-    printf("\t left_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_T);
-    printf("\t left_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r);
-    printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel);
-
-    printf("\t right_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0);
-    printf("\t right_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T);
-    printf("\t right_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r);
-    printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel);
-  }
+}
   pumi_verify_params(pumi_mesh);
   pumi_print_node_coordinates(pumi_mesh);
-  pumi_BL_elemsize_ON(pumi_mesh);
+  if (BL_caching_flag){
+      pumi_BL_elemsize_ON(pumi_mesh);
+  }
   pumi_initialize_locate_functions(pumi_mesh);
+  pumi_initialize_locatecell_functions(pumi_mesh);
   return (pumi_mesh);
 }
 
@@ -156,7 +157,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double 
   }
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r = log(r_right);
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio = (r_right-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0;
-  (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag) = 0;
+  (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag) = 0;
 
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel = N_uniform + N_left + N_right; // (dependent variable)
   if (isubmesh==0){
@@ -349,9 +350,12 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \brief Deallocates/Frees the memory allocated to members and object of struct pumi_mesh in pumi_initiate()
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
-void pumi_finalize(pumi_mesh_t* pumi_mesh){
+void pumi_finalize(pumi_mesh_t* pumi_mesh, int BL_caching_flag){
   pumi_finalize_locate_functions();
-  pumi_BL_elemsize_OFF(pumi_mesh);
+  pumi_finalize_locatecell_functions();
+  if (BL_caching_flag){
+      pumi_BL_elemsize_OFF(pumi_mesh);
+  }
   free(pumi_mesh->pumi_submeshes);
   free(pumi_mesh);
 }
@@ -376,7 +380,7 @@ void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_para
 * \param BL_T thickness of left/right BL blocks
 * \param BL_t0 first layer thickness in BL
 * \param BL_Nel number of elements in the left/right BL block
-* \details This routine will only be called inside the hpic initialize code 
+* \details This routine will only be called inside the hpic initialize code
 */
 double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel){
     double tol = 1e-5;
@@ -530,7 +534,7 @@ void pumi_verify_params(pumi_mesh_t *pumi_mesh){
   }
   else{
     printf("\t\nERROR: One or more input/calculated mesh paramater is not valid. Abort\n");
-    pumi_finalize(pumi_mesh);
+    //pumi_finalize(pumi_mesh);
     exit(0);
   }
 }

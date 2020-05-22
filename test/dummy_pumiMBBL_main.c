@@ -177,11 +177,11 @@ int main(int argc, char *argv[])
     }
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
-    pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs);
+    pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_cache_BL_elemsize_ON);
 
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
-    //exit(0);
+
     int Nel_total = pumi_total_elements(pumi_mesh);
 
     int num_particles_per_debyelength;
@@ -232,9 +232,12 @@ int main(int argc, char *argv[])
     }
 
     printf("Total weight = %lf\n\n", sumweights );
+
     free(coordinates);
     free(particle_isactive);
     free(grid_weights);
+
+    pumi_finalize(pumi_mesh,pumi_cache_BL_elemsize_ON); //deallocates pumi_mesh object
 
     return 0;
 }
