@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     scanf("%d", &num_particles_per_debyelength); //user supplied
     int num_particles = num_particles_per_debyelength*NumberDebyeLengthsInDomain;
     double *coordinates = (double*) malloc(num_particles * sizeof(double));
-    int *particle_isactive = (int*) malloc(num_particles * sizeof(int));
+    //int *particle_isactive = (int*) malloc(num_particles * sizeof(int));
 
     srand48(time(NULL));
     int iparticle=0;
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
         for(j=0; j<numparticle_submesh;j++){
             coordinates[iparticle] = submesh_xleft + submesh_L*drand48();
             //particle_isactive[iparticle] = isubmesh+1;
-            particle_isactive[iparticle] = pumi_locate_submesh_1D(pumi_mesh, coordinates[iparticle]);
+            //particle_isactive[iparticle] = pumi_locate_submesh_1D(pumi_mesh, coordinates[iparticle]);
             iparticle++;
         }
     }
@@ -216,11 +216,13 @@ int main(int argc, char *argv[])
     }
     int kcell;
     double Wgh1, Wgh2;
-
+    int submesh_icell;
     for (iparticle=0; iparticle<num_particles; iparticle++){ //loop over all particles
-      isubmesh = particle_isactive[iparticle];
+      //isubmesh = particle_isactive[iparticle];
       //pumiMBBL_locatepoint_1D(pumi_mesh, coordinates[iparticle], isubmesh, &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
-      pumi_locate_function[isubmesh](pumi_mesh, isubmesh, coordinates[iparticle], &kcell, &Wgh2);
+      //pumi_locate_function[isubmesh](pumi_mesh, isubmesh, coordinates[iparticle], &kcell, &Wgh2);
+      pumi_locate_submesh_and_cell(pumi_mesh, coordinates[iparticle], &isubmesh, &submesh_icell);
+      pumi_calc_weights(pumi_mesh, isubmesh, submesh_icell, coordinates[iparticle], &kcell, &Wgh2);
       Wgh1 = 1.0 - Wgh2;
       grid_weights[kcell]   += Wgh1;
       grid_weights[kcell+1] += Wgh2; //accumulate the weights for each particle
@@ -234,7 +236,7 @@ int main(int argc, char *argv[])
     printf("Total weight = %lf\n\n", sumweights );
 
     free(coordinates);
-    free(particle_isactive);
+    //free(particle_isactive);
     free(grid_weights);
 
     pumi_finalize(pumi_mesh,pumi_cache_BL_elemsize_ON); //deallocates pumi_mesh object

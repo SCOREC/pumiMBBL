@@ -37,6 +37,7 @@ typedef struct pumi_submesh1D{
   double log_left_r;//!< (dependent variable) log(left_r) -- value used in pumi_locatepoint_BL_1D algo
   double left_r_lBL_t0_ratio;//!< (dependent variable) (left_r-1)/lBL_t0 -- value used in pumi_locatepoint_1D algo
   double *leftBL_elemsize;//!< pointer to array that stores elem size in leftBL
+  double *leftBL_coords;//!< pointer to array that stores the node coords in leftBL
   int leftBL_elemsize_calc_flag; // !< leftBL elem size calculation flag variable. 0=>BL elemsize array not computed, 1=>BL elemsize array computed
 
   double right_T; //!< right BL thickness
@@ -47,6 +48,7 @@ typedef struct pumi_submesh1D{
   double log_right_r;//!< (dependent variable) log(right_r) -- value used in pumi_locatepoint_BL_1D algo
   double right_r_rBL_t0_ratio;//!< (dependent variable) (right_r-1)/rBL_t0 -- value used in pumi_locatepoint_1D algo
   double *rightBL_elemsize;//!< pointer to array that stores elem size in rightBL
+  double *rightBL_coords;//!< pointer to array that stores the node coords in rightBL
   int rightBL_elemsize_calc_flag; // !< rightBL elem size calculation flag variable. 0=>BL elemsize array not computed, 1=>BL elemsize array computed
 
   int submesh_total_Nel; //!< (dependent variable) total number of elements in the submesh block

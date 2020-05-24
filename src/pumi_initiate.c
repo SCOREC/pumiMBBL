@@ -93,8 +93,9 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   if (BL_caching_flag){
       pumi_BL_elemsize_ON(pumi_mesh);
   }
-  pumi_initialize_locate_functions(pumi_mesh);
-  pumi_initialize_locatecell_functions(pumi_mesh);
+  pumi_initialize_multiD_functions(pumi_mesh);
+  //pumi_initialize_locate_functions(pumi_mesh);
+  pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
   return (pumi_mesh);
 }
 
@@ -351,8 +352,8 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
 void pumi_finalize(pumi_mesh_t* pumi_mesh, int BL_caching_flag){
-  pumi_finalize_locate_functions();
-  pumi_finalize_locatecell_functions();
+  //pumi_finalize_locate_functions();
+  pumi_finalize_locatecell_and_calcweights_functions();
   if (BL_caching_flag){
       pumi_BL_elemsize_OFF(pumi_mesh);
   }
