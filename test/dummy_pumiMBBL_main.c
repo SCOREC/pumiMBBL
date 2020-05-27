@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
     //free(particle_isactive);
     free(grid_weights);
 
-    pumi_finalize(pumi_mesh,pumi_cache_BL_elemsize_ON); //deallocates pumi_mesh object
+    pumi_finalize(pumi_mesh); //deallocates pumi_mesh object
 
     return 0;
 }

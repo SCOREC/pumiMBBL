@@ -68,6 +68,7 @@ typedef struct pumi_mesh{
   int ndim; //!< number of physical dimensions of the problem space
   void *pumi_submeshes; //!< pointer object to access members of the structs pumi_submesh1D and pumi_submesh2D
   int pumi_Nel_total; //!< total number of elements in the mesh
+  int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"

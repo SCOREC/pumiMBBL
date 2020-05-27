@@ -60,7 +60,7 @@ void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_para
 void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag,
   int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
-void pumi_finalize(pumi_mesh_t* pumi_mesh, int BL_caching_flag);
+void pumi_finalize(pumi_mesh_t* pumi_mesh);
 double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel);
 double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel);
 void pumi_verify_params(pumi_mesh_t *pumi_mesh);

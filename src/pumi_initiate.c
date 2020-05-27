@@ -91,7 +91,11 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   pumi_verify_params(pumi_mesh);
   pumi_print_node_coordinates(pumi_mesh);
   if (BL_caching_flag){
+      pumi_mesh->BL_elem_coords_cache_flag = 1;
       pumi_BL_elemsize_ON(pumi_mesh);
+  }
+  else{
+      pumi_mesh->BL_elem_coords_cache_flag = 0;
   }
   pumi_initialize_multiD_functions(pumi_mesh);
   //pumi_initialize_locate_functions(pumi_mesh);
@@ -351,10 +355,10 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 * \brief Deallocates/Frees the memory allocated to members and object of struct pumi_mesh in pumi_initiate()
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
-void pumi_finalize(pumi_mesh_t* pumi_mesh, int BL_caching_flag){
+void pumi_finalize(pumi_mesh_t* pumi_mesh){
   //pumi_finalize_locate_functions();
   pumi_finalize_locatecell_and_calcweights_functions();
-  if (BL_caching_flag){
+  if (pumi_mesh->BL_elem_coords_cache_flag){
       pumi_BL_elemsize_OFF(pumi_mesh);
   }
   free(pumi_mesh->pumi_submeshes);
@@ -535,7 +539,7 @@ void pumi_verify_params(pumi_mesh_t *pumi_mesh){
   }
   else{
     printf("\t\nERROR: One or more input/calculated mesh paramater is not valid. Abort\n");
-    //pumi_finalize(pumi_mesh);
+    pumi_finalize(pumi_mesh);
     exit(0);
   }
 }
@@ -549,7 +553,7 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
   int isubmesh;
   for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     N_cumulative[isubmesh] = N_cumulative[isubmesh-1] + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
-    printf("cumulative_length[%d]=%.16e\n",isubmesh, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative);
+    //printf("cumulative_length[%d]=%.16e\n",isubmesh, ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative);
   }
 
   int inode = 0;
