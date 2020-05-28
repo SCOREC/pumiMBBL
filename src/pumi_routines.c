@@ -535,76 +535,13 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh){
   return smallest_elemsize;
 }
 
-/*
-* \brief Returns submesh ID of a newly initialized particle
-* \param *pumi_mesh pointer object to struct pumi_mesh
-* \param coords - coordinate of the newly initialized particle
-*/
-/*
-int pumi_locate_submesh_1D(pumi_mesh_t *pumi_mesh, double coords){
-    if (pumi_mesh->nsubmeshes == 1){
-        return 0;
-    }
-    else{
-        int isubmesh;
-        for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-            if (coords < ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative){
-                return (isubmesh-1);
-            }
-        }
-        return (pumi_mesh->nsubmeshes-1);
-    }
-}
-*/
-/*
-* \brief Returns submesh ID of a pushed particle using adjacency search
-* \param *pumi_mesh pointer object to struct pumi_mesh
-* \param coords - new coordinate of the pushed particle
-* \param coords - old submesh ID of the pushed particle (i.e. before the push)
-*/
-/*
-int pumi_update_submesh_1D(pumi_mesh_t *pumi_mesh, double coords, int isubmesh){
-    if (pumi_mesh->nsubmeshes == 1){
-        return 0;
-    }
-    else{
-        int left = 0;
-        int right = 0;
-        int curr_submesh = isubmesh;
-        if (isubmesh == pumi_mesh->nsubmeshes-1){
-            //isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative>coords);
-            //return isubmesh;
-            while(coords<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + curr_submesh)->Length_cumulative){
-                curr_submesh--;
-                left -= 1;
-            }
-            return (isubmesh+left);
-        }
-        else{
-            //isubmesh = isubmesh - (int) (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative>coords) + (int) (coords>((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh+1))->Length_cumulative);
-            //return isubmesh;
-            while(coords<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + curr_submesh)->Length_cumulative){
-                curr_submesh--;
-                left -= 1;
-            }
-
-            while(coords>((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (curr_submesh+1))->Length_cumulative){
-                curr_submesh++;
-                right += 1;
-                if (curr_submesh == pumi_mesh->nsubmeshes-1){
-                    break;
-                }
-            }
-            return (isubmesh+left+right);
-        }
-    }
-}
-*/
 
 /*
-* \brief Returns submesh ID of a newly initialized particle
+* \brief Locates submesh ID and local cell ID of a initialized particle with global search and analytically
 * \param *pumi_mesh pointer object to struct pumi_mesh
-* \param coords - coordinate of the newly initialized particle
+* \param coords - new coordinate of the particle
+* \param prev_submeshID - old submesh ID of the pushed particle (i.e. before the push)
+* \param[out] pointers to new submesh ID and new local cell which will be populated inside the routine
 */
 void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID){
     if (pumi_mesh->nsubmeshes == 1){
@@ -630,10 +567,11 @@ void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *su
 }
 
 /*
-* \brief Returns submesh ID of a pushed particle using adjacency search
+* \brief Calculates new submesh ID with adjacency search and new local cell ID of a pushed particle analytically
 * \param *pumi_mesh pointer object to struct pumi_mesh
-* \param coords - new coordinate of the pushed particle
-* \param coords - old submesh ID of the pushed particle (i.e. before the push)
+* \param coords - new coordinate of the particle
+* \param prev_submeshID - old submesh ID of the pushed particle (i.e. before the push)
+* \param[out] pointers to new submesh ID and new local cell which will be populated inside the routine
 */
 void pumi_update_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int *submeshID, int *cellID){
     if (pumi_mesh->nsubmeshes == 1){
@@ -653,10 +591,12 @@ void pumi_update_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int pre
 }
 
 /*
-* \brief Returns submesh ID of a pushed particle using adjacency search
+* \brief Calculates new submesh ID and new local cell ID of a pushed particle using adjacency searches
 * \param *pumi_mesh pointer object to struct pumi_mesh
-* \param coords - new coordinate of the pushed particle
-* \param coords - old submesh ID of the pushed particle (i.e. before the push)
+* \param coords - new coordinate of the particle
+* \param prev_submeshID - old submesh ID of the pushed particle (i.e. before the push)
+* \param prev_cellID - old local cell ID of the pushed particle (i.e. before the push)
+* \param[out] pointers to new submesh ID and new local cell which will be populated inside the routine
 */
 void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
     if (pumi_mesh->nsubmeshes == 1){
@@ -677,7 +617,14 @@ void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, 
     *cellID = pumi_updatecell_fnptr[*submeshID](pumi_mesh, *submeshID, prev_cellID, coords);
 }
 
-
+/*
+* \brief subroutine to call relevant weight-calculate routine using function pointers
+* \param[in] *pumi_mesh pointer object to struct pumi_mesh
+* \param[in] submesh ID of the block
+* \param[in] local cell ID in the block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
+* \param[out] pointers to global cell and weight2 which will be populated inside the routine
+*/
 void pumi_calc_weights(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
     pumi_calc_weights_fnptr[isubmesh](pumi_mesh, isubmesh, local_cell, coord, global_cell, weight);
 }
@@ -686,7 +633,7 @@ void pumi_calc_weights(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, dou
 * \brief subroutine to locate the cell number of a particle inside a uniform block
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the uniform block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
 int pumi_locatecell_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, double coord){
     int icell = (coord - ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
@@ -694,22 +641,23 @@ int pumi_locatecell_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, double coord){
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a uniform block
+* \brief subroutine to update the cell number of a particle inside a uniform block
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the uniform block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID of particle in the uniform block
+* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
 int pumi_updatecell_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
     icell = (coord - ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
-    printf("coord=%2.4f found in uni cell %d\n",coord, icell );
     return icell;
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a uniform block
+* \brief subroutine to calculate golbal cell ID and weight contribution of a particle inside a uniform block
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the uniform block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID of particle in the uniform block
+* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
 void pumi_calc_weights_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
     *weight = (coord - (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_x_left + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0*local_cell))/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
@@ -720,7 +668,7 @@ void pumi_calc_weights_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int local_ce
 * \brief subroutine to locate the cell number of a particle inside a leftBL block
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
 int pumi_locatecell_in_leftBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord){
     int icell = log(1 + (fabs(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left-coord))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r_lBL_t0_ratio)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_left_r;
@@ -728,10 +676,11 @@ int pumi_locatecell_in_leftBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a leftBL block
+* \brief subroutine to update the local cell number of a particle inside a leftBL block with adjacency search
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID in the leftBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
 */
 int pumi_updatecell_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
     while(coord < *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + icell)){
@@ -745,10 +694,11 @@ int pumi_updatecell_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int i
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a leftBL block
+* \brief subroutine to update the local cell number of a particle inside a leftBL block analytically
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID in the leftBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
 */
 int pumi_updatecell_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
     icell = log(1 + (fabs(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left-coord))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r_lBL_t0_ratio)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_left_r;
@@ -756,10 +706,12 @@ int pumi_updatecell_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a leftBL block
+* \brief subroutine to calculate golbal cell ID and weight contribution of a particle inside a leftBL block analytically
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID in the leftBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
+* \param[out] pointers to global cell and weight2 which will be populated inside the routine
 */
 void pumi_calc_weights_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
     double r_power_cell = pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r,local_cell);
@@ -768,10 +720,12 @@ void pumi_calc_weights_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, 
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a leftBL block
+* \brief subroutine to calculate golbal cell ID and weight contribution of a particle inside a leftBL block using cached elementsize and nodal coords
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID in the leftBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
+* \param[out] pointers to global cell and weight2 which will be populated inside the routine
 */
 void pumi_calc_weights_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
     *global_cell = local_cell + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative;
@@ -783,7 +737,7 @@ void pumi_calc_weights_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, in
 * \brief subroutine to locate the cell number of a particle inside a rightBL block
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the rightBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
 int pumi_locatecell_in_rightBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord){
     int icell = log(1 + (fabs(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right-coord))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r;
@@ -791,10 +745,11 @@ int pumi_locatecell_in_rightBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coor
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a leftBL block
+* \brief subroutine to update the local cell number of a particle inside a rightBL block with adjacency search
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
-* \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] submesh ID of the rightBL block
+* \param[in] local cell ID in the rightBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
 */
 int pumi_updatecell_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
     while(coord < *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + icell)){
@@ -809,10 +764,11 @@ int pumi_updatecell_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int 
 
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a leftBL block
+* \brief subroutine to update the local cell number of a particle inside a rightBL block analytically
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
-* \param[in] submesh ID of the leftBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] submesh ID of the rightBL block
+* \param[in] icell local cell ID in the rightBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
 */
 int pumi_updatecell_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
     icell = log(1 + (fabs(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right-coord))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r;
@@ -820,10 +776,12 @@ int pumi_updatecell_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, in
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a rightBL block
+* \brief subroutine to calculate golbal cell ID and weight contribution of a particle inside a rightBL block analytically
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the rightBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID in the rightBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
+* \param[out] pointers to global cell and weight2 which will be populated inside the routine
 */
 void pumi_calc_weights_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
     local_cell = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel - local_cell - 1;
@@ -833,10 +791,12 @@ void pumi_calc_weights_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh,
 }
 
 /*
-* \brief subroutine to locate the cell number of a particle inside a rightBL block
+* \brief subroutine to calculate golbal cell ID and weight contribution of a particle inside a rightBL block using cached elementsize and nodal coords
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the rightBL block
-* \param[in] particle_coordinate coordinate of the particle whose cell number and local weights is to be evaluated
+* \param[in] local cell ID in the rightBL block
+* \param[in] coord coordinate of the particle nodal weight is to be evaluated
+* \param[out] pointers to global cell and weight2 which will be populated inside the routine
 */
 void pumi_calc_weights_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
 //    local_cell = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel - local_cell - 1;
@@ -846,10 +806,10 @@ void pumi_calc_weights_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, i
 }
 
 /*
-* \brief Assigns the appropriate subroutine for each submesh block to locate the local cell number of a particle in that submesh
+* \brief Assigns the appropriate subroutine for each submesh block to locate/update the local cell number of a particle in that submesh
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
-* \details Allocates memory to function pointer *pumi_locate_function and assign relevant locate pumi routines
-during pumi mesh initialization
+* \details Allocates memory to function pointer *pumi_locatecell_fnptr, *pumi_updatecell_fnptr, *pumi_calc_weights_fnptr
+and assign relevant locate/update/weight-calculate pumi routines to each submesh during pumi mesh initialization
 */
 void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh){
     pumi_locatecell_fnptr = malloc(pumi_mesh->nsubmeshes*sizeof(pumi_locatecell_ptr));
@@ -899,7 +859,7 @@ void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh
 }
 
 /*!
-* \brief Deallocates/Frees the memory allocated to the funciton pointer *pumi_locate_function
+* \brief Deallocates/Frees the memory allocated to the funciton pointers pumi_*_fnptr
 */
 void pumi_finalize_locatecell_and_calcweights_functions(){
     free(pumi_locatecell_fnptr);

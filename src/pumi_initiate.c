@@ -416,7 +416,7 @@ double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel){
 * \details This routine will only be called inside the hpic code when the inputs to hpic does
 not correspond to a valid BL mesh with grading ratio 1.2. The routine returns a new grading ratio that will satisfy
 the hpic inputs.
-*/
+
 double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel){
   double tol = 1e-5;
   double r = 1.2;
@@ -443,6 +443,7 @@ double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel){
     return r;
   }
 }
+*/
 /*!
 * \brief Peforms checks on pumi params and verfies their validity (for diagnostics purposes)
 * \param *pumi_mesh pointer object to struct pumi_initiate

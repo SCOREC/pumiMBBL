@@ -84,9 +84,6 @@ void pumi_initialize_multiD_functions(pumi_mesh_t *pumi_mesh);
 
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 
-//int pumi_locate_submesh_1D(pumi_mesh_t *pumi_mesh, double coords);
-//int pumi_update_submesh_1D(pumi_mesh_t *pumi_mesh, double coords, int isubmesh);
-
 void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID);
 void pumi_update_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int *submeshID, int *cellID);
 void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID);
