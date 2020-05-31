@@ -301,8 +301,8 @@ void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   pumi_inputs->Nel_max = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->p1_i = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->Nel_i = malloc(nsubmeshes*sizeof(int));
-  pumi_inputs->p2max_i = malloc(nsubmeshes*sizeof(int));
-  pumi_inputs->p2min_i = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->p2max_i = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->p2min_i = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->alpha = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
@@ -347,7 +347,7 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
     free(pumi_inputs->type_flag[i]);
   }
   free(pumi_inputs->type_flag);
-  free(pumi_inputs);
+  //free(pumi_inputs);
 
 }
 
