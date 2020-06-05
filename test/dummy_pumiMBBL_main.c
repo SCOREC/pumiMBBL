@@ -26,9 +26,11 @@ int main(int argc, char *argv[])
     }
 
 
-    pumi_inputs = malloc(sizeof(pumi_initiate_input_t));
+    //pumi_inputs = malloc(sizeof(pumi_initiate_input_t));
+    int nsubmesh = atoi( argv[1] );
+    pumi_inputs = pumi_inputs_allocate(nsubmesh);
     pumi_inputs->ndim = 1; // Fixed pumi input
-    pumi_inputs->nsubmeshes = atoi( argv[1] );
+    pumi_inputs->nsubmeshes = nsubmesh;
 
     // reading submesh meshtypes
     char all_submesh_flag[MAX_SUBMESHES*SEGMENT_STRING_LENGTH];
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
+    //pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
 
     double lambda_D = 1.4868e-04;
     double x1_min = 0.0;

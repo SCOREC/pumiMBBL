@@ -296,7 +296,9 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
 * \param *pumi_inputs pointer object to struct pumi_initiate_input
 * \param nsubmeshes number of submesh blocks
 */
-void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+//void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes){
+  pumi_initiate_input_t* pumi_inputs = (pumi_initiate_input_t*) malloc(sizeof(pumi_initiate_input_t));
   pumi_inputs->Nel_max_FLAG = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->Nel_max = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->p1_i = malloc(nsubmeshes*sizeof(int));
@@ -318,6 +320,7 @@ void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   pumi_inputs->right_r = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->right_Nel = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->uniform_Nel = malloc(nsubmeshes*sizeof(int));
+  return pumi_inputs;
 }
 
 /*!
@@ -347,8 +350,7 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
     free(pumi_inputs->type_flag[i]);
   }
   free(pumi_inputs->type_flag);
-  //free(pumi_inputs);
-
+  free(pumi_inputs);
 }
 
 /*!
