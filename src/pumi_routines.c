@@ -806,6 +806,16 @@ void pumi_calc_weights_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, i
 }
 
 /*
+* \brief subroutine that returns global cell number from submesh ID and local cell ID
+* \param[in] *pumi_mesh pointer object to struct pumi_mesh
+* \param[in] submesh ID of the rightBL block
+* \param[in] icell local cell ID in the rightBL block
+*/
+int pumi_global_cell_ID(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell){
+    return (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative + local_cell);
+}
+
+/*
 * \brief Assigns the appropriate subroutine for each submesh block to locate/update the local cell number of a particle in that submesh
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \details Allocates memory to function pointer *pumi_locatecell_fnptr, *pumi_updatecell_fnptr, *pumi_calc_weights_fnptr
