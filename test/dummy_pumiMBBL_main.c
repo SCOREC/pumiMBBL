@@ -211,6 +211,35 @@ int main(int argc, char *argv[])
         }
     }
 
+    for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+        int submesh_total_Nel, icell;
+        double left_node, right_node;
+        if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+            submesh_total_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
+            for(icell=0; icell<submesh_total_Nel; icell++){
+                pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
+                printf("icell=%d left_node=%2.8e right_node=%2.8e\n", icell, left_node, right_node);
+            }
+            printf("\n\n");
+        }
+        if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
+            submesh_total_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel;
+            for(icell=0; icell<submesh_total_Nel; icell++){
+                pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
+                printf("icell=%d left_node=%2.8e right_node=%2.8e\n", icell, left_node, right_node);
+            }
+            printf("\n\n");
+        }
+        if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+            submesh_total_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
+            for(icell=0; icell<submesh_total_Nel; icell++){
+                pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
+                printf("icell=%d left_node=%2.8e right_node=%2.8e\n", icell, left_node, right_node);
+            }
+            printf("\n\n");
+        }
+    }
+
     double *grid_weights = (double*) malloc((Nel_total+1)*sizeof(double));
     int i;
     for (i=0; i<= Nel_total; i++){
