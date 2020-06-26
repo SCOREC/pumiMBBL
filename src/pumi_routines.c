@@ -34,6 +34,16 @@ int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
 }
 
 /*
+* \brief Computes and returns the total number of elements in a submesh block for 1D domain
+* \param *pumi_mesh pointer object to struct pumi_mesh
+* \param ID of the submesh
+*/
+int pumi_submesh_total_elements_1D(pumi_mesh_t *pumi_mesh, int isubmesh)
+{
+  return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;
+}
+
+/*
 * \brief Computes and returns the coordinate of the left endpoint of the mesh
 * \param *pumi_mesh pointer object to struct pumi_mesh
 */
