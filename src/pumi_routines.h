@@ -38,12 +38,22 @@ void pumi_calc_node_coords_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubm
 
 void pumi_calc_node_coords(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double *left_node, double *right_node);
 
+double pumi_calc_elem_size_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+double pumi_calc_elem_size_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+double pumi_calc_elem_size_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+double pumi_calc_elem_size_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+double pumi_calc_elem_size_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+
+double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+
 typedef int (*pumi_locatecell_ptr)(pumi_mesh_t*, int, double);
 pumi_locatecell_ptr *pumi_locatecell_fnptr;
 typedef void (*pumi_calc_weights_ptr)(pumi_mesh_t*, int, int, double, int*, double*);
 pumi_calc_weights_ptr *pumi_calc_weights_fnptr;
 typedef void (*pumi_calc_node_coords_ptr)(pumi_mesh_t*, int, int, double*,double*);
 pumi_calc_node_coords_ptr *pumi_calc_node_coords_fnptr;
+typedef double (*pumi_calc_elem_size_ptr)(pumi_mesh_t*, int, int);
+pumi_calc_elem_size_ptr *pumi_calc_elem_size_fnptr;
 void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh);
 void pumi_finalize_locatecell_and_calcweights_functions();
 

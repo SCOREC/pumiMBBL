@@ -213,12 +213,14 @@ int main(int argc, char *argv[])
 
     for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
         int submesh_total_Nel, icell;
-        double left_node, right_node;
+        double left_node, right_node, elem_size, err;
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
             submesh_total_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
             for(icell=0; icell<submesh_total_Nel; icell++){
                 pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
-                printf("icell=%d left_node=%2.8e right_node=%2.8e\n", icell, left_node, right_node);
+                elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
+                err = right_node-left_node-elem_size;
+                printf("icell=%d left_node=%2.8e right_node=%2.8e err=%2.8e\n", icell, left_node, right_node, err);
             }
             printf("\n\n");
         }
@@ -226,7 +228,9 @@ int main(int argc, char *argv[])
             submesh_total_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel;
             for(icell=0; icell<submesh_total_Nel; icell++){
                 pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
-                printf("icell=%d left_node=%2.8e right_node=%2.8e\n", icell, left_node, right_node);
+                elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
+                err = right_node-left_node-elem_size;
+                printf("icell=%d left_node=%2.8e right_node=%2.8e err=%2.8e\n", icell, left_node, right_node, err);
             }
             printf("\n\n");
         }
@@ -234,7 +238,9 @@ int main(int argc, char *argv[])
             submesh_total_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
             for(icell=0; icell<submesh_total_Nel; icell++){
                 pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
-                printf("icell=%d left_node=%2.8e right_node=%2.8e\n", icell, left_node, right_node);
+                elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
+                err = right_node-left_node-elem_size;
+                printf("icell=%d left_node=%2.8e right_node=%2.8e err=%2.8e\n", icell, left_node, right_node, err);
             }
             printf("\n\n");
         }
