@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
     //pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
 
-    double lambda_D = 1.4868e-04;
+    double lambda_D = 4.7016e-05;
     double x1_min = 0.0;
     int NumberDebyeLengthsInDomain=0;
     for(isubmesh=0; isubmesh<pumi_inputs->nsubmeshes; isubmesh++){
