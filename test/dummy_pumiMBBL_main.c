@@ -196,9 +196,9 @@ int main(int argc, char *argv[])
     srand48(time(NULL));
     int iparticle=0;
     for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
-        double submesh_xleft = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;
-        double submesh_xright = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right;
-        double submesh_L = submesh_xright-submesh_xleft;
+        double submesh_xleft = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
+        double submesh_xright = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_max;
+        double submesh_L = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T;
         double deblenth = submesh_L/lambda_D;
         int submesh_debyelengths = (int) deblenth;
         int numparticle_submesh = num_particles_per_debyelength*submesh_debyelengths;
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
+    /*for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
         int submesh_total_Nel, icell;
         double left_node, right_node, elem_size, err;
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
             }
             printf("\n\n");
         }
-    }
+    }*/
 
     double *grid_weights = (double*) malloc((Nel_total+1)*sizeof(double));
     int i;
@@ -259,6 +259,7 @@ int main(int argc, char *argv[])
       //pumiMBBL_locatepoint_1D(pumi_mesh, coordinates[iparticle], isubmesh, &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
       //pumi_locate_function[isubmesh](pumi_mesh, isubmesh, coordinates[iparticle], &kcell, &Wgh2);
       pumi_locate_submesh_and_cell(pumi_mesh, coordinates[iparticle], &isubmesh, &submesh_icell);
+      //printf("particle %d located at submesh %d and local cell %d\n",iparticle, isubmesh, submesh_icell );
       pumi_calc_weights(pumi_mesh, isubmesh, submesh_icell, coordinates[iparticle], &kcell, &Wgh2);
       Wgh1 = 1.0 - Wgh2;
       grid_weights[kcell]   += Wgh1;
