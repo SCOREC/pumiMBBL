@@ -29,7 +29,7 @@ int pumi_total_elements(pumi_mesh_t *pumi_mesh)
 */
 int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
 {
-  int Nel_total = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes-1))->submesh_total_Nel + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes-1))->Nel_cumulative;
+  int Nel_total = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes-1))->submesh_Nel + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes-1))->Nel_cumulative;
   return Nel_total;
 }
 
@@ -40,7 +40,7 @@ int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
 */
 int pumi_submesh_total_elements_1D(pumi_mesh_t *pumi_mesh, int isubmesh)
 {
-  return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;
+  return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
 }
 
 /*
@@ -49,7 +49,7 @@ int pumi_submesh_total_elements_1D(pumi_mesh_t *pumi_mesh, int isubmesh)
 */
 double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh)
 {
-  double global_x_left = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + 0)->x_left;
+  double global_x_left = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + 0)->x_min;
   return global_x_left;
 }
 
@@ -59,7 +59,7 @@ double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh)
 */
 double pumi_global_x_right_1D(pumi_mesh_t *pumi_mesh)
 {
-  double global_x_right = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes - 1))->x_right;
+  double global_x_right = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (pumi_mesh->nsubmeshes - 1))->x_max;
   return global_x_right;
 }
 
@@ -231,31 +231,45 @@ void pumi_BL_elemsize_ON_1D(pumi_mesh_t *pumi_mesh){
     int isubmesh;
   for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-      (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag) = 1;
-      int left_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize = (double*) malloc(left_Nel*sizeof(double));
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords = (double*) malloc((left_Nel+1)*sizeof(double));
-      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
-      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;
-      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + 1) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
+      (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag) = 1;//
+      int left_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize = (double*) malloc(left_Nel*sizeof(double));//
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords = (double*) malloc((left_Nel+1)*sizeof(double));//
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize = (double*) malloc(left_Nel*sizeof(double));
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords = (double*) malloc((left_Nel+1)*sizeof(double));
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;//
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;//
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + 1) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;//
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + 1) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min+((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
       int iCell;
       for (iCell=1; iCell<left_Nel; iCell++){
-        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + iCell) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + (iCell-1))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
-        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + (iCell+1)) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + (iCell)) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + iCell);
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + iCell) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + (iCell-1))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;//
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + (iCell+1)) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords + (iCell)) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + iCell);//
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + iCell) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + (iCell-1))*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + (iCell+1)) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + (iCell)) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + iCell);
       }
     }
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-      (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag) = 1;
-      int right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize = (double*) malloc(right_Nel*sizeof(double));
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords = (double*) malloc((right_Nel+1)*sizeof(double));
-      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);
-      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;
-      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + 1) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + 0) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + 0);
+      (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag) = 1;//
+      int right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize = (double*) malloc(right_Nel*sizeof(double));//
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords = (double*) malloc((right_Nel+1)*sizeof(double));//
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize = (double*) malloc(right_Nel*sizeof(double));
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords = (double*) malloc((right_Nel+1)*sizeof(double));
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel-1);//
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left;//
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + 1) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + 0) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + 0);//
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel-1);
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + 0) = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
+      *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + 1) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + 0) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + 0);
       int iCell;
       for (iCell=1; iCell<right_Nel; iCell++){
-        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + iCell) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + (iCell-1))/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
-        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + (iCell+1)) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + (iCell)) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + iCell);
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + iCell) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + (iCell-1))/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;//
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + (iCell+1)) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords + (iCell)) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + iCell);//
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + iCell) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + (iCell-1))/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
+        *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + (iCell+1)) = *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords + (iCell)) + *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + iCell);
       }
     }
   }
@@ -284,14 +298,18 @@ void pumi_BL_elemsize_OFF_1D(pumi_mesh_t *pumi_mesh){
     int isubmesh;
   for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag = 0;
-      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize);
-      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords);
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag = 0;//
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize);//
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_coords);//
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize);
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords);
     }
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag = 0;
-      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize);
-      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords);
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag = 0;//
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize);//
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_coords);//
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize);
+      free(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_coords);
     }
   }
 }
@@ -312,33 +330,19 @@ double pumi_return_1D_gradingratio(pumi_mesh_t *pumi_mesh, int node){
     for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
 
       int submesh_left_node = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative;
-      int submesh_right_node = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;
+      int submesh_right_node = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
 
       if (node >= (submesh_left_node + 1) && node <= (submesh_right_node - 1)){
 
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
-          int submesh_left_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
-          int submesh_right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
-          if (node >= submesh_left_Nel+submesh_left_node && node <= submesh_right_node-submesh_right_Nel){
-            return 1.0;
-            break;
-          }
+          return 1.0;
         }
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-          int submesh_left_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
-          if (node >= submesh_left_node+1 && node <= submesh_left_node+submesh_left_Nel-1){
-            return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r;
-            break;
-          }
+          return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
         }
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-          int submesh_right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
-          if (node <= submesh_right_node-1 && node >= submesh_right_node-submesh_right_Nel+1){
-            return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
-            break;
-          }
+          return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
         }
-
 
       }
 
@@ -347,31 +351,31 @@ double pumi_return_1D_gradingratio(pumi_mesh_t *pumi_mesh, int node){
         double right_elem_size;
         // On LHS of the node
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->pumi_flag & rightBL){
-          left_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->rBL_t0;
+          left_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->t0;
         }
         else{
           if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->pumi_flag & uniform){
             left_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->uniform_t0;
           }
           else{
-            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->lBL_t0;
-            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->left_r;
-            double Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->left_Nel;
+            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->t0;
+            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->r;
+            double Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_Nel;
             left_elem_size = t0*pow(r,Nel-1);
           }
         }
         // On RHS of the node
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->pumi_flag & leftBL){
-          right_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->lBL_t0;
+          right_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
         }
         else{
           if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->pumi_flag & uniform){
-            right_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->uniform_t0;
+            right_elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
           }
           else{
-            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->rBL_t0;
-            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->right_r;
-            double Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->right_Nel;
+            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
+            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->r;
+            double Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->submesh_Nel;
             right_elem_size = t0*pow(r,Nel-1);
           }
         }
@@ -421,49 +425,35 @@ double pumi_return_1D_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
   int isubmesh;
   for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     int submesh_left_elem = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative;
-    int submesh_right_elem = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel-1;
+    int submesh_right_elem = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel-1;
 
     if (elem >= submesh_left_elem && elem <= submesh_right_elem){
 
       if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
-        int submesh_left_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
-        int submesh_right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
-        if (elem >= submesh_left_Nel+submesh_left_elem && elem <= submesh_right_elem-submesh_right_Nel){
           return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
-          break;
-        }
       }
       if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-        int submesh_left_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel;
-        if (elem >= submesh_left_elem && elem <= submesh_left_elem+submesh_left_Nel-1){
           int local_elem = elem - submesh_left_elem;
-          if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag){
-            return *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize + local_elem);
-            break;
+          if (pumi_mesh->BL_elem_coords_cache_flag){
+            return *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->BL_elemsize + local_elem);
           }
           else {
-            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->lBL_t0;
-            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->left_r;
+            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
+            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->r;
             return t0*pow(r,local_elem);
-            break;
           }
-        }
       }
       if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-        int submesh_right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
-        if (elem <= submesh_right_elem && elem >= submesh_right_elem-submesh_right_Nel+1){
+        int submesh_right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
           int local_elem = submesh_right_Nel-(submesh_right_elem-elem+1);
-          if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag){
+          if (pumi_mesh->BL_elem_coords_cache_flag){
             return *(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize + local_elem);
-            break;
           }
           else {
-            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->rBL_t0;
-            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->right_r;
+            double t0 = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
+            double r = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->r;
             return t0*pow(r,submesh_right_Nel-1-local_elem);
-            break;
           }
-        }
       }
 
     }
@@ -513,27 +503,27 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh){
   int isubmesh = 0;
 
   if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-    smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->lBL_t0;
+    smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
   }
   else{
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-      smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->rBL_t0;
+      smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
     }
     else{
-      smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
+      smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
     }
   }
   for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     double new_smallest_elemsize;
     if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-      new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->lBL_t0;
+      new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
     }
     else{
       if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-        new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->rBL_t0;
+        new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh))->t0;
       }
       else{
-        new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0;
+        new_smallest_elemsize = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
       }
     }
 
