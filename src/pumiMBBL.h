@@ -25,14 +25,11 @@ typedef struct pumi_submesh1D{
   double x_right; //!< coordinate of right end of submesh block
 
   int uniform_Nel; //!< number of elements in the uniform mesh segment block
-  double uniform_x_left; //!< (dependent variable) coordinate of left end of uniform mesh segment inside the submesh block
-  double uniform_x_right; //!< (dependent variable) coordinate of right end of uniform mesh segment inside the submesh block
   double uniform_t0; //!< (dependent variable) element sizes in uniform mesh segment inside the submesh block
 
   double left_T; //!< left Boundary Layer (BL) thickness
   double left_r; //!< growth ratio for left BL mesh
   int left_Nel; //!< number of elements in the left BL segment
-  double lBL_x_right; //!< (dependent variable) coordinate of right end of left BL segment inside the submesh block
   double lBL_t0; //!< (dependent variable) size of first (leftmost) element in the left BL segment inside the submesh block
   double log_left_r;//!< (dependent variable) log(left_r) -- value used in pumi_locatepoint_BL_1D algo
   double left_r_lBL_t0_ratio;//!< (dependent variable) (left_r-1)/lBL_t0 -- value used in pumi_locatepoint_1D algo
@@ -43,7 +40,6 @@ typedef struct pumi_submesh1D{
   double right_T; //!< right BL thickness
   double right_r; //!<  growth ratio for right BL segment
   int right_Nel; //!< number of elements in the right BL segment
-  double rBL_x_left; //!< (dependent variable) coordinate of left end of right graded mesh region inside the submesh block
   double rBL_t0; //!< (dependent variable) size of first (rightmost) element in the right BL segment inside the submesh block
   double log_right_r;//!< (dependent variable) log(right_r) -- value used in pumi_locatepoint_BL_1D algo
   double right_r_rBL_t0_ratio;//!< (dependent variable) (right_r-1)/rBL_t0 -- value used in pumi_locatepoint_1D algo
