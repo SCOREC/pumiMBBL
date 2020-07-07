@@ -24,6 +24,17 @@ typedef struct pumi_submesh1D{
   double x_left; //!< coordinate of left end of submesh block
   double x_right; //!< coordinate of right end of submesh block
 
+  double x_min;
+  double x_max;
+  double submesh_T;
+  int submesh_Nel;
+  double t0;
+  double r;
+  double log_r;
+  double r_t0_ratio;
+  double *BL_elemsize;
+  double *BL_coords;
+  
   int uniform_Nel; //!< number of elements in the uniform mesh segment block
   double uniform_t0; //!< (dependent variable) element sizes in uniform mesh segment inside the submesh block
 

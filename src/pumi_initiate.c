@@ -122,54 +122,71 @@ values based on inputs from command line of hpic code or based on values supplie
 */
 void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag, int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right){
   ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag = submeshflag;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left = xleft;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right = xright;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_length = xright-xleft;
-
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel = N_uniform;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_left = xleft;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min = xleft;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_right = xright;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_max = xright;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_length = xright-xleft;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T = xright-xleft;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_Nel = N_uniform;//
   if (submeshflag & uniform){
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0 = ((xright - T_right) - (xleft + T_left))/N_uniform; // (dependent variable)
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_uniform;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = (xright-xleft)/N_uniform;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = 1.0;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0 = ((xright - T_right) - (xleft + T_left))/N_uniform;// // (dependent variable)
   }
-  else{
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0 = 0.0; // (dependent variable)
-  }
+  else{//
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->uniform_t0 = 0.0;// // (dependent variable)
+  }  //
 
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_T = T_left;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r = r_left;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel = N_left;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_T = T_left;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r = r_left;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_Nel = N_left;//
   if (submeshflag & leftBL){
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = T_left*(r_left-1.0)/(pow(r_left,N_left)-1.0); // (dependent variable)
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_left;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = T_left*(r_left-1.0)/(pow(r_left,N_left)-1.0);
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = r_left;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_r = log(r_left);
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r_t0_ratio = (r_left-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = T_left*(r_left-1.0)/(pow(r_left,N_left)-1.0);// // (dependent variable)
   }
-  else{
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = 0.0; // (dependent variable)
-  }
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_left_r = log(r_left);
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r_lBL_t0_ratio = (r_left-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;
-  (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag) = 0;
+  else{//
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0 = 0.0; // // (dependent variable)
+  }//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_left_r = log(r_left);//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->left_r_lBL_t0_ratio = (r_left-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->lBL_t0;//
+  (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->leftBL_elemsize_calc_flag) = 0;//
 
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T = T_right;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r = r_right;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel = N_right;
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_T = T_right;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r = r_right;//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel = N_right;//
   if (submeshflag & rightBL){
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0 = T_right*(r_right-1)/(pow(r_right,N_right)-1);// (dependent variable)
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_right;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = T_right*(r_right-1)/(pow(r_right,N_right)-1.0);
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = r_right;
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_r = log(r_right);
+      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r_t0_ratio = (r_right-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0 = T_right*(r_right-1)/(pow(r_right,N_right)-1);// // (dependent variable)
   }
-  else{
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0 = 0.0;// (dependent variable)
-  }
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r = log(r_right);
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio = (r_right-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0;
-  (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag) = 0;
+  else{ //
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0 = 0.0; // // (dependent variable)
+  }//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_right_r = log(r_right);//
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r_rBL_t0_ratio = (r_right-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rBL_t0;//
+  (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->rightBL_elemsize_calc_flag) = 0;//
 
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel = N_uniform + N_left + N_right; // (dependent variable)
+  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel = N_uniform + N_left + N_right; // // (dependent variable)
   if (isubmesh==0){
     ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = 0;
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative = 0.0;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative = 0.0;//
   }
   else{
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Length_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_length;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_Nel;//
+    //((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_Nel;
+    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Length_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Length_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_total_length;//
   }
-  pumi_mesh->pumi_Nel_total += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;
+  pumi_mesh->pumi_Nel_total += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_total_Nel;//
+  //pumi_mesh->pumi_Nel_total += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
 }
 
 /*!
