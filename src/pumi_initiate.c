@@ -306,9 +306,8 @@ pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes){
 /*!
 * \brief Deallocates/Frees the memory allocated to members and object of struct pumi_initiate_input in pumi_initiate_allocate()
 * \param *pumi_inputs pointer object to struct pumi_initiate_input
-* \param nsubmeshes number of submesh blocks
 */
-void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
+void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs){
   free(pumi_inputs->Nel_max_FLAG);
   free(pumi_inputs->Nel_max);
   free(pumi_inputs->p1_i);
@@ -326,7 +325,7 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
   free(pumi_inputs->right_Nel);
   free(pumi_inputs->uniform_Nel);
   int i;
-  for (i=0; i<nsubmeshes; i++){
+  for (i=0; i<pumi_inputs->nsubmeshes; i++){
     free(pumi_inputs->type_flag[i]);
   }
   free(pumi_inputs->type_flag);

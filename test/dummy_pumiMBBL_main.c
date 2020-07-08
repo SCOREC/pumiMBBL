@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_cache_BL_elemsize_ON);
 
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
-    pumi_inputs_deallocate(pumi_inputs, pumi_inputs->nsubmeshes);
+    pumi_inputs_deallocate(pumi_inputs);
 
     int Nel_total = pumi_total_elements(pumi_mesh);
 
