@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
       printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
       printf("  E.g.\n\n");
-      printf("    ./install/bin/pumiMBBL_Demo 3 \"leftBL,uniform,rightBL\" \"20,60,20\" \"12,23,12\" \"5,0,5\"\n");
+      printf("    ./install/bin/pumiMBBL1D_Demo 3 \"leftBL,uniform,rightBL\" \"20,60,20\" \"12,23,12\" \"5,0,5\"\n");
       exit(0);
     }
 

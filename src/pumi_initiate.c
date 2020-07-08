@@ -99,7 +99,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           char flagstring[SUBMESH_FLAGSTRING_LENGTH];
           strcpy(flagstring, pumi_inputs->type_flag[isubmesh]);
           unsigned int submesh_flag = pumi_getsubmeshflag(flagstring);
-          pumi_setsubmesh_x(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
+          pumi_setsubmesh_x(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel_x + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
         }
         printf("PUMI mesh parameter info [X-Direction] :\n\n");
         printf("\tTotal elements along X-direction = %d\n\n", pumi_mesh->pumi_Nel_total_x);
