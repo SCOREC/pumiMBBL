@@ -115,8 +115,8 @@ void pumi_BL_elemsize_ON(pumi_mesh_t *pumi_mesh){
     pumi_BL_elemsize_ON_1D(pumi_mesh);
   }
   else {
-    printf("Multi dimension pumi mesh not implemented -- Terminating\n");
-    exit(0);
+    //printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+    //exit(0);
   }
 }
 
@@ -165,8 +165,8 @@ void pumi_BL_elemsize_OFF(pumi_mesh_t *pumi_mesh){
     pumi_BL_elemsize_OFF_1D(pumi_mesh);
   }
   else {
-    printf("Multi dimension pumi mesh not implemented -- Terminating\n");
-    exit(0);
+    //printf("Multi dimension pumi mesh not implemented -- Terminating\n");
+    //exit(0);
   }
 }
 
