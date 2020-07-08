@@ -27,7 +27,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     pumi_mesh->ndim = dimension;
     pumi_mesh->nsubmeshes = submesh_num;
     if (pumi_mesh->ndim == 1){
-      pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh1D_t));
+      pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh_t));
     }
     else{
       printf("Multi dimension pumi mesh not implemented -- Terminating\n");
@@ -46,7 +46,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     pumi_mesh->nsubmeshes = pumi_inputs->nsubmeshes;
     pumi_mesh->pumi_Nel_total = 0;
     if (pumi_mesh->ndim == 1){
-      pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh1D_t));
+      pumi_mesh->pumi_submeshes = (void*) malloc(pumi_mesh->nsubmeshes * sizeof(pumi_submesh_t));
     }
     else{
       printf("Multi dimension pumi mesh not implemented -- Terminating\n");
@@ -67,24 +67,24 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     printf("\tSUBMESH %d parameters:\n", isubmesh+1 );
 
     printf("\n\t submeshflag = ");
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
       printf("leftBL\n");
-      printf("\t left_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
-      printf("\t left_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
-      printf("\t left_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
-      printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
+      printf("\t left_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
+      printf("\t left_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
+      printf("\t left_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
+      printf("\t left_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
     }
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
       printf("uniform\n");
-      printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
-      printf("\t uniform_dx  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
+      printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
+      printf("\t uniform_dx  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
     }
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
       printf("rightBL\n");
-      printf("\t right_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
-      printf("\t right_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
-      printf("\t right_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
-      printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
+      printf("\t right_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
+      printf("\t right_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
+      printf("\t right_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
+      printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
     }
 
 }
@@ -121,39 +121,39 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 values based on inputs from command line of hpic code or based on values supplied by the user directly from terminal prompt
 */
 void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag, int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right){
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag = submeshflag;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min = xleft;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_max = xright;
-  ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T = xright-xleft;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag = submeshflag;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min = xleft;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_max = xright;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T = xright-xleft;
   if (submeshflag & uniform){
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_uniform;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = (xright-xleft)/N_uniform;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = 1.0;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_uniform;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = (xright-xleft)/N_uniform;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = 1.0;
   }
 
   if (submeshflag & leftBL){
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_left;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = T_left*(r_left-1.0)/(pow(r_left,N_left)-1.0);
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = r_left;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_r = log(r_left);
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r_t0_ratio = (r_left-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_left;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = T_left*(r_left-1.0)/(pow(r_left,N_left)-1.0);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = r_left;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_r = log(r_left);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r_t0_ratio = (r_left-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
   }
 
   if (submeshflag & rightBL){
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_right;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = T_right*(r_right-1)/(pow(r_right,N_right)-1.0);
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = r_right;
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_r = log(r_right);
-      ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r_t0_ratio = (r_right-1.0)/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel = N_right;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 = T_right*(r_right-1)/(pow(r_right,N_right)-1.0);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r = r_right;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->log_r = log(r_right);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r_t0_ratio = (r_right-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
   }
 
   if (isubmesh==0){
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = 0;
+    ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = 0;
   }
   else{
-    ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_Nel;
+    ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + (isubmesh-1))->submesh_Nel;
   }
-  pumi_mesh->pumi_Nel_total += ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
+  pumi_mesh->pumi_Nel_total += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel;
 }
 
 /*!
@@ -402,30 +402,30 @@ void pumi_verify_params(pumi_mesh_t *pumi_mesh){
   for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("\tSUBMESH %d:\n", isubmesh+1 );
 
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel > 0)){
-        printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel > 0)){
+        printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
         flag++;
       }
       else{
         printf("\t\t left_Nel    -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r > 1.0)){
-        printf("\t\t left_r = %2.4e is not a valid input. It has to be greater than 1.0 for a graded BL mesh.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r > 1.0)){
+        printf("\t\t left_r = %2.4e is not a valid input. It has to be greater than 1.0 for a graded BL mesh.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
         flag++;
       }
       else{
         printf("\t\t left_r      -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T > 0.0)){
-        printf("\t\t left_T = %2.4e is not a valid input. It has to be positive real number.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T > 0.0)){
+        printf("\t\t left_T = %2.4e is not a valid input. It has to be positive real number.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
         flag++;
       }
       else{
         printf("\t\t left_T      -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 > 0.0)){
-        printf("\t\t left_t0 = %2.4e is not a valid calculated parameter. It has to be positive real number.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 > 0.0)){
+        printf("\t\t left_t0 = %2.4e is not a valid calculated parameter. It has to be positive real number.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
         flag++;
       }
       else{
@@ -433,16 +433,16 @@ void pumi_verify_params(pumi_mesh_t *pumi_mesh){
       }
     }
 
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel > 0)){
-        printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel > 0)){
+        printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
         flag++;
       }
       else{
         printf("\t\t uniform_Nel -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 > 0.0)){
-        printf("\t\t uniform_dx = %2.4e is not a valid calculated parameter. It has to be positive real number.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 > 0.0)){
+        printf("\t\t uniform_dx = %2.4e is not a valid calculated parameter. It has to be positive real number.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
         flag++;
       }
       else{
@@ -450,30 +450,30 @@ void pumi_verify_params(pumi_mesh_t *pumi_mesh){
       }
     }
 
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel > 0)){
-        printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel > 0)){
+        printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel);
         flag++;
       }
       else{
         printf("\t\t right_Nel   -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r > 1.0)){
-        printf("\t\t right_r = %2.4e is not a valid input. It has to be greater than 1.0 for a graded BL mesh.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r > 1.0)){
+        printf("\t\t right_r = %2.4e is not a valid input. It has to be greater than 1.0 for a graded BL mesh.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r);
         flag++;
       }
       else{
         printf("\t\t right_r     -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T > 0.0)){
-        printf("\t\t right_T = %2.4e is not a valid input. It has to be positive real number.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T > 0.0)){
+        printf("\t\t right_T = %2.4e is not a valid input. It has to be positive real number.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_T);
         flag++;
       }
       else{
         printf("\t\t right_T     -- verified...\n");
       }
-      if (!(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 > 0.0)){
-        printf("\t\t right_t0 = %2.4e is not a valid calculated parameter. It has to be positive real number.\n", ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
+      if (!(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0 > 0.0)){
+        printf("\t\t right_t0 = %2.4e is not a valid calculated parameter. It has to be positive real number.\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0);
         flag++;
       }
       else{
@@ -503,42 +503,42 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
   for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes; isubmesh++){
     printf("SUBMESH %d:\n", isubmesh+1 );
 
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & leftBL){
       FILE *lBL_fptr;
       char lBL_coord_file[30];
       sprintf(lBL_coord_file,"submesh%d_coord_leftBL.txt",isubmesh+1);
       lBL_fptr = fopen(lBL_coord_file,"w");
       printf("\tLeft BL segment:\n");
-      inode = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative+1;
-      coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
-      elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+      inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative+1;
+      coord = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
+      elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
       printf("\t\tNode %6d: %2.8e\n", inode, coord );
       fprintf(lBL_fptr, "%.16e\n", coord );
       int i;
-      for (i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel; i++ ){
+      for (i=0; i<((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel; i++ ){
         inode++;
         coord += elem_size;
         printf("\t\tNode %6d: %2.8e\n", inode, coord );
         fprintf(lBL_fptr, "%.16e\n", coord );
-        elem_size = elem_size*((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
+        elem_size = elem_size*((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
       }
       printf("\tLeftBL coordinates written to the file \"%s\"\n\n",lBL_coord_file );
       fclose(lBL_fptr);
     }
 
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & uniform){
       FILE *uni_fptr;
       char uni_coord_file[30];
       sprintf(uni_coord_file,"submesh%d_coord_uniform.txt",isubmesh+1);
       uni_fptr = fopen(uni_coord_file,"w");
       printf("\tUniform segment:\n");
-      inode = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative+1;
-      coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
-      double dx_uniform = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
+      inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative+1;
+      coord = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
+      double dx_uniform = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0;
       printf("\t\tNode %6d: %2.8e\n", inode, coord );
       fprintf(uni_fptr, "%.16e\n", coord );
       int i;
-      for (i=0; i<((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel; i++ ){
+      for (i=0; i<((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel; i++ ){
         inode++;
         coord += dx_uniform;
         printf("\t\tNode %6d: %2.8e\n", inode, coord );
@@ -548,24 +548,24 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
       fclose(uni_fptr);
     }
 
-    if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
       FILE *rBL_fptr;
       char rBL_coord_file[30];
       sprintf(rBL_coord_file,"submesh%d_coord_rightBL.txt",isubmesh+1);
       rBL_fptr = fopen(rBL_coord_file,"w");
       printf("\tRight BL segment:\n");
-      inode = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative+1;
-      coord = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
-      elem_size = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0*pow(((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r,((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel-1);
+      inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->Nel_cumulative+1;
+      coord = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->x_min;
+      elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->t0*pow(((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r,((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel-1);
       printf("\t\tNode %6d: %2.8e\n", inode, coord );
       fprintf(rBL_fptr, "%.16e\n", coord );
       int i;
-      for (i=((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel-1; i>=0; i-- ){
+      for (i=((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->submesh_Nel-1; i>=0; i-- ){
         inode++;
         coord += elem_size;
         printf("\t\tNode %6d: %2.8e\n", inode, coord );
         fprintf(rBL_fptr, "%.16e\n", coord );
-        elem_size = elem_size/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
+        elem_size = elem_size/((pumi_submesh_t*) pumi_mesh->pumi_submeshes + isubmesh)->r;
       }
       printf("\tRightBL coordinates written to the file \"%s\"\n\n",rBL_coord_file );
       fclose(rBL_fptr);

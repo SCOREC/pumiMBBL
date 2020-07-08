@@ -20,7 +20,7 @@ typedef enum pumi_meshflag{
 /*!
 * \brief Contains the parameters used to define a submesh
 */
-typedef struct pumi_submesh1D{
+typedef struct pumi_submesh{
   double x_min; //!< coordinate of min end of submesh block
   double x_max; //!< coordinate of max end of submesh block
 
@@ -36,7 +36,7 @@ typedef struct pumi_submesh1D{
   int Nel_cumulative; //!< (dependent variable) total number of elements in the previous submeshes
 
   pumi_meshflag_t pumi_flag; //!< flag for types of mesh segments(i.e. uniform mesh segment, right BL segment or left BL segment) available in the submesh block
-} pumi_submesh1D_t;
+} pumi_submesh_t;
 
 /*!
 * \brief Contains parameters that defines the mesh
