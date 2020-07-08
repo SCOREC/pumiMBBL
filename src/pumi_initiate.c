@@ -279,13 +279,11 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
 //void pumi_inputs_allocate(pumi_initiate_input_t *pumi_inputs, int nsubmeshes){
 pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes){
   pumi_initiate_input_t* pumi_inputs = (pumi_initiate_input_t*) malloc(sizeof(pumi_initiate_input_t));
-  pumi_inputs->Nel_max_FLAG = malloc(nsubmeshes*sizeof(int));
-  pumi_inputs->Nel_max = malloc(nsubmeshes*sizeof(int));
+  // 1D allocs
   pumi_inputs->p1_i = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->Nel_i = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->p2max_i = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->p2min_i = malloc(nsubmeshes*sizeof(double));
-  pumi_inputs->alpha = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_left = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->x_right = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->type_flag = (char**) malloc(nsubmeshes*sizeof(char*));
@@ -300,6 +298,25 @@ pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes){
   pumi_inputs->right_r = malloc(nsubmeshes*sizeof(double));
   pumi_inputs->right_Nel = malloc(nsubmeshes*sizeof(int));
   pumi_inputs->uniform_Nel = malloc(nsubmeshes*sizeof(int));
+  // 2D allocs
+  pumi_inputs->p1_i_x = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->p1_i_y = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->Nel_i_x = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->Nel_i_y = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->p2max_i_x = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->p2max_i_y = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->p2min_i_x = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->p2min_i_y = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->y_bottom = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->y_top = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->uniform_Nel_x = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->uniform_Nel_y = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->bottom_T = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->bottom_r = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->bottom_Nel = malloc(nsubmeshes*sizeof(int));
+  pumi_inputs->top_T = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->top_r = malloc(nsubmeshes*sizeof(double));
+  pumi_inputs->top_Nel = malloc(nsubmeshes*sizeof(int));
   return pumi_inputs;
 }
 
@@ -308,13 +325,11 @@ pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes){
 * \param *pumi_inputs pointer object to struct pumi_initiate_input
 */
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs){
-  free(pumi_inputs->Nel_max_FLAG);
-  free(pumi_inputs->Nel_max);
+  //1D params
   free(pumi_inputs->p1_i);
   free(pumi_inputs->Nel_i);
   free(pumi_inputs->p2max_i);
   free(pumi_inputs->p2min_i);
-  free(pumi_inputs->alpha);
   free(pumi_inputs->x_left);
   free(pumi_inputs->x_right);
   free(pumi_inputs->left_T);
@@ -324,6 +339,26 @@ void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs){
   free(pumi_inputs->right_r);
   free(pumi_inputs->right_Nel);
   free(pumi_inputs->uniform_Nel);
+  //2D params
+  free(pumi_inputs->p1_i_x);
+  free(pumi_inputs->p1_i_y);
+  free(pumi_inputs->Nel_i_x);
+  free(pumi_inputs->Nel_i_y);
+  free(pumi_inputs->p2max_i_x);
+  free(pumi_inputs->p2max_i_y);
+  free(pumi_inputs->p2min_i_x);
+  free(pumi_inputs->p2min_i_y);
+  free(pumi_inputs->y_bottom);
+  free(pumi_inputs->y_top);
+  free(pumi_inputs->bottom_T);
+  free(pumi_inputs->bottom_r);
+  free(pumi_inputs->bottom_Nel);
+  free(pumi_inputs->top_T);
+  free(pumi_inputs->top_r);
+  free(pumi_inputs->top_Nel);
+  free(pumi_inputs->uniform_Nel_x);
+  free(pumi_inputs->uniform_Nel_y);
+  // common params
   int i;
   for (i=0; i<pumi_inputs->nsubmeshes; i++){
     free(pumi_inputs->type_flag[i]);
