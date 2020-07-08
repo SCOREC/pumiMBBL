@@ -14,7 +14,9 @@ typedef enum pumi_meshflag{
   unassigned = 0x00, //!< Default flag for each submesh block
   uniform = 0x01, //!< Inidicates the presence of uniform mesh segment in a submesh block
   leftBL = 0x02, //!< Inidicates the presence of left Boundary Layer (BL) segment in a submesh block
+  bottomBL = 0x02, //!< Inidicates the presence of bottom Boundary Layer (BL) segment in a submesh block
   rightBL = 0x04, //!< Inidicates the presence of rigth BL segment in a submesh block
+  topBL = 0x04, //!< Inidicates the presence of top BL segment in a submesh block
 } pumi_meshflag_t;
 
 /*!

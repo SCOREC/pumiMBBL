@@ -5,7 +5,8 @@
 
 #define SUBMESH_FLAGSTRING_LENGTH 23 //!< Maximum length of the mesh flag string input for each submesh block (corresponds to "uniform&leftBL&rightBL")
 #define SUBMESH_MAX_SEGMENTS 3 //!< Maximum number of segments allowed in submesh block
-#define SEGMENT_STRING_LENGTH 8 //!< Maximum length of string that defines the mesh type in a segment of a submesh block
+#define SUBMESH_MAXTYPES 5 //!< Number of types of meshes available
+#define SEGMENT_STRING_LENGTH 9 //!< Maximum length of string that defines the mesh type in a segment of a submesh block
 #define MAX_SUBMESHES 100 //!< Maximum number of submeshes allowed in MSBL
 #define DEFAULT_PARAM_VAL 0.0 //!< Default values assigned to submesh parameters
 
@@ -76,13 +77,17 @@ pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes);
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs);
 void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, double ***submesh_params, unsigned int **submesh_flag);
 void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag);
-void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xleft, double xright, unsigned int submeshflag,
-  int N_uniform, double T_left, double r_left, int N_left, double T_right, double r_right, int N_right);
+void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
+    int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
 double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel);
 //double pumi_compute_grading_ratio(int p1_lr, int p2, int BL_Nel);
 void pumi_verify_params(pumi_mesh_t *pumi_mesh);
+void pumi_verify_params_1D(pumi_mesh_t *pumi_mesh);
+void pumi_verify_params_2D(pumi_mesh_t *pumi_mesh);
 void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh);
+void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh);
+void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh);
 
 #endif /* pumi_initiate_h */
