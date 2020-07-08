@@ -35,7 +35,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     }
     int isubmesh;
     for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x; isubmesh++){
-      pumi_setsubmesh(pumi_mesh, isubmesh, submesh_params[isubmesh][0], submesh_params[isubmesh][1], submesh_flag[isubmesh], (int) submesh_params[isubmesh][2], submesh_params[isubmesh][3], submesh_params[isubmesh][4], (int) submesh_params[isubmesh][5], submesh_params[isubmesh][6], submesh_params[isubmesh][7], (int) submesh_params[isubmesh][8]);
+      pumi_setsubmesh_x(pumi_mesh, isubmesh, submesh_params[isubmesh][0], submesh_params[isubmesh][1], submesh_flag[isubmesh], (int) submesh_params[isubmesh][2], submesh_params[isubmesh][3], submesh_params[isubmesh][4], (int) submesh_params[isubmesh][5], submesh_params[isubmesh][6], submesh_params[isubmesh][7], (int) submesh_params[isubmesh][8]);
     }
     pumi_freemeshparameters_from_terminal(pumi_mesh->nsubmeshes_x, submesh_params, submesh_flag);
 
@@ -53,7 +53,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         char flagstring[SUBMESH_FLAGSTRING_LENGTH];
         strcpy(flagstring, pumi_inputs->type_flag[isubmesh]);
         unsigned int submesh_flag = pumi_getsubmeshflag(flagstring);
-        pumi_setsubmesh(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
+        pumi_setsubmesh_x(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
       }
       printf("PUMI mesh parameter info :\n\n");
       printf("\tTotal elements in mesh = %d\n\n", pumi_mesh->pumi_Nel_total_x);
@@ -107,23 +107,23 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 }
 
 /*!
-* \brief Assigns the values to members of struct pumi_submesh1D based on user inputs
+* \brief Assigns the values to x-members of struct pumi_submesh based on user inputs
 * \param[out] *pumi_mesh pointer object of struct pumi_mesh whose members are assigned their corresponding values in this routine
 * \param[in] isubmesh The index number of the submesh whose members (i.e submesh parameters) are being assigned their values
-* \param[in] xleft Left end coordinate of the submesh block
-* \param[in] xright Right end coordinate of the submesh block
+* \param[in] xmin Left end coordinate of the submesh block
+* \param[in] xmax Right end coordinate of the submesh block
 * \param[in] submeshflag Mesh type flag of submesh block converted into a unsigned int using pumi_getsubmeshflag
 * \param[in] N_uniform Number of elements in the uniform mesh segment of the submesh block
-* \param[in] T_left Thickness of the left BL segment of the submesh block
-* \param[in] r_left Growth ratio of elements in the left BL segment of the submesh block
-* \param[in] N_left Number of elements in the left BL segment of the submesh block
-* \param[in] T_right Thickness of the right BL segment of the submesh block
-* \param[in] r_right Growth ratio of elements in the right BL segment of the submesh block
-* \param[in] N_right Number of elements in the right BL segment of the submesh block
+* \param[in] T_minBL Thickness of the left BL segment of the submesh block
+* \param[in] r_minBL Growth ratio of elements in the left BL segment of the submesh block
+* \param[in] N_minBL Number of elements in the left BL segment of the submesh block
+* \param[in] T_maxBL Thickness of the right BL segment of the submesh block
+* \param[in] r_maxBL Growth ratio of elements in the right BL segment of the submesh block
+* \param[in] N_maxBL Number of elements in the right BL segment of the submesh block
 * \details The submesh parameters (used to define the submesh along with the dependent submesh paramaters) defined in the struct pumi_submesh1D are assigned their corresponding
 values based on inputs from command line of hpic code or based on values supplied by the user directly from terminal prompt
 */
-void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag, int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL){
+void pumi_setsubmesh_x(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag, int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL){
   ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->pumi_flag = submeshflag;
   ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->x_min = xmin;
   ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->x_max = xmax;
@@ -134,7 +134,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double x
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->r = 1.0;
   }
 
-  if (submeshflag & leftBL || submeshflag & bottomBL){
+  if (submeshflag & leftBL){
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->submesh_Nel = N_minBL;
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->t0 = T_minBL*(r_minBL-1.0)/(pow(r_minBL,N_minBL)-1.0);
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->r = r_minBL;
@@ -142,7 +142,7 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double x
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->r_t0_ratio = (r_minBL-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->t0;
   }
 
-  if (submeshflag & rightBL || submeshflag & topBL){
+  if (submeshflag & rightBL){
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->submesh_Nel = N_maxBL;
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->t0 = T_maxBL*(r_maxBL-1)/(pow(r_maxBL,N_maxBL)-1.0);
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->r = r_maxBL;
@@ -157,6 +157,59 @@ void pumi_setsubmesh(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double x
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + (isubmesh-1))->submesh_Nel;
   }
   pumi_mesh->pumi_Nel_total_x += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->submesh_Nel;
+}
+
+/*!
+* \brief Assigns the values to y-members of struct pumi_submesh based on user inputs
+* \param[out] *pumi_mesh pointer object of struct pumi_mesh whose members are assigned their corresponding values in this routine
+* \param[in] isubmesh The index number of the submesh whose members (i.e submesh parameters) are being assigned their values
+* \param[in] xmin Left end coordinate of the submesh block
+* \param[in] xmax Right end coordinate of the submesh block
+* \param[in] submeshflag Mesh type flag of submesh block converted into a unsigned int using pumi_getsubmeshflag
+* \param[in] N_uniform Number of elements in the uniform mesh segment of the submesh block
+* \param[in] T_minBL Thickness of the left BL segment of the submesh block
+* \param[in] r_minBL Growth ratio of elements in the left BL segment of the submesh block
+* \param[in] N_minBL Number of elements in the left BL segment of the submesh block
+* \param[in] T_maxBL Thickness of the right BL segment of the submesh block
+* \param[in] r_maxBL Growth ratio of elements in the right BL segment of the submesh block
+* \param[in] N_maxBL Number of elements in the right BL segment of the submesh block
+* \details The submesh parameters (used to define the submesh along with the dependent submesh paramaters) defined in the struct pumi_submesh1D are assigned their corresponding
+values based on inputs from command line of hpic code or based on values supplied by the user directly from terminal prompt
+*/
+void pumi_setsubmesh_y(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag, int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL){
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->pumi_flag = submeshflag;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->x_min = xmin;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->x_max = xmax;
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->submesh_T = xmax-xmin;
+  if (submeshflag & uniform){
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->submesh_Nel = N_uniform;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->t0 = (xmax-xmin)/N_uniform;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->r = 1.0;
+  }
+
+  if (submeshflag & bottomBL){
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->submesh_Nel = N_minBL;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->t0 = T_minBL*(r_minBL-1.0)/(pow(r_minBL,N_minBL)-1.0);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->r = r_minBL;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->log_r = log(r_minBL);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->r_t0_ratio = (r_minBL-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->t0;
+  }
+
+  if (submeshflag & topBL){
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->submesh_Nel = N_maxBL;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->t0 = T_maxBL*(r_maxBL-1)/(pow(r_maxBL,N_maxBL)-1.0);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->r = r_maxBL;
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->log_r = log(r_maxBL);
+      ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->r_t0_ratio = (r_maxBL-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->t0;
+  }
+
+  if (isubmesh==0){
+    ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->Nel_cumulative = 0;
+  }
+  else{
+    ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_y + (isubmesh-1))->submesh_Nel;
+  }
+  pumi_mesh->pumi_Nel_total_y += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->submesh_Nel;
 }
 
 /*!
@@ -236,7 +289,7 @@ unsigned int number (i.e a bit flag based on enum pumi_meshflag) corresponding t
 */
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
   char newflagstring[SUBMESH_MAX_SEGMENTS][SEGMENT_STRING_LENGTH];
-  char flagtypes[SUBMESH_MAX_SEGMENTS][SEGMENT_STRING_LENGTH] = {"uniform","leftBL","rightBL"};
+  char flagtypes[SUBMESH_MAXTYPES][SEGMENT_STRING_LENGTH] = {"uniform","leftBL","rightBL","bottomBL","topBL"};
 
   char *tok = strtok(flagstring, "&");
   int numstring=0;
@@ -249,7 +302,7 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
   unsigned int intflag = unassigned;
   int i;
   for (i=0; i<numstring; i++){
-    int l1 = strcmp(newflagstring[i],flagtypes[0]);
+/*    int l1 = strcmp(newflagstring[i],flagtypes[0]);
     int l2 = strcmp(newflagstring[i],flagtypes[1]);
     int l3 = strcmp(newflagstring[i],flagtypes[2]);
     int l123 = l1*l2*l3;
@@ -258,18 +311,18 @@ unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]){
       printf("\tList of valid input(s):\n\tuniform\n\tleftBL\n\trightBL\n\tleftBL&uniform\n\trightBL&uniform\n\tleftBL&rightBL\n\tuniform&leftBL&rightBL\n\n");
       printf("\tAssigning \"leftBL&uniform&rightBL\" (default input) to submesh flag...\n\n");
       intflag = uniform+leftBL+rightBL;
-    }
-    else{
+  }*/
+    //else{
       if (strcmp(newflagstring[i],flagtypes[0])==0){
         intflag =  intflag + uniform;
       }
-      if (strcmp(newflagstring[i],flagtypes[1])==0){
+      if (strcmp(newflagstring[i],flagtypes[1])==0 || strcmp(newflagstring[i],flagtypes[3])==0){
         intflag = intflag + leftBL;
       }
-      if (strcmp(newflagstring[i],flagtypes[2])==0){
+      if (strcmp(newflagstring[i],flagtypes[2])==0 || strcmp(newflagstring[i],flagtypes[4])==0){
         intflag = intflag + rightBL;
       }
-    }
+    //}
   }
     return intflag;
 }
