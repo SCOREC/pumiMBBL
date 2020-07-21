@@ -23,8 +23,8 @@ typedef enum pumi_meshflag{
 * \brief Contains the parameters used to define a submesh
 */
 typedef struct pumi_submesh{
-  double x_min; //!< coordinate of min end of submesh block
-  double x_max; //!< coordinate of max end of submesh block
+  double coord_min; //!< coordinate of min end of submesh block
+  double coord_max; //!< coordinate of max end of submesh block
 
   double submesh_T; //!< thickness of the submesh block
   int submesh_Nel; //!< number of elements in the submesh block
@@ -44,13 +44,13 @@ typedef struct pumi_submesh{
 * \brief Contains parameters that defines the mesh
 */
 typedef struct pumi_mesh{
-  int nsubmeshes_x; //!< number of submesh blocks in the domain in x-drection
-  int nsubmeshes_y; //!< number of submesh blocks in the domain in y-drection
+  int nsubmeshes_x1; //!< number of submesh blocks in the domain in x-drection
+  int nsubmeshes_x2; //!< number of submesh blocks in the domain in y-drection
   int ndim; //!< number of physical dimensions of the problem space
-  void *pumi_submeshes_x; //!< pointer object to access members of the struct pumi_submesh (in x-direction)
-  void *pumi_submeshes_y; //!< pointer object to access members of the struct pumi_submesh (in y-direction)
-  int pumi_Nel_total_x; //!< total number of elements in the mesh (along x-directiom)
-  int pumi_Nel_total_y; //!< total number of elements in the mesh (along y-directiom)
+  void *pumi_submeshes_x1; //!< pointer object to access members of the struct pumi_submesh (in x-direction)
+  void *pumi_submeshes_x2; //!< pointer object to access members of the struct pumi_submesh (in y-direction)
+  int pumi_Nel_total_x1; //!< total number of elements in the mesh (along x-directiom)
+  int pumi_Nel_total_x2; //!< total number of elements in the mesh (along y-directiom)
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
 } pumi_mesh_t;
 

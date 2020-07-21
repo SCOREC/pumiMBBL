@@ -50,20 +50,20 @@ typedef struct pumi_initiate_input{
   double *right_r; //!<  pointer to array of growth ratios in the right BL segment for each block
   int *right_Nel; //!< pointer to array of number of elements in the right BL segment for each block
   // 2D params
-  int nsubmeshes_x; //!< number of submesh blocks in the domain
-  int nsubmeshes_y; //!< number of submesh blocks in the domain
-  int *p1_i_x;//! Number of debye lenghts in a submesh
-  int *p1_i_y;//! Number of debye lenghts in a submesh
-  int *Nel_i_x;//!< Number of cells in a submesh block
-  int *Nel_i_y;//!< Number of cells in a submesh block
-  double *p2max_i_x;//!< Number of maximum size cells in a Debye Length
-  double *p2max_i_y;//!< Number of maximum size cells in a Debye Length
-  double *p2min_i_x;//!< Number of minimum size cells in a Debye Length
-  double *p2min_i_y;//!< Number of minimum size cells in a Debye Length
+  int nsubmeshes_x1; //!< number of submesh blocks in the domain
+  int nsubmeshes_x2; //!< number of submesh blocks in the domain
+  int *p1_i_x1;//! Number of debye lenghts in a submesh
+  int *p1_i_x2;//! Number of debye lenghts in a submesh
+  int *Nel_i_x1;//!< Number of cells in a submesh block
+  int *Nel_i_x2;//!< Number of cells in a submesh block
+  double *p2max_i_x1;//!< Number of maximum size cells in a Debye Length
+  double *p2max_i_x2;//!< Number of maximum size cells in a Debye Length
+  double *p2min_i_x1;//!< Number of minimum size cells in a Debye Length
+  double *p2min_i_x2;//!< Number of minimum size cells in a Debye Length
   double *y_bottom; //!< pointer to array of left end coordinates of each submesh block
   double *y_top; //!< pointer to array of right end coordinates of each submesh block
-  int *uniform_Nel_x; //!< pointer to array of number of elements in the uniform mesh segment for each submesh block
-  int *uniform_Nel_y; //!< pointer to array of number of elements in the uniform mesh segment for each submesh block
+  int *uniform_Nel_x1; //!< pointer to array of number of elements in the uniform mesh segment for each submesh block
+  int *uniform_Nel_x2; //!< pointer to array of number of elements in the uniform mesh segment for each submesh block
   double *bottom_T; //!< pointer to array of left BL segment thickness for each submesh block
   double *bottom_r; //!< pointer to array of growth ratios in the left BL segment for each block
   int *bottom_Nel; //!< pointer to array of number of elements in the left BL segment for each block
@@ -77,9 +77,9 @@ pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes);
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs);
 void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, double ***submesh_params, unsigned int **submesh_flag);
 void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag);
-void pumi_setsubmesh_x(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
+void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
     int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL);
-void pumi_setsubmesh_y(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
+void pumi_setsubmesh_x2(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
     int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);

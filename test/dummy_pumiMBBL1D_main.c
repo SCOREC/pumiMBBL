@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         int right_Nel = 0;
 
         double uniform_L = 0.0;
-        double uniform_dx1 = 0.0;
+        double uniform_dx11 = 0.0;
         int uniform_Nel = 0;
 
         if (typeflag & leftBL){// set values if leftBL flag is active
@@ -195,27 +195,27 @@ int main(int argc, char *argv[])
 
     srand48(time(NULL));
     int iparticle=0;
-    for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x; isubmesh++){
-        double submesh_xleft = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->x_min;
-        double submesh_xright = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->x_max;
-        double submesh_L = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->submesh_T;
+    for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+        double submesh_x1left = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min;
+        double submesh_x1right = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_max;
+        double submesh_L = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_T;
         double deblenth = submesh_L/lambda_D;
         int submesh_debyelengths = (int) deblenth;
         int numparticle_submesh = num_particles_per_debyelength*submesh_debyelengths;
         int j;
         for(j=0; j<numparticle_submesh;j++){
-            coordinates[iparticle] = submesh_xleft + submesh_L*drand48();
+            coordinates[iparticle] = submesh_x1left + submesh_L*drand48();
             //particle_isactive[iparticle] = isubmesh+1;
             //particle_isactive[iparticle] = pumi_locate_submesh_1D(pumi_mesh, coordinates[iparticle]);
             iparticle++;
         }
     }
 
-    /*for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x; isubmesh++){
+    /*for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
         int submesh_total_Nel, icell;
         double left_node, right_node, elem_size, err;
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->pumi_flag & leftBL){
-            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->left_Nel;
+        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & leftBL){
+            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->left_Nel;
             for(icell=0; icell<submesh_total_Nel; icell++){
                 pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
                 elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
@@ -224,8 +224,8 @@ int main(int argc, char *argv[])
             }
             printf("\n\n");
         }
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->pumi_flag & uniform){
-            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->uniform_Nel;
+        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & uniform){
+            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->uniform_Nel;
             for(icell=0; icell<submesh_total_Nel; icell++){
                 pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
                 elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
@@ -234,8 +234,8 @@ int main(int argc, char *argv[])
             }
             printf("\n\n");
         }
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->pumi_flag & rightBL){
-            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x + isubmesh)->right_Nel;
+        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & rightBL){
+            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->right_Nel;
             for(icell=0; icell<submesh_total_Nel; icell++){
                 pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
                 elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
