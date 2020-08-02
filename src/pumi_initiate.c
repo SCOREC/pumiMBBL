@@ -94,11 +94,22 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         pumi_mesh->pumi_submeshes_x1 = (void*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_submesh_t));
         pumi_mesh->pumi_submeshes_x2 = (void*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_submesh_t));
 
+        pumi_mesh->isactive = (bool**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(bool *));
+        pumi_mesh->nodeoffset_start = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+        pumi_mesh->nodeoffset_skip = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+        pumi_mesh->elemoffset_start = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+        pumi_mesh->elemoffset_skip = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+
         int isubmesh;
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
           char flagstring[SUBMESH_FLAGSTRING_LENGTH];
           strcpy(flagstring, pumi_inputs->type_flag[isubmesh]);
           unsigned int submesh_flag = pumi_getsubmeshflag(flagstring);
+          pumi_mesh->isactive[isubmesh] = (bool*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(bool));
+          pumi_mesh->nodeoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+          pumi_mesh->nodeoffset_skip[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+          pumi_mesh->elemoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+          pumi_mesh->elemoffset_skip[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
           pumi_setsubmesh_x1(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel_x1 + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
         }
         printf("PUMI mesh parameter info [X1-Direction] :\n\n");
@@ -164,8 +175,35 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             printf("\t top_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
           }
         }
-      //printf("Multi dimension pumi mesh not implemented -- Terminating\n");
-      //exit(0);
+
+        for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++ ){
+            for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
+                pumi_mesh->isactive[isubmesh][jsubmesh] = pumi_inputs->isactive[isubmesh][jsubmesh];
+            }
+        }
+        printf("PUMI submesh activity info :\n\n");
+        for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
+            if (jsubmesh != pumi_mesh->nsubmeshes_x2-1){
+                for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1-1; isubmesh++ ){
+                    printf("_____________");
+                }
+                printf("__________________\n\n");
+            }
+            for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
+                if (isubmesh){
+                    printf("|");
+                }
+                if(pumi_mesh->isactive[isubmesh][jsubmesh]){
+                    printf("    ACTIVE    ");
+                }
+                else{
+                    printf("   INACTIVE   ");
+                }
+            }
+            printf("\n");
+        }
+        printf("\n\n");
+
     }
 
   }

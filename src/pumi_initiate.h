@@ -52,6 +52,7 @@ typedef struct pumi_initiate_input{
   // 2D params
   int nsubmeshes_x1; //!< number of submesh blocks in the domain
   int nsubmeshes_x2; //!< number of submesh blocks in the domain
+  bool isactive[MAX_SUBMESHES][MAX_SUBMESHES];
   int *p1_i_x1;//! Number of debye lenghts in a submesh
   int *p1_i_x2;//! Number of debye lenghts in a submesh
   int *Nel_i_x1;//!< Number of cells in a submesh block

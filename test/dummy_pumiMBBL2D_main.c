@@ -11,9 +11,9 @@ int main(int argc, char *argv[])
     pumi_initiate_input_t    *pumi_inputs;
 
     ///*
-    if (argc != 11){
+    if (argc != 12){
       printf("Execute the code with the following command line arguments -- \n\n" );
-      printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 \"typeflag_i_x1\" \"p1_i_x1\" \"Nel_i_x1\" \"p2min_i_x1\" N_x2 \"typeflag_i_x2\" \"p1_i_x2\" \"Nel_i_x2\" \"p2min_i_x2\"\n\n\n");
+      printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 \"typeflag_i_x1\" \"p1_i_x1\" \"Nel_i_x1\" \"p2min_i_x1\" N_x2 \"typeflag_i_x2\" \"p1_i_x2\" \"Nel_i_x2\" \"p2min_i_x2\" \"block_isactive\"\n\n\n");
       printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
       printf("\t \"typeflag_i_x1\" \t Active mesh type segment in i-th submesh along the x1-direction \n" );
       printf("\t \"p1_i_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
@@ -26,11 +26,13 @@ int main(int argc, char *argv[])
       printf("\t \"Nel_i_x2\" \t\t Number of elements in i-th submesh along the x2-direction \n");
       printf("\t \"p2min_i_x2\"  \t\t For bottomBL/topBL, Number of minimum size cells in a Debye Length for i-th submesh along the x2-direction \n");
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
+      printf("\t block_isactive \t Activity info of each submesh-block (N_x1*N_x2 inputs required)\n" );
+      printf("\t \t  \t\t 0 is inactive \n\n");
       printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
       printf("  E.g.#1\n\n");
-      printf("    ./install/bin/pumiMBBL2D_Demo 4 \"leftBL,uniform,uniform,rightBL\" \"20,30,30,20\" \"10,10,10,10\" \"1.0,0,0,1.0\" 3 \"bottomBL,uniform,topBL\" \"10,30,10\" \"5,10,5\" \"1.0,0,1.0\"\n\n");
+      printf("    ./install/bin/pumiMBBL2D_Demo 4 \"leftBL,uniform,uniform,rightBL\" \"20,30,30,20\" \"10,10,10,10\" \"1.0,0,0,1.0\" 3 \"bottomBL,uniform,topBL\" \"10,30,10\" \"5,10,5\" \"1.0,0,1.0\" \"1,1,1,1,1,1,1,1,1,1,1,1,\"\n\n");
       printf("  E.g.#2\n\n");
-      printf("    ./install/bin/pumiMBBL2D_Demo 3 \"leftBL,uniform,rightBL\" \"30,90,30\" \"15,25,15\" \"1.0,0.0,1.0\" 2 \"topBL,bottomBL\" \"50,50\" \"25,25\" \"1.0,1.0\"\n\n");
+      printf("    ./install/bin/pumiMBBL2D_Demo 3 \"leftBL,uniform,rightBL\" \"30,90,30\" \"15,25,15\" \"1.0,0.0,1.0\" 2 \"topBL,bottomBL\" \"50,50\" \"25,25\" \"1.0,1.0\" \"1,1,1,1,1,1\"\n\n");
       exit(0);
     }
 
@@ -185,6 +187,25 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    //reading submesh activity info
+    char all_submesh_isactive[MAX_SUBMESHES*2];
+    char each_submesh_isactive[MAX_SUBMESHES][2];
+    strcpy(all_submesh_isactive, argv[11]);
+
+    tok = strtok(all_submesh_isactive, ",");
+    isubmesh=0;
+    while (tok != NULL){
+      strcpy (each_submesh_isactive[isubmesh], tok);
+      tok = strtok(NULL, ",");
+      isubmesh++;
+    }
+    //print error if number of inputs do not match nsubmeshes
+    if (isubmesh != pumi_inputs->nsubmeshes_x2*pumi_inputs->nsubmeshes_x1){
+        printf("ERROR: Number of block_isactive arguments not equal to number of submeshes...\n");
+        exit(0);
+    }
+
+
     double lambda_D = 1.0;
     double x1_min = 0.0;
     int NumberDebyeLengthsInDomain_x1=0;
@@ -320,6 +341,20 @@ int main(int argc, char *argv[])
         *(pumi_inputs->top_T + isubmesh)     = top_T;
         *(pumi_inputs->top_r + isubmesh)     = top_r;
         *(pumi_inputs->top_Nel + isubmesh)   = top_Nel;
+    }
+
+    int ksubmesh=0;
+    for(jsubmesh=0; jsubmesh<pumi_inputs->nsubmeshes_x2; jsubmesh++){
+        for(isubmesh=0; isubmesh<pumi_inputs->nsubmeshes_x1; isubmesh++){
+            int val = atoi(each_submesh_isactive[ksubmesh]);
+            ksubmesh++;
+            if (val){
+                pumi_inputs->isactive[isubmesh][jsubmesh] = true;
+            }
+            else{
+                pumi_inputs->isactive[isubmesh][jsubmesh] = false;
+            }
+        }
     }
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh

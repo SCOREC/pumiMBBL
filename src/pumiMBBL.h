@@ -7,6 +7,8 @@
 #ifndef pumiMBBL_h
 #define pumiMBBL_h
 
+#include <stdbool.h>
+
 /*!
 * \brief Mesh flag enum that defines the types of meshing in each segment of the submesh block
 */
@@ -52,6 +54,11 @@ typedef struct pumi_mesh{
   int pumi_Nel_total_x1; //!< total number of elements in the mesh (along x-directiom)
   int pumi_Nel_total_x2; //!< total number of elements in the mesh (along y-directiom)
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
+  bool **isactive;
+  int **nodeoffset_start;
+  int **nodeoffset_skip;
+  int **elemoffset_start;
+  int **elemoffset_skip;
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"
