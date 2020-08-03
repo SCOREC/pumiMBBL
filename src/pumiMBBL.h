@@ -56,9 +56,10 @@ typedef struct pumi_mesh{
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
   bool **isactive;
   int **nodeoffset_start;
-  int **nodeoffset_skip;
+  int *nodeoffset_skip;
   int **elemoffset_start;
-  int **elemoffset_skip;
+  int *elemoffset_skip;
+  int **global_nodeoffset;
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"

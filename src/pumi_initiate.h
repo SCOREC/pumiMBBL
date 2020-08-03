@@ -82,6 +82,8 @@ void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
     int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL);
 void pumi_setsubmesh_x2(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
     int N_uniform, double T_minBL, double r_minBL, int N_minBL, double T_maxBL, double r_maxBL, int N_maxBL);
+void pumi_setsubmesh_elemoffsets(pumi_mesh_t *pumi_mesh);
+void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh);
 unsigned int pumi_getsubmeshflag(char flagstring[SUBMESH_FLAGSTRING_LENGTH]);
 void pumi_finalize(pumi_mesh_t* pumi_mesh);
 double pumi_compute_grading_ratio_new(double BL_T, double BL_t0, int BL_Nel);

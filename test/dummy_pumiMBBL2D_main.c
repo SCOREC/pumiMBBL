@@ -363,6 +363,21 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
+    int Jnp;
+    for (Jnp=pumi_mesh->pumi_Nel_total_x2; Jnp>-1; Jnp--){
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+            printf("nodeoffset[%d][%4d] = %6d   ",isubmesh, Jnp, pumi_mesh->global_nodeoffset[isubmesh][Jnp] );
+        }
+        printf("\n\n");
+    }
+
+    for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+            printf("nodeoffset_start[%d][%d] = %6d   ",isubmesh, jsubmesh, pumi_mesh->nodeoffset_start[isubmesh][jsubmesh] );
+        }
+        printf("\n\n");
+    }
+
     //pumi_finalize(pumi_mesh);
     return 0;
 }
