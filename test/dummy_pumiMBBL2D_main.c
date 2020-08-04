@@ -378,6 +378,47 @@ int main(int argc, char *argv[])
         printf("\n\n");
     }
 
-    //pumi_finalize(pumi_mesh);
+    for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+            if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_A){
+                printf("TYPE_A   ");
+            }
+            if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_B){
+                printf("TYPE_B   ");
+            }
+            if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_C){
+                printf("TYPE_C   ");
+            }
+            if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_D){
+                printf("TYPE_D   ");
+            }
+            if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_O){
+                printf("------   ");
+            }
+
+        }
+        printf("\n\n");
+    }
+
+    int inp_x2;
+    for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+            if (pumi_mesh->isactive[isubmesh][jsubmesh]){
+                printf("SUBMESH X1-%d/X2-%d\n",isubmesh+1,jsubmesh+1 );
+                for (inp_x2=0; inp_x2<=((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; inp_x2++){
+                    Jnp = inp_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
+                    int nodeoffset_1 = pumi_calc_nodeoffset(pumi_mesh, isubmesh, jsubmesh, inp_x2);
+                    int nodeoffset_2 = pumi_mesh->global_nodeoffset[isubmesh][Jnp];
+                    printf("\tinp_x2=%4d %4d %4d %d\n",inp_x2, nodeoffset_1, nodeoffset_2, nodeoffset_2-nodeoffset_1 );
+                }
+            }
+            else{
+                printf("SUBMESH X1-%d/X2-%d -- INACTIVE\n",isubmesh+1,jsubmesh+1 );
+            }
+            printf("\n");
+        }
+    }
+
+    pumi_finalize(pumi_mesh);
     return 0;
 }

@@ -101,6 +101,16 @@ typedef double (*pumi_covolume_ptr)(pumi_mesh_t*, int);
 pumi_covolume_ptr pumi_covolume_fnptr[MAX_DIM];
 //double (*pumi_covolume_fnptr[])(pumi_mesh_t*, int) = {pumi_return_covolume_1D, pumi_return_covolume_2D};
 
+typedef int (*pumi_nodeoffset_ptr)(pumi_mesh_t*, int, int, int);
+pumi_nodeoffset_ptr **pumi_nodeoffset_fnptr;
+void pumi_initialize_nodeoffset_functions(pumi_mesh_t *pumi_mesh);
+void pumi_finalize_nodeoffset_functions(pumi_mesh_t *pumi_mesh);
+int pumi_calc_nodeoffset_typeA(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
+int pumi_calc_nodeoffset_typeB(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
+int pumi_calc_nodeoffset_typeC(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
+int pumi_calc_nodeoffset_typeD(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
+int pumi_calc_nodeoffset(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
+
 void pumi_initialize_multiD_functions(pumi_mesh_t *pumi_mesh);
 
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);

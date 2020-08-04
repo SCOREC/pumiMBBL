@@ -21,6 +21,15 @@ typedef enum pumi_meshflag{
   topBL = 0x04, //!< Inidicates the presence of top BL segment in a submesh block
 } pumi_meshflag_t;
 
+typedef enum pumi_2D_blocktype_for_nodeoffset{
+    type_O = 0, //type for inactive blocks
+    type_A = 1, //nodeoffset_skip is same for all nodes
+    type_B = 2, //nodeoffset_skip is different for first 2 nodes
+    type_C = 3, //nodeoffset_skip is different for last node
+    type_D = 4, //nodeoffset_skip is diffrent for first 2 nodes and last node
+}pumi_2D_blocktype_for_nodeoffset_t;
+
+
 /*!
 * \brief Contains the parameters used to define a submesh
 */
@@ -56,10 +65,13 @@ typedef struct pumi_mesh{
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
   bool **isactive;
   int **nodeoffset_start;
-  int *nodeoffset_skip;
+  int **nodeoffset_skip_top;
+  int **nodeoffset_skip_mid;
+  int **nodeoffset_skip_bottom;
   int **elemoffset_start;
   int *elemoffset_skip;
   int **global_nodeoffset;
+  pumi_2D_blocktype_for_nodeoffset_t **blocktype;
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"
