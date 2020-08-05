@@ -217,7 +217,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 
         pumi_setsubmesh_elemoffsets(pumi_mesh);
         pumi_setsubmesh_nodeoffsets(pumi_mesh);
-        pumi_initialize_nodeoffset_functions(pumi_mesh);
+        pumi_initialize_nodeID_functions(pumi_mesh);
     }
 
   }
@@ -286,6 +286,7 @@ void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->submesh_Nel;
   }
   pumi_mesh->pumi_Nel_total_x1 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
+  pumi_mesh->pumi_Nnp_total_x1 = pumi_mesh->pumi_Nel_total_x1+1;
 }
 
 /*!
@@ -339,6 +340,7 @@ void pumi_setsubmesh_x2(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->submesh_Nel;
   }
   pumi_mesh->pumi_Nel_total_x2 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel;
+  pumi_mesh->pumi_Nnp_total_x2 = pumi_mesh->pumi_Nel_total_x2+1;
 }
 
 
@@ -821,7 +823,7 @@ void pumi_finalize(pumi_mesh_t* pumi_mesh){
       free(pumi_mesh->pumi_submeshes_x1);
   }
   else{
-      pumi_finalize_nodeoffset_functions(pumi_mesh);
+      pumi_finalize_nodeID_functions(pumi_mesh);
       free(pumi_mesh->pumi_submeshes_x1);
       free(pumi_mesh->pumi_submeshes_x2);
   }

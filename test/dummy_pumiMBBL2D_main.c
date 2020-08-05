@@ -400,17 +400,28 @@ int main(int argc, char *argv[])
         printf("\n\n");
     }
 
-    int inp_x2;
+    int icell_x1, icell_x2, kcell_x1, kcell_x2;
+    int node1, node3, node11, node31;
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             if (pumi_mesh->isactive[isubmesh][jsubmesh]){
                 printf("SUBMESH X1-%d/X2-%d\n",isubmesh+1,jsubmesh+1 );
-                for (inp_x2=0; inp_x2<=((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; inp_x2++){
-                    Jnp = inp_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
-                    int nodeoffset_1 = pumi_calc_nodeoffset(pumi_mesh, isubmesh, jsubmesh, inp_x2);
-                    int nodeoffset_2 = pumi_mesh->global_nodeoffset[isubmesh][Jnp];
-                    printf("\tinp_x2=%4d %4d %4d %d\n",inp_x2, nodeoffset_1, nodeoffset_2, nodeoffset_2-nodeoffset_1 );
+                for (icell_x2=0; icell_x2<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; icell_x2++){
+                    for (icell_x1=0; icell_x1<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; icell_x1++){
+                        kcell_x1 = icell_x1 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
+                        kcell_x2 = icell_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
+                        node11 = kcell_x1 + pumi_mesh->pumi_Nnp_total_x1*kcell_x2 - pumi_mesh->global_nodeoffset[isubmesh][kcell_x2];
+                        node31 = kcell_x2 + pumi_mesh->pumi_Nnp_total_x1*(kcell_x2+1) - pumi_mesh->global_nodeoffset[isubmesh][kcell_x2+1];
+                        pumi_calc_nodeID(pumi_mesh, isubmesh, jsubmesh, icell_x1, icell_x2, &node1, &node3);
+                        printf("node1=%4d err=%d node3=%4d err=%d\n",node1, node1-node11, node3, node3-node31 );
+                    }
                 }
+                //for (inp_x2=0; inp_x2<=((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; inp_x2++){
+                //    Jnp = inp_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
+                //    int nodeoffset_1 = pumi_calc_nodeID(pumi_mesh, isubmesh, jsubmesh, inp_x2, &node1, &node3);
+                //    int nodeoffset_2 = pumi_mesh->global_nodeoffset[isubmesh][Jnp];
+                //    printf("\tinp_x2=%4d %4d %4d %d\n",inp_x2, node1, node3, node3-node1);
+                //}
             }
             else{
                 printf("SUBMESH X1-%d/X2-%d -- INACTIVE\n",isubmesh+1,jsubmesh+1 );

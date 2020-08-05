@@ -101,15 +101,33 @@ typedef double (*pumi_covolume_ptr)(pumi_mesh_t*, int);
 pumi_covolume_ptr pumi_covolume_fnptr[MAX_DIM];
 //double (*pumi_covolume_fnptr[])(pumi_mesh_t*, int) = {pumi_return_covolume_1D, pumi_return_covolume_2D};
 
-typedef int (*pumi_nodeoffset_ptr)(pumi_mesh_t*, int, int, int);
-pumi_nodeoffset_ptr **pumi_nodeoffset_fnptr;
-void pumi_initialize_nodeoffset_functions(pumi_mesh_t *pumi_mesh);
-void pumi_finalize_nodeoffset_functions(pumi_mesh_t *pumi_mesh);
-int pumi_calc_nodeoffset_typeA(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
-int pumi_calc_nodeoffset_typeB(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
-int pumi_calc_nodeoffset_typeC(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
-int pumi_calc_nodeoffset_typeD(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
-int pumi_calc_nodeoffset(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2);
+typedef int (*pumi_nodeID_ptr)(pumi_mesh_t*, int, int, int, int, int*, int*);
+pumi_nodeID_ptr **pumi_nodeID_fnptr;
+void pumi_initialize_nodeID_functions(pumi_mesh_t *pumi_mesh);
+void pumi_finalize_nodeID_functions(pumi_mesh_t *pumi_mesh);
+
+int pumi_calc_nodeID_typeA(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
+
+int pumi_calc_nodeID_typeB(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
+typedef void (*pumi_typeB_nodeoffset_ptr)(pumi_mesh_t*, int, int, int, int*, int*);
+pumi_typeB_nodeoffset_ptr pumi_typeB_nodeoffset_fnptr[2];
+void pumi_typeB_nodeoffset_expression1(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+void pumi_typeB_nodeoffset_expression2(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+
+int pumi_calc_nodeID_typeC(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
+typedef void (*pumi_typeC_nodeoffset_ptr)(pumi_mesh_t*, int, int, int, int*, int*);
+pumi_typeC_nodeoffset_ptr pumi_typeC_nodeoffset_fnptr[2];
+void pumi_typeC_nodeoffset_expression1(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+void pumi_typeC_nodeoffset_expression2(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+
+int pumi_calc_nodeID_typeD(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
+typedef void (*pumi_typeD_nodeoffset_ptr)(pumi_mesh_t*, int, int, int, int*, int*);
+pumi_typeD_nodeoffset_ptr pumi_typeD_nodeoffset_fnptr[3];
+void pumi_typeD_nodeoffset_expression1(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+void pumi_typeD_nodeoffset_expression2(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+void pumi_typeD_nodeoffset_expression3(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x2, int *offset1, int *offset3);
+
+int pumi_calc_nodeID(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
 
 void pumi_initialize_multiD_functions(pumi_mesh_t *pumi_mesh);
 

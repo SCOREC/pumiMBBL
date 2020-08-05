@@ -61,7 +61,9 @@ typedef struct pumi_mesh{
   void *pumi_submeshes_x1; //!< pointer object to access members of the struct pumi_submesh (in x-direction)
   void *pumi_submeshes_x2; //!< pointer object to access members of the struct pumi_submesh (in y-direction)
   int pumi_Nel_total_x1; //!< total number of elements in the mesh (along x-directiom)
+  int pumi_Nnp_total_x1;
   int pumi_Nel_total_x2; //!< total number of elements in the mesh (along y-directiom)
+  int pumi_Nnp_total_x2;
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
   bool **isactive;
   int **nodeoffset_start;
