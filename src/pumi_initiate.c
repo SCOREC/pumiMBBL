@@ -163,8 +163,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           }
           if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->pumi_flag & uniform){
             printf("uniform\n");
-            printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
-            printf("\t uniform_dx2  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0);
+            printf("\t uniform_Nel = %d    \t\t Number of Cells in uniform mesh region\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel);
+            printf("\t uniform_dx2  = %2.4e \t [m] Cell size in uniform mesh segment\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->t0);
           }
           if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->pumi_flag & topBL){
             printf("topBL\n");
@@ -218,6 +218,31 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         pumi_setsubmesh_elemoffsets(pumi_mesh);
         pumi_setsubmesh_nodeoffsets(pumi_mesh);
         pumi_initialize_nodeID_functions(pumi_mesh);
+
+        printf("PUMI submesh type for nodeoffset calculations :\n\n");
+        for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
+            for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+                if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_A){
+                    printf("TYPE_A   ");
+                }
+                if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_B){
+                    printf("TYPE_B   ");
+                }
+                if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_C){
+                    printf("TYPE_C   ");
+                }
+                if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_D){
+                    printf("TYPE_D   ");
+                }
+                if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_O){
+                    printf("------   ");
+                }
+
+            }
+            printf("\n\n");
+        }
+
+        pumi_initialize_locatecell_and_calcweights_functions_2D(pumi_mesh);
     }
 
   }
