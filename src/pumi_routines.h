@@ -28,12 +28,19 @@ int pumi_locatecell_in_rightBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coor
 int pumi_locatecell_in_topBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord);
 
 void pumi_calc_weights_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_in_uni_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_in_uni_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
 void pumi_calc_weights_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
 void pumi_calc_weights_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_in_bottomBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_in_bottomBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
 void pumi_calc_weights_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
 void pumi_calc_weights_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
-
+void pumi_calc_weights_in_topBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_in_topBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
 void pumi_calc_weights(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
+void pumi_calc_weights_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight);
 
 void pumi_calc_node_coords_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double *left_node, double *right_node);
 void pumi_calc_node_coords_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double *left_node, double *right_node);
@@ -58,6 +65,7 @@ double pumi_calc_elem_size_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int local_ce
 double pumi_calc_elem_size_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
 
 int pumi_dummy_elem_node_ID(double coord_x1, double coord_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
+int pumi_dummy_elem_node_ID_v2(int kcell_x1, int kcell_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
 
 typedef int (*pumi_locatecell_ptr)(pumi_mesh_t*, int, double);
 pumi_locatecell_ptr *pumi_locatecell_fnptr;
@@ -65,6 +73,8 @@ pumi_locatecell_ptr *pumi_locatecell_fnptr_x1;
 pumi_locatecell_ptr *pumi_locatecell_fnptr_x2;
 typedef void (*pumi_calc_weights_ptr)(pumi_mesh_t*, int, int, double, int*, double*);
 pumi_calc_weights_ptr *pumi_calc_weights_fnptr;
+pumi_calc_weights_ptr *pumi_calc_weights_fnptr_x1;
+pumi_calc_weights_ptr *pumi_calc_weights_fnptr_x2;
 typedef void (*pumi_calc_node_coords_ptr)(pumi_mesh_t*, int, int, double*,double*);
 pumi_calc_node_coords_ptr *pumi_calc_node_coords_fnptr;
 typedef double (*pumi_calc_elem_size_ptr)(pumi_mesh_t*, int, int);
@@ -78,11 +88,19 @@ void pumi_finalize_locatecell_and_calcweights_functions_2D();
 
 typedef int (*pumi_updatecell_ptr)(pumi_mesh_t*, int, int, double);
 pumi_updatecell_ptr *pumi_updatecell_fnptr;
+pumi_updatecell_ptr *pumi_updatecell_fnptr_x1;
+pumi_updatecell_ptr *pumi_updatecell_fnptr_x2;
 int pumi_updatecell_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
+int pumi_updatecell_in_uni_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
+int pumi_updatecell_in_uni_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
 int pumi_updatecell_in_leftBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
 int pumi_updatecell_in_leftBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
+int pumi_updatecell_in_bottomBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
+int pumi_updatecell_in_bottomBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
 int pumi_updatecell_in_rightBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
 int pumi_updatecell_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
+int pumi_updatecell_in_topBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
+int pumi_updatecell_in_topBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);
 
 /*!
 * \brief elemsize index offset enum, possible ways to call pumi_return_elemsize()
@@ -95,8 +113,10 @@ typedef enum pumi_elemsize_index_offset{
 
 void pumi_BL_elemsize_ON(pumi_mesh_t *pumi_mesh);
 void pumi_BL_elemsize_ON_1D(pumi_mesh_t *pumi_mesh);
+void pumi_BL_elemsize_ON_2D(pumi_mesh_t *pumi_mesh);
 void pumi_BL_elemsize_OFF(pumi_mesh_t *pumi_mesh);
 void pumi_BL_elemsize_OFF_1D(pumi_mesh_t *pumi_mesh);
+void pumi_BL_elemsize_OFF_2D(pumi_mesh_t *pumi_mesh);
 
 double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node);
 double pumi_return_1D_gradingratio(pumi_mesh_t* pumi_mesh, int node);
@@ -157,5 +177,7 @@ void pumi_locate_submesh_and_cell_x1(pumi_mesh_t *pumi_mesh, double coords, int 
 void pumi_locate_submesh_and_cell_x2(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID);
 void pumi_update_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int *submeshID, int *cellID);
 void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID);
+void pumi_update_submesh_and_update_cell_x1(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID);
+void pumi_update_submesh_and_update_cell_x2(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID);
 int pumi_global_cell_ID(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
 #endif /* pumi_routines_h */

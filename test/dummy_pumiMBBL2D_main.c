@@ -485,12 +485,13 @@ int main(int argc, char *argv[])
     int ncell_x2 = pumi_mesh->pumi_Nel_total_x2;
     //double dx1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + 0)->t0;
     //double dx2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + 0)->t0;
-    double x1 = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (pumi_mesh->nsubmeshes_x1-1))->coord_max)/ncell_x1;
-    double x2 = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (pumi_mesh->nsubmeshes_x2-1))->coord_max)/ncell_x2;
+    double dx1 = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (pumi_mesh->nsubmeshes_x1-1))->coord_max)/ncell_x1;
+    double dx2 = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (pumi_mesh->nsubmeshes_x2-1))->coord_max)/ncell_x2;
     for (loop=0; loop< 100000; loop++){
         for(icell_x2=0; icell_x2<ncell_x2; icell_x2++){
             for(icell_x1=0; icell_x1<ncell_x1; icell_x1++){
-                kcell = pumi_dummy_elem_node_ID(pt_x1, pt_x2, dx1, dx2, ncell_x1, &node1, &node3 );
+                //kcell = pumi_dummy_elem_node_ID(pt_x1, pt_x2, dx1, dx2, ncell_x1, &node1, &node3 );
+                kcell = pumi_dummy_elem_node_ID_v2(icell_x1, icell_x2, dx1, dx2, ncell_x1, &node1, &node3);
             }
         }
     }
