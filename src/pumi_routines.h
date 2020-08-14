@@ -141,6 +141,8 @@ pumi_covolume_ptr pumi_covolume_fnptr[MAX_DIM];
 
 typedef int (*pumi_nodeID_ptr)(pumi_mesh_t*, int, int, int, int, int*, int*);
 pumi_nodeID_ptr **pumi_nodeID_fnptr;
+
+bool pumi_mesh_with_no_inactive_blocks(pumi_mesh_t *pumi_mesh);
 void pumi_initialize_nodeID_functions(pumi_mesh_t *pumi_mesh);
 void pumi_finalize_nodeID_functions(pumi_mesh_t *pumi_mesh);
 
@@ -167,6 +169,7 @@ void pumi_typeD_nodeoffset_expression3(pumi_mesh_t* pumi_mesh, int isubmesh_x1, 
 
 int pumi_calc_elementID_and_nodeID(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
 int pumi_calc_elementID_and_nodeID_with_global_offset(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
+int pumi_calc_elementID_and_nodeID_on_fullmesh(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
 
 void pumi_initialize_multiD_functions(pumi_mesh_t *pumi_mesh);
 
