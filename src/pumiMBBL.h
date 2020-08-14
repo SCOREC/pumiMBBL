@@ -66,6 +66,7 @@ typedef struct pumi_mesh{
   int pumi_Nnp_total_x2;
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
   bool **isactive;
+  int nodeoffset_cache_flag;
   int **nodeoffset_start;
   int **nodeoffset_skip_top;
   int **nodeoffset_skip_mid;
