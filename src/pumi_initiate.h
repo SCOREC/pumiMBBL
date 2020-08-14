@@ -26,6 +26,16 @@ typedef enum pumi_cache_BL_elemsize{
   pumi_cache_BL_elemsize_ON = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
 } pumi_cache_BL_elemsize_t;
 
+typedef enum pumi_cache_nodeoffset{
+  pumi_cache_nodeoffset_OFF = 0, //!< no caching of BL element sizes (will be calculated on-the-fly)
+  pumi_cache_nodeoffset_ON = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
+} pumi_cache_nodeoffset_t;
+
+typedef struct pumi_initiate_mesh_options{
+    int BL_cache_flag;
+    int nodeoffset_cache_flag;
+} pumi_initiate_mesh_options_t;
+
 /*!
 * \brief Contains the parameters inputs to the mesh which will be passed as arguments to pumi_initiate()
 */
@@ -73,7 +83,7 @@ typedef struct pumi_initiate_input{
   int *top_Nel; //!< pointer to array of number of elements in the right BL segment for each block
 } pumi_initiate_input_t;
 
-pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs, int BL_caching_flag);
+pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs, pumi_initiate_mesh_options_t pumi_initiate_options);
 pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes);
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs);
 void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, double ***submesh_params, unsigned int **submesh_flag);
