@@ -148,10 +148,10 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           printf("\n\t submeshflag = ");
           if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->pumi_flag & bottomBL){
             printf("bottomBL\n");
-            printf("\t bottom_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0);
-            printf("\t bottom_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_T);
-            printf("\t bottom_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r);
-            printf("\t bottom_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
+            printf("\t bottom_t0     = %2.4e \t [m] Cell size of first/leftmost cell in left BL segment\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->t0);
+            printf("\t bottom_T      = %2.4e \t [m] Left boundary layer (left BL) thickness\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_T);
+            printf("\t bottom_r      = %2.4e \t Grading ratio in left BL mesh\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->r);
+            printf("\t bottom_Nel    = %d    \t\t Number of Cells in left BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel);
           }
           if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->pumi_flag & uniform){
             printf("uniform\n");
@@ -160,10 +160,10 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           }
           if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->pumi_flag & topBL){
             printf("topBL\n");
-            printf("\t top_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0);
-            printf("\t top_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_T);
-            printf("\t top_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r);
-            printf("\t top_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
+            printf("\t top_t0    = %2.4e \t [m] Cell size of last/rightmost cell in right BL segment\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->t0);
+            printf("\t top_T     = %2.4e \t [m] Right boundary layer (right BL) thickness\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_T);
+            printf("\t top_r     = %2.4e \t Grading ratio in right BL mesh\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->r);
+            printf("\t top_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel);
           }
         }
 

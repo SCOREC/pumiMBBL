@@ -97,6 +97,46 @@ double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inode){
     exit(0);
 }
 
+double pumi_calc_covolume_2D(pumi_mesh_t* pumi_mesh, int inp_x1, int inp_x2){
+    double dx1_left, dx1_right, dx2_bottom, dx2_top;
+    if (inp_x1 == 0){
+      dx1_left = 0.0;
+      dx1_right = pumi_return_x1_elemsize(pumi_mesh, inp_x1, pumi_elem_on_right_offset);
+    }
+    else if (inp_x1 == pumi_mesh->pumi_Nel_total_x1){
+      dx1_left = pumi_return_x1_elemsize(pumi_mesh, inp_x1, pumi_elem_on_left_offset);
+      dx1_right = 0.0;
+    }
+    else if (inp_x1 > 0 && inp_x1 < pumi_mesh->pumi_Nel_total_x1){
+      dx1_left = pumi_return_x1_elemsize(pumi_mesh, inp_x1, pumi_elem_on_left_offset);
+      dx1_right = pumi_return_x1_elemsize(pumi_mesh, inp_x1, pumi_elem_on_right_offset);
+    }
+    else{
+      printf("\tInvalid x1 - node number for covolume\n");
+      exit(0);
+    }
+
+    if (inp_x2 == 0){
+      dx2_bottom = 0.0;
+      dx2_top = pumi_return_x2_elemsize(pumi_mesh, inp_x2, pumi_elem_on_top_offset);
+    }
+    else if (inp_x2 == pumi_mesh->pumi_Nel_total_x2){
+      dx2_bottom = pumi_return_x2_elemsize(pumi_mesh, inp_x2, pumi_elem_on_bottom_offset);
+      dx2_top = 0.0;
+    }
+    else if (inp_x2 > 0 && inp_x2 < pumi_mesh->pumi_Nel_total_x2){
+      dx2_bottom = pumi_return_x2_elemsize(pumi_mesh, inp_x2, pumi_elem_on_bottom_offset);
+      dx2_top = pumi_return_x2_elemsize(pumi_mesh, inp_x2, pumi_elem_on_top_offset);
+    }
+    else{
+      printf("\tInvalid x2 - node number for covolume\n");
+      exit(0);
+    }
+
+    double covolume = (dx1_left*dx2_bottom + dx1_right*dx2_bottom +  dx1_left*dx2_top + dx1_right*dx2_top)/4.0;
+    return covolume;
+
+}
 /*
 * \brief Call appropriate subroutine (based on the dimension of the problem) and returns covolume for given node
 * \param *pumi_mesh pointer object to struct pumi_mesh
@@ -382,6 +422,127 @@ double pumi_return_1D_gradingratio(pumi_mesh_t *pumi_mesh, int node){
 * \param *pumi_mesh pointer object to struct pumi_mesh
 * \param node number
 */
+double pumi_calc_x1_gradingratio(pumi_mesh_t *pumi_mesh, int node){
+
+    if (node == 0 || node == pumi_mesh->pumi_Nel_total_x1){
+        printf("Grading ratio not defined for the first and last x1-node of the domain -- Terminating \n");
+        exit(0);
+    }
+    else{
+        int isubmesh;
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+
+            int submesh_left_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
+            int submesh_right_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
+
+            if (node > submesh_left_node && node < submesh_right_node){
+                return ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r;
+            }
+
+            else if (node == ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative){
+                double left_elem_size;
+                double right_elem_size;
+                // On LHS of the node
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->pumi_flag & rightBL){
+                    left_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->pumi_flag & uniform){
+                    left_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->pumi_flag & leftBL){
+                    double t0 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->t0;
+                    double r = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->r;
+                    double Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->submesh_Nel;
+                    left_elem_size = t0*pow(r,Nel-1);
+                }
+
+                // On RHS of the node
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->pumi_flag & leftBL){
+                    right_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->pumi_flag & uniform){
+                    right_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->pumi_flag & rightBL){
+                    double t0 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->t0;
+                    double r = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->r;
+                    double Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh))->submesh_Nel;
+                    right_elem_size = t0*pow(r,Nel-1);
+                }
+
+                return right_elem_size/left_elem_size;
+            }
+        }
+    }
+
+}
+
+
+/*
+* \brief Returns grading ratio for given node
+* \param *pumi_mesh pointer object to struct pumi_mesh
+* \param node number
+*/
+double pumi_calc_x2_gradingratio(pumi_mesh_t *pumi_mesh, int node){
+
+    if (node == 0 || node == pumi_mesh->pumi_Nel_total_x2){
+        printf("Grading ratio not defined for the first and last x2-node of the domain -- Terminating \n");
+        exit(0);
+    }
+    else{
+        int isubmesh;
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x2; isubmesh++){
+
+            int submesh_bottom_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative;
+            int submesh_top_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel;
+
+            if (node > submesh_bottom_node && node < submesh_top_node){
+                return ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->r;
+            }
+
+            else if (node == ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative){
+                double bottom_elem_size;
+                double top_elem_size;
+                // On LHS of the node
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->pumi_flag & topBL){
+                    bottom_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->pumi_flag & uniform){
+                    bottom_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->pumi_flag & bottomBL){
+                    double t0 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->t0;
+                    double r = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->r;
+                    double Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->submesh_Nel;
+                    bottom_elem_size = t0*pow(r,Nel-1);
+                }
+
+                // On RHS of the node
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->pumi_flag & bottomBL){
+                    top_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->pumi_flag & uniform){
+                    top_elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->t0;
+                }
+                if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->pumi_flag & topBL){
+                    double t0 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->t0;
+                    double r = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->r;
+                    double Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh))->submesh_Nel;
+                    top_elem_size = t0*pow(r,Nel-1);
+                }
+
+                return top_elem_size/bottom_elem_size;
+            }
+        }
+    }
+
+}
+
+/*
+* \brief Returns grading ratio for given node
+* \param *pumi_mesh pointer object to struct pumi_mesh
+* \param node number
+*/
 double pumi_return_2D_gradingratio(pumi_mesh_t *pumi_mesh, int node){
     printf("Multi dimension pumi mesh not implemented -- Terminating\n");
     exit(0);
@@ -450,7 +611,53 @@ double pumi_return_1D_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
   }
 }
 
+/*
+* \brief Returns element size for given index (and offset)
+* \param *pumi_mesh pointer object to struct pumi_mesh
+* \param index - node or element index
+* \param offset - If node index is inpute, index will be 0 or -1 depending on right/left elementsize to the node to be returned
+*/
+double pumi_return_x1_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
+    int elem = index+offset;
 
+    if (elem < 0){
+        elem = 0;
+    }
+    if (elem > pumi_mesh->pumi_Nel_total_x1){
+        elem = pumi_mesh->pumi_Nel_total_x1;
+    }
+    int isubmesh;
+    for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+        int submesh_left_elem = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
+        int submesh_right_elem = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel-1;
+
+        if (elem >= submesh_left_elem && elem <= submesh_right_elem){
+            int local_cell = elem - submesh_left_elem;
+            return (pumi_calc_elem_size_x1(pumi_mesh, isubmesh, local_cell));
+        }
+    }
+}
+
+double pumi_return_x2_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset){
+    int elem = index+offset;
+
+    if (elem < 0){
+        elem = 0;
+    }
+    if (elem > pumi_mesh->pumi_Nel_total_x2){
+        elem = pumi_mesh->pumi_Nel_total_x2;
+    }
+    int isubmesh;
+    for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x2; isubmesh++){
+        int submesh_bottom_elem = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative;
+        int submesh_top_elem = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel-1;
+
+        if (elem >= submesh_bottom_elem && elem <= submesh_top_elem){
+            int local_cell = elem - submesh_bottom_elem;
+            return (pumi_calc_elem_size_x2(pumi_mesh, isubmesh, local_cell));
+        }
+    }
+}
 /*
 * \brief Returns element size for given index (and offset)
 * \param *pumi_mesh pointer object to struct pumi_mesh
@@ -1067,6 +1274,14 @@ double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell)
 
 double pumi_calc_elem_size_1D(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1){
     return (pumi_calc_elem_size_fnptr_x1[isubmesh_x1](pumi_mesh, isubmesh_x1, icell_x1));
+}
+
+double pumi_calc_elem_size_x1(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1){
+    return (pumi_calc_elem_size_fnptr_x1[isubmesh_x1](pumi_mesh, isubmesh_x1, icell_x1));
+}
+
+double pumi_calc_elem_size_x2(pumi_mesh_t *pumi_mesh, int isubmesh_x2, int icell_x2){
+    return (pumi_calc_elem_size_fnptr_x2[isubmesh_x2](pumi_mesh, isubmesh_x2, icell_x2));
 }
 
 double pumi_calc_elem_size_2D(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1, int isubmesh_x2, int icell_x2){

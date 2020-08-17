@@ -478,6 +478,7 @@ int main(int argc, char *argv[])
         printf("4 int for FullMesh      = %2.8f s\n2 int for FullMesh      = %2.8f s\nstd.hPIC without locate = %2.8f s\n", time1, time2, time3);
     }
     */
+    /*
     int icell_x1, icell_x2, kcell, node1, node3;
     double elemsize;
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
@@ -492,6 +493,26 @@ int main(int argc, char *argv[])
                     }
                 }
             }
+        }
+    }
+    */
+    int inp_x1, inp_x2;
+    /*
+    double r_x1, r_x2;
+    for (inp_x2=1; inp_x2<pumi_mesh->pumi_Nel_total_x2; inp_x2++){
+        for (inp_x1=1; inp_x1<pumi_mesh->pumi_Nel_total_x1; inp_x1++){
+            r_x1 = pumi_calc_x1_gradingratio(pumi_mesh, inp_x1);
+            r_x2 = pumi_calc_x2_gradingratio(pumi_mesh, inp_x2);
+            printf("inp_x1=%3d inp_x2=%3d rx1=%2.8f rx2=%2.8f\n", inp_x1, inp_x2, r_x1, r_x2 );
+        }
+    }
+    */
+
+    double covolume;
+    for (inp_x2=0; inp_x2<pumi_mesh->pumi_Nnp_total_x2; inp_x2++){
+        for (inp_x1=0; inp_x1<pumi_mesh->pumi_Nnp_total_x1; inp_x1++){
+            covolume = pumi_calc_covolume_2D(pumi_mesh, inp_x1, inp_x2);
+            printf("inp_x1=%3d inp_x2=%3d covolume=%2.8f\n", inp_x1, inp_x2, covolume );
         }
     }
 

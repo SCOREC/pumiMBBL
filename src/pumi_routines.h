@@ -62,6 +62,8 @@ double pumi_calc_elem_size_in_topBL_analytic(pumi_mesh_t *pumi_mesh, int isubmes
 
 double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
 double pumi_calc_elem_size_1D(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1);
+double pumi_calc_elem_size_x1(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1);
+double pumi_calc_elem_size_x2(pumi_mesh_t *pumi_mesh, int isubmesh_x2, int icell_x2);
 double pumi_calc_elem_size_2D(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1, int isubmesh_x2, int icell_x2);
 
 int pumi_dummy_elem_node_ID(double coord_x1, double coord_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
@@ -108,7 +110,9 @@ int pumi_updatecell_in_topBL_analytic(pumi_mesh_t *pumi_mesh, int isubmesh, int 
 typedef enum pumi_elemsize_index_offset{
   pumi_elem_input_offset = 0, //!< no offset for direct element input
   pumi_elem_on_right_offset = 0, //!< no offset for node input and querying right element size
+  pumi_elem_on_top_offset = 0,
   pumi_elem_on_left_offset = -1, //!< -1 offset for node input and querying left element size
+  pumi_elem_on_bottom_offset = -1,
 } pumi_elemsize_index_offset_t;
 
 void pumi_BL_elemsize_ON(pumi_mesh_t *pumi_mesh);
@@ -120,6 +124,8 @@ void pumi_BL_elemsize_OFF_2D(pumi_mesh_t *pumi_mesh);
 
 double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node);
 double pumi_return_1D_gradingratio(pumi_mesh_t* pumi_mesh, int node);
+double pumi_calc_x1_gradingratio(pumi_mesh_t *pumi_mesh, int node);
+double pumi_calc_x2_gradingratio(pumi_mesh_t *pumi_mesh, int node);
 double pumi_return_2D_gradingratio(pumi_mesh_t* pumi_mesh, int node);
 typedef double (*pumi_gradingratio_ptr)(pumi_mesh_t*, int);
 pumi_gradingratio_ptr pumi_gradingratio_fnptr[MAX_DIM];
@@ -127,6 +133,8 @@ pumi_gradingratio_ptr pumi_gradingratio_fnptr[MAX_DIM];
 
 double pumi_return_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
 double pumi_return_1D_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
+double pumi_return_x1_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
+double pumi_return_x2_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
 double pumi_return_2D_elemsize(pumi_mesh_t* pumi_mesh, int index, int offset);
 typedef double (*pumi_elemsize_ptr)(pumi_mesh_t*, int, int);
 pumi_elemsize_ptr pumi_elemsize_fnptr[MAX_DIM];
@@ -137,6 +145,7 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode);
 double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inode);
 typedef double (*pumi_covolume_ptr)(pumi_mesh_t*, int);
 pumi_covolume_ptr pumi_covolume_fnptr[MAX_DIM];
+double pumi_calc_covolume_2D(pumi_mesh_t* pumi_mesh, int inp_x1, int inp_x2);
 //double (*pumi_covolume_fnptr[])(pumi_mesh_t*, int) = {pumi_return_covolume_1D, pumi_return_covolume_2D};
 
 typedef int (*pumi_nodeID_ptr)(pumi_mesh_t*, int, int, int, int, int*, int*);
