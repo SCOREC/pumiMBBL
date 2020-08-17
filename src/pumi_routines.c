@@ -1065,12 +1065,14 @@ double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell)
     return (pumi_calc_elem_size_fnptr[isubmesh](pumi_mesh, isubmesh, local_cell));
 }
 
-double pumi_calc_elem_size_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell){
-    return (pumi_calc_elem_size_fnptr_x1[isubmesh](pumi_mesh, isubmesh, local_cell));
+double pumi_calc_elem_size_1D(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1){
+    return (pumi_calc_elem_size_fnptr_x1[isubmesh_x1](pumi_mesh, isubmesh_x1, icell_x1));
 }
 
-double pumi_calc_elem_size_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell){
-    return (pumi_calc_elem_size_fnptr_x2[isubmesh](pumi_mesh, isubmesh, local_cell));
+double pumi_calc_elem_size_2D(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int icell_x1, int isubmesh_x2, int icell_x2){
+    //printf("size_x1 = %2.8f  size_x2=%2.8f  ", (pumi_calc_elem_size_fnptr_x1[isubmesh_x1](pumi_mesh, isubmesh_x1, icell_x1)),(pumi_calc_elem_size_fnptr_x2[isubmesh_x2](pumi_mesh, isubmesh_x2, icell_x2)));
+    return ((pumi_calc_elem_size_fnptr_x1[isubmesh_x1](pumi_mesh, isubmesh_x1, icell_x1))*
+            (pumi_calc_elem_size_fnptr_x2[isubmesh_x2](pumi_mesh, isubmesh_x2, icell_x2)));
 }
 
 /*
@@ -1266,7 +1268,7 @@ void pumi_initialize_locatecell_and_calcweights_functions_2D(pumi_mesh_t *pumi_m
             pumi_locatecell_fnptr_x1[isubmesh] = &pumi_locatecell_in_uni_x1;
             pumi_updatecell_fnptr_x1[isubmesh] = &pumi_updatecell_in_uni_x1;
             pumi_calc_weights_fnptr_x1[isubmesh] = &pumi_calc_weights_in_uni_x1;
-            pumi_calc_elem_size_fnptr_x1[isubmesh] = &pumi_calc_elem_size_in_uni_x2;
+            pumi_calc_elem_size_fnptr_x1[isubmesh] = &pumi_calc_elem_size_in_uni_x1;
             printf("submesh=%d -- uniform routines initialized\n",isubmesh );
         }
         else{

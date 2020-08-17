@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
     pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_ON;
-    pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_ON;
+    pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_OFF;
     pumi_initiate_mesh_options_t pumi_initiate_options;
     pumi_initiate_options.BL_cache_flag = BL_caching_flag;
     pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
@@ -367,8 +367,8 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
-    int Jnp;
     /*
+    int Jnp;
     for (Jnp=pumi_mesh->pumi_Nel_total_x2; Jnp>-1; Jnp--){
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             printf("nodeoffset[%d][%4d] = %6d   ",isubmesh, Jnp, pumi_mesh->global_nodeoffset[isubmesh][Jnp] );
@@ -381,7 +381,7 @@ int main(int argc, char *argv[])
             printf("nodeoffset_start[%d][%d] = %6d   ",isubmesh, jsubmesh, pumi_mesh->nodeoffset_start[isubmesh][jsubmesh] );
         }
         printf("\n\n");
-    }*/
+    }
 
     int icell_x1, icell_x2, loop;
     int kcell, node1, node3;
@@ -477,8 +477,23 @@ int main(int argc, char *argv[])
     else{
         printf("4 int for FullMesh      = %2.8f s\n2 int for FullMesh      = %2.8f s\nstd.hPIC without locate = %2.8f s\n", time1, time2, time3);
     }
-
-
+    */
+    int icell_x1, icell_x2, kcell, node1, node3;
+    double elemsize;
+    for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
+        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+            if (pumi_mesh->isactive[isubmesh][jsubmesh]){
+                for (icell_x2=0; icell_x2<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; icell_x2++){
+                    for (icell_x1=0; icell_x1<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; icell_x1++){
+                        kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, icell_x1, icell_x2, &node1, &node3);
+                        printf("Cell %4d ",kcell);
+                        elemsize = pumi_calc_elem_size_2D(pumi_mesh, isubmesh, icell_x1, jsubmesh, icell_x2);
+                        printf("Area=%2.8f \n",elemsize);
+                    }
+                }
+            }
+        }
+    }
 
     pumi_finalize(pumi_mesh);
     return 0;
