@@ -478,9 +478,9 @@ int main(int argc, char *argv[])
         printf("4 int for FullMesh      = %2.8f s\n2 int for FullMesh      = %2.8f s\nstd.hPIC without locate = %2.8f s\n", time1, time2, time3);
     }
     */
-    /*
+
     int icell_x1, icell_x2, kcell, node1, node3;
-    double elemsize;
+    double elemsize, elemsize_new;
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             if (pumi_mesh->isactive[isubmesh][jsubmesh]){
@@ -488,26 +488,27 @@ int main(int argc, char *argv[])
                     for (icell_x1=0; icell_x1<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; icell_x1++){
                         kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, icell_x1, icell_x2, &node1, &node3);
                         printf("Cell %4d ",kcell);
-                        elemsize = pumi_calc_elem_size_2D(pumi_mesh, isubmesh, icell_x1, jsubmesh, icell_x2);
-                        printf("Area=%2.8f \n",elemsize);
+                        elemsize_new = pumi_calc_elem_size_fnptr[0][isubmesh](pumi_mesh, isubmesh, icell_x1)*
+                                       pumi_calc_elem_size_fnptr[1][jsubmesh](pumi_mesh, jsubmesh, icell_x2);
+                        printf("Area=%2.8f \n",elemsize_new);
                     }
                 }
             }
         }
     }
-    */
+
     int inp_x1, inp_x2;
-    /*
-    double r_x1, r_x2;
+
+    double r1, r2;
     for (inp_x2=1; inp_x2<pumi_mesh->pumi_Nel_total_x2; inp_x2++){
         for (inp_x1=1; inp_x1<pumi_mesh->pumi_Nel_total_x1; inp_x1++){
-            r_x1 = pumi_calc_x1_gradingratio(pumi_mesh, inp_x1);
-            r_x2 = pumi_calc_x2_gradingratio(pumi_mesh, inp_x2);
-            printf("inp_x1=%3d inp_x2=%3d rx1=%2.8f rx2=%2.8f\n", inp_x1, inp_x2, r_x1, r_x2 );
+            r1 = pumi_return_gradingratio(pumi_mesh, inp_x1, pumi_x1);
+            r2 = pumi_return_gradingratio(pumi_mesh, inp_x2, pumi_x2);
+            //printf("inp_x1=%3d inp_x2=%3d r1=%2.8f r2=%2.8f\n", inp_x1, inp_x2, r1, r2 );
         }
     }
-    */
 
+    /*
     double covolume;
     for (inp_x2=0; inp_x2<pumi_mesh->pumi_Nnp_total_x2; inp_x2++){
         for (inp_x1=0; inp_x1<pumi_mesh->pumi_Nnp_total_x1; inp_x1++){
@@ -515,7 +516,16 @@ int main(int argc, char *argv[])
             printf("inp_x1=%3d inp_x2=%3d covolume=%2.8f\n", inp_x1, inp_x2, covolume );
         }
     }
-
+    */
+    /*
+    bool node_isactive;
+    for (inp_x2=0; inp_x2<pumi_mesh->pumi_Nnp_total_x2; inp_x2++){
+        for (inp_x1=0; inp_x1<pumi_mesh->pumi_Nnp_total_x1; inp_x1++){
+            node_isactive = pumi_is_node_active(pumi_mesh, inp_x1, inp_x2);
+            printf("inp_x1=%3d inp_x2=%3d node=%d\n", inp_x1, inp_x2, node_isactive );
+        }
+    }
+    */
     pumi_finalize(pumi_mesh);
     return 0;
 }

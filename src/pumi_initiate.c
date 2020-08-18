@@ -82,7 +82,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
         }
       }
-      pumi_initialize_multiD_functions(pumi_mesh);
+      
       //pumi_initialize_locate_functions(pumi_mesh);
       pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
     }
