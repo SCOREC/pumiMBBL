@@ -39,6 +39,7 @@ typedef struct pumi_submesh{
 
   double submesh_T; //!< thickness of the submesh block
   int submesh_Nel; //!< number of elements in the submesh block
+  int submesh_Nel_minus_1;
   double t0; //!< (dependent variable) smallest element size inside the submesh block
   double r; //!< growth ratio for elements inside the submesh block
   double log_r; //!< (dependent variable) log(r) -- value used in analytic locate routines in BL

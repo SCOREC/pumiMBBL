@@ -1005,8 +1005,8 @@ void pumi_calc_node_coords_in_rightBL_analytic(pumi_mesh_t *pumi_mesh, int isubm
 * \param[in] submesh ID of the rightBL block
 * \param[in] icell local cell ID in the rightBL block
 */
-double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell){
-    return (pumi_calc_elem_size_fnptr[0][isubmesh](pumi_mesh, isubmesh, local_cell));
+double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, int dir){
+    return (pumi_calc_elem_size_fnptr[dir][isubmesh](pumi_mesh, isubmesh, local_cell));
 }
 
 
@@ -1324,7 +1324,7 @@ int pumi_calc_elementID_and_nodeID_typeA(pumi_mesh_t* pumi_mesh, int isubmesh_x1
 int pumi_calc_elementID_and_nodeID_typeB(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3){
     int nodeoffset1, nodeoffset3, index, elemoffset, kcell_x1, kcell_x2, elemID;
     //index = ceil(1.0*icell_x2/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel);
-    index = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1-icell_x2)/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1);
+    index = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1-icell_x2)/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1);
     pumi_typeB_nodeoffset_fnptr[index](pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x2, &nodeoffset1, &nodeoffset3);
     elemoffset = pumi_mesh->elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->elemoffset_skip[isubmesh_x2];
     kcell_x1 = icell_x1 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->Nel_cumulative;
@@ -1354,7 +1354,7 @@ void pumi_typeB_nodeoffset_expression1(pumi_mesh_t* pumi_mesh, int isubmesh_x1, 
 
 int pumi_calc_elementID_and_nodeID_typeC(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3){
     int nodeoffset1, nodeoffset3, index, elemoffset, kcell_x1, kcell_x2, elemID;
-    index = icell_x2/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1);
+    index = icell_x2/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1);
     pumi_typeC_nodeoffset_fnptr[index](pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x2, &nodeoffset1, &nodeoffset3);
     elemoffset = pumi_mesh->elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->elemoffset_skip[isubmesh_x2];
     kcell_x1 = icell_x1 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->Nel_cumulative;
@@ -1384,7 +1384,7 @@ void pumi_typeC_nodeoffset_expression2(pumi_mesh_t* pumi_mesh, int isubmesh_x1, 
 
 int pumi_calc_elementID_and_nodeID_typeD(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3){
     int nodeoffset1, nodeoffset3, index, elemoffset, kcell_x1, kcell_x2, elemID;
-    index = icell_x2/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1) + 1 -
+    index = icell_x2/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1) + 1 -
     (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1-icell_x2)/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1);
     pumi_typeD_nodeoffset_fnptr[index](pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x2, &nodeoffset1, &nodeoffset3);
     elemoffset = pumi_mesh->elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->elemoffset_skip[isubmesh_x2];

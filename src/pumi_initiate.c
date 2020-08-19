@@ -82,7 +82,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
         }
       }
-      
+
       //pumi_initialize_locate_functions(pumi_mesh);
       pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
     }
@@ -297,7 +297,7 @@ void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->log_r = log(r_maxBL);
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r_t0_ratio = (r_maxBL-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
   }
-
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel_minus_1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel - 1;
   if (isubmesh==0){
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative = 0;
   }
@@ -351,7 +351,7 @@ void pumi_setsubmesh_x2(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->log_r = log(r_maxBL);
       ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->r_t0_ratio = (r_maxBL-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->t0;
   }
-
+  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel_minus_1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel - 1;
   if (isubmesh==0){
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative = 0;
   }
