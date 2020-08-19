@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
     pumi_initiate_mesh_options_t pumi_initiate_options;
     pumi_initiate_options.BL_cache_flag = BL_caching_flag;
     //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
-    
+
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_initiate_options);
 
@@ -264,9 +264,9 @@ int main(int argc, char *argv[])
       //isubmesh = particle_isactive[iparticle];
       //pumiMBBL_locatepoint_1D(pumi_mesh, coordinates[iparticle], isubmesh, &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
       //pumi_locate_function[isubmesh](pumi_mesh, isubmesh, coordinates[iparticle], &kcell, &Wgh2);
-      pumi_locate_submesh_and_cell(pumi_mesh, coordinates[iparticle], &isubmesh, &submesh_icell);
+      pumi_locate_submesh_and_cell(pumi_mesh, coordinates[iparticle], &isubmesh, &submesh_icell, pumi_x1);
       //printf("particle %d located at submesh %d and local cell %d\n",iparticle, isubmesh, submesh_icell );
-      pumi_calc_weights(pumi_mesh, isubmesh, submesh_icell, coordinates[iparticle], &kcell, &Wgh2);
+      pumi_calc_weights(pumi_mesh, isubmesh, submesh_icell, coordinates[iparticle], &kcell, &Wgh2, pumi_x1);
       Wgh1 = 1.0 - Wgh2;
       grid_weights[kcell]   += Wgh1;
       grid_weights[kcell+1] += Wgh2; //accumulate the weights for each particle

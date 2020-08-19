@@ -477,11 +477,11 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh){
 * \param prev_submeshID - old submesh ID of the pushed particle (i.e. before the push)
 * \param[out] pointers to new submesh ID and new local cell which will be populated inside the routine
 */
-void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID){
-    if (pumi_mesh->nsubmeshes_x1 == 1){
-        *submeshID = 0;
-    }
-    else{
+void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID, int dir){
+    //if (pumi_mesh->nsubmeshes_x1 == 1){
+    //    *submeshID = 0;
+    //}
+    //else{
         int isubmesh;
         int submesh_located = 0;
         for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
@@ -494,72 +494,10 @@ void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *su
         if (!(submesh_located)){
             *submeshID = pumi_mesh->nsubmeshes_x1-1;
         }
-    }
+    //}
 
-    *cellID = pumi_locatecell_fnptr[*submeshID](pumi_mesh, *submeshID, coords);
+    *cellID = pumi_locatecell_fnptr[dir][*submeshID](pumi_mesh, *submeshID, coords);
 
-}
-
-void pumi_locate_submesh_and_cell_x1(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID){
-
-    int isubmesh;
-    int submesh_located = 0;
-    for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-        if (coords < ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min){
-            *submeshID = isubmesh-1;
-            submesh_located++;
-            break;
-        }
-    }
-    if (!(submesh_located)){
-        *submeshID = pumi_mesh->nsubmeshes_x1-1;
-    }
-
-    *cellID = pumi_locatecell_fnptr_x1[*submeshID](pumi_mesh, *submeshID, coords);
-
-}
-
-void pumi_locate_submesh_and_cell_x2(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID){
-
-    int isubmesh;
-    int submesh_located = 0;
-    for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes_x2; isubmesh++){
-        if (coords < ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->coord_min){
-            *submeshID = isubmesh-1;
-            submesh_located++;
-            break;
-        }
-    }
-    if (!(submesh_located)){
-        *submeshID = pumi_mesh->nsubmeshes_x2-1;
-    }
-
-    *cellID = pumi_locatecell_fnptr_x2[*submeshID](pumi_mesh, *submeshID, coords);
-
-}
-
-/*
-* \brief Calculates new submesh ID with adjacency search and new local cell ID of a pushed particle analytically
-* \param *pumi_mesh pointer object to struct pumi_mesh
-* \param coords - new coordinate of the particle
-* \param prev_submeshID - old submesh ID of the pushed particle (i.e. before the push)
-* \param[out] pointers to new submesh ID and new local cell which will be populated inside the routine
-*/
-void pumi_update_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int *submeshID, int *cellID){
-    if (pumi_mesh->nsubmeshes_x1 == 1){
-        *submeshID = 0;
-    }
-    else{
-        *submeshID = prev_submeshID;
-        while(coords<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + *submeshID)->coord_min){
-            *submeshID -= 1;
-        }
-
-        while(coords>((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + *submeshID)->coord_max){
-            *submeshID += 1;
-        }
-    }
-    *cellID = pumi_locatecell_fnptr[*submeshID](pumi_mesh, *submeshID, coords);
 }
 
 /*
@@ -570,11 +508,11 @@ void pumi_update_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int pre
 * \param prev_cellID - old local cell ID of the pushed particle (i.e. before the push)
 * \param[out] pointers to new submesh ID and new local cell which will be populated inside the routine
 */
-void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
-    if (pumi_mesh->nsubmeshes_x1 == 1){
-        *submeshID = 0;
-    }
-    else{
+void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID, int dir){
+    //if (pumi_mesh->nsubmeshes_x1 == 1){
+    //    *submeshID = 0;
+    //}
+    //else{
         *submeshID = prev_submeshID;
         while(coords<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + *submeshID)->coord_min){
             *submeshID -= 1;
@@ -585,37 +523,8 @@ void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, 
             *submeshID += 1;
             prev_cellID = 0;
         }
-    }
-    *cellID = pumi_updatecell_fnptr[*submeshID](pumi_mesh, *submeshID, prev_cellID, coords);
-}
-
-void pumi_update_submesh_and_update_cell_x1(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
-    *submeshID = prev_submeshID;
-    while(coords<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + *submeshID)->coord_min){
-        *submeshID -= 1;
-        prev_cellID = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + *submeshID)->submesh_Nel - 1;
-    }
-
-    while(coords>((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + *submeshID)->coord_max){
-        *submeshID += 1;
-        prev_cellID = 0;
-    }
-    *cellID = pumi_updatecell_fnptr_x1[*submeshID](pumi_mesh, *submeshID, prev_cellID, coords);
-}
-
-void pumi_update_submesh_and_update_cell_x2(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
-    *submeshID = prev_submeshID;
-    while(coords<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + *submeshID)->coord_min){
-        *submeshID -= 1;
-        prev_cellID = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + *submeshID)->submesh_Nel - 1;
-    }
-
-    while(coords>((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + *submeshID)->coord_max){
-        *submeshID += 1;
-        prev_cellID = 0;
-    }
-
-    *cellID = pumi_updatecell_fnptr_x2[*submeshID](pumi_mesh, *submeshID, prev_cellID, coords);
+    //}
+    *cellID = pumi_updatecell_fnptr[dir][*submeshID](pumi_mesh, *submeshID, prev_cellID, coords);
 }
 
 /*
@@ -626,28 +535,16 @@ void pumi_update_submesh_and_update_cell_x2(pumi_mesh_t *pumi_mesh, double coord
 * \param[in] coord coordinate of the particle nodal weight is to be evaluated
 * \param[out] pointers to global cell and weight2 which will be populated inside the routine
 */
-void pumi_calc_weights(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
-    pumi_calc_weights_fnptr[isubmesh](pumi_mesh, isubmesh, local_cell, coord, global_cell, weight);
+void pumi_calc_weights(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight, int dir){
+    pumi_calc_weights_fnptr[dir][isubmesh](pumi_mesh, isubmesh, local_cell, coord, global_cell, weight);
 }
 
-void pumi_calc_weights_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
-    pumi_calc_weights_fnptr_x1[isubmesh](pumi_mesh, isubmesh, local_cell, coord, global_cell, weight);
-}
-
-void pumi_calc_weights_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
-    pumi_calc_weights_fnptr_x2[isubmesh](pumi_mesh, isubmesh, local_cell, coord, global_cell, weight);
-}
 /*
 * \brief subroutine to locate the cell number of a particle inside a uniform block
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] submesh ID of the uniform block
 * \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
-int pumi_locatecell_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, double coord){
-    int icell = (coord - ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
-    return icell;
-}
-
 int pumi_locatecell_in_uni_x1(pumi_mesh_t *pumi_mesh, int isubmesh_x1, double coord_x1){
     int icell_x1 = (coord_x1 - ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->coord_min)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->t0;
     return icell_x1;
@@ -665,11 +562,6 @@ int pumi_locatecell_in_uni_x2(pumi_mesh_t *pumi_mesh, int isubmesh_x2, double co
 * \param[in] local cell ID of particle in the uniform block
 * \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
-int pumi_updatecell_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
-    icell = (coord - ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
-    return icell;
-}
-
 int pumi_updatecell_in_uni_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord){
     icell = (coord - ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
     return icell;
@@ -687,11 +579,6 @@ int pumi_updatecell_in_uni_x2(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, d
 * \param[in] local cell ID of particle in the uniform block
 * \param[in] coord coordinate of the particle whose cell number and local weights is to be evaluated
 */
-void pumi_calc_weights_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
-    *weight = (coord - (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0*local_cell))/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
-    *global_cell = local_cell + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
-}
-
 void pumi_calc_weights_in_uni_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, double coord, int *global_cell, double* weight){
     *weight = (coord - (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0*local_cell))/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
     *global_cell = local_cell + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
@@ -1097,6 +984,7 @@ double pumi_calc_elem_size_in_topBL_analytic(pumi_mesh_t *pumi_mesh, int isubmes
 * \details Allocates memory to function pointer *pumi_locatecell_fnptr, *pumi_updatecell_fnptr, *pumi_calc_weights_fnptr
 and assign relevant locate/update/weight-calculate pumi routines to each submesh during pumi mesh initialization
 */
+/*
 void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh){
     pumi_locatecell_fnptr = malloc(pumi_mesh->nsubmeshes_x1*sizeof(pumi_locatecell_ptr));
     pumi_updatecell_fnptr = malloc(pumi_mesh->nsubmeshes_x1*sizeof(pumi_updatecell_ptr));
@@ -1157,56 +1045,79 @@ void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh
         }
     }
 }
+*/
+void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh){
+    pumi_locatecell_fnptr = (pumi_locatecell_ptr**) malloc(MAX_DIM*sizeof(pumi_locatecell_ptr *));
+    pumi_locatecell_fnptr[0] = (pumi_locatecell_ptr*) malloc(pumi_mesh->nsubmeshes_x1*sizeof(pumi_locatecell_ptr));
 
-void pumi_initialize_locatecell_and_calcweights_functions_2D(pumi_mesh_t *pumi_mesh){
-    pumi_locatecell_fnptr_x1 = malloc(pumi_mesh->nsubmeshes_x1*sizeof(pumi_locatecell_ptr));
-    pumi_locatecell_fnptr_x2 = malloc(pumi_mesh->nsubmeshes_x2*sizeof(pumi_locatecell_ptr));
     pumi_calc_elem_size_fnptr = (pumi_calc_elem_size_ptr**) malloc(MAX_DIM * sizeof(pumi_calc_elem_size_ptr *));
     pumi_calc_elem_size_fnptr[0] = (pumi_calc_elem_size_ptr*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_calc_elem_size_ptr));
-    pumi_calc_elem_size_fnptr[1] = (pumi_calc_elem_size_ptr*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_calc_elem_size_ptr));
-    pumi_updatecell_fnptr_x1 = malloc(pumi_mesh->nsubmeshes_x1*sizeof(pumi_updatecell_ptr));
-    pumi_updatecell_fnptr_x2 = malloc(pumi_mesh->nsubmeshes_x2*sizeof(pumi_updatecell_ptr));
-    pumi_calc_weights_fnptr_x1 = malloc(pumi_mesh->nsubmeshes_x1*sizeof(pumi_calc_weights_ptr));
-    pumi_calc_weights_fnptr_x2 = malloc(pumi_mesh->nsubmeshes_x2*sizeof(pumi_calc_weights_ptr));
+
+    pumi_updatecell_fnptr = (pumi_updatecell_ptr**) malloc(MAX_DIM * sizeof(pumi_updatecell_ptr *));
+    pumi_updatecell_fnptr[0] = (pumi_updatecell_ptr*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_updatecell_ptr));
+
+    pumi_calc_weights_fnptr = (pumi_calc_weights_ptr**) malloc(MAX_DIM * sizeof(pumi_calc_weights_ptr *));
+    pumi_calc_weights_fnptr[0] = (pumi_calc_weights_ptr*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_calc_weights_ptr));
+
+    if (pumi_mesh->ndim == 1){
+        pumi_locatecell_fnptr[1] = NULL;
+        pumi_calc_elem_size_fnptr[1] = NULL;
+        pumi_updatecell_fnptr[1] = NULL;
+        pumi_calc_weights_fnptr[1] = NULL;
+    }
+    else{
+        pumi_locatecell_fnptr[1] = (pumi_locatecell_ptr*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_locatecell_ptr));
+        pumi_calc_elem_size_fnptr[1] = (pumi_calc_elem_size_ptr*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_calc_elem_size_ptr));
+        pumi_updatecell_fnptr[1] = (pumi_updatecell_ptr*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_updatecell_ptr));
+        pumi_calc_weights_fnptr[1] = (pumi_calc_weights_ptr*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_calc_weights_ptr));
+    }
+
+    pumi_calc_node_coords_fnptr = malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_calc_node_coords_ptr));
+
     int isubmesh, jsubmesh;
     for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
         if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & leftBL){
-            pumi_locatecell_fnptr_x1[isubmesh] = &pumi_locatecell_in_leftBL;
+            pumi_locatecell_fnptr[0][isubmesh] = &pumi_locatecell_in_leftBL;
             printf("submesh=%d -- leftBL locate cell routine initialized\n",isubmesh );
             if (pumi_mesh->BL_elem_coords_cache_flag){
-                pumi_calc_weights_fnptr_x1[isubmesh] = &pumi_calc_weights_in_leftBL_cached;
-                pumi_updatecell_fnptr_x1[isubmesh] = &pumi_updatecell_in_leftBL_cached;
+                pumi_calc_weights_fnptr[0][isubmesh] = &pumi_calc_weights_in_leftBL_cached;
+                pumi_updatecell_fnptr[0][isubmesh] = &pumi_updatecell_in_leftBL_cached;
                 pumi_calc_elem_size_fnptr[0][isubmesh] = &pumi_calc_elem_size_in_leftBL_cached;
+                pumi_calc_node_coords_fnptr[isubmesh] = &pumi_calc_node_coords_in_leftBL_cached;
                 printf("submesh=%d -- leftBL calc weight and cell update (with cache) routines initialized\n",isubmesh );
             }
             else{
-                pumi_calc_weights_fnptr_x1[isubmesh] = &pumi_calc_weights_in_leftBL_analytic;
-                pumi_updatecell_fnptr_x1[isubmesh] = &pumi_updatecell_in_leftBL_analytic;
+                pumi_calc_weights_fnptr[0][isubmesh] = &pumi_calc_weights_in_leftBL_analytic;
+                pumi_updatecell_fnptr[0][isubmesh] = &pumi_updatecell_in_leftBL_analytic;
                 pumi_calc_elem_size_fnptr[0][isubmesh] = &pumi_calc_elem_size_in_leftBL_analytic;
+                pumi_calc_node_coords_fnptr[isubmesh] = &pumi_calc_node_coords_in_leftBL_analytic;
                 printf("submesh=%d -- leftBL calc weight and cell update (without cache) routines initialized\n",isubmesh );
             }
         }
         else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & rightBL){
-            pumi_locatecell_fnptr_x1[isubmesh] = &pumi_locatecell_in_rightBL;
+            pumi_locatecell_fnptr[0][isubmesh] = &pumi_locatecell_in_rightBL;
             printf("submesh=%d -- rightBL locate cell routine initialized\n",isubmesh );
             if (pumi_mesh->BL_elem_coords_cache_flag){
-                pumi_calc_weights_fnptr_x1[isubmesh] = &pumi_calc_weights_in_rightBL_cached;
-                pumi_updatecell_fnptr_x1[isubmesh] = &pumi_updatecell_in_rightBL_cached;
+                pumi_calc_weights_fnptr[0][isubmesh] = &pumi_calc_weights_in_rightBL_cached;
+                pumi_updatecell_fnptr[0][isubmesh] = &pumi_updatecell_in_rightBL_cached;
                 pumi_calc_elem_size_fnptr[0][isubmesh] = &pumi_calc_elem_size_in_rightBL_cached;
+                pumi_calc_node_coords_fnptr[isubmesh] = &pumi_calc_node_coords_in_rightBL_cached;
                 printf("submesh=%d -- rightBL calc weights and cell update (with cache) routines initialized\n",isubmesh );
             }
             else{
-                pumi_calc_weights_fnptr_x1[isubmesh] = &pumi_calc_weights_in_rightBL_analytic;
-                pumi_updatecell_fnptr_x1[isubmesh] = &pumi_updatecell_in_rightBL_analytic;
+                pumi_calc_weights_fnptr[0][isubmesh] = &pumi_calc_weights_in_rightBL_analytic;
+                pumi_updatecell_fnptr[0][isubmesh] = &pumi_updatecell_in_rightBL_analytic;
                 pumi_calc_elem_size_fnptr[0][isubmesh] = &pumi_calc_elem_size_in_rightBL_analytic;
+                pumi_calc_node_coords_fnptr[isubmesh] = &pumi_calc_node_coords_in_rightBL_analytic;
                 printf("submesh=%d -- rightBL calc weight and cell update (without cache) routines initialized\n",isubmesh );
             }
         }
         else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & uniform){
-            pumi_locatecell_fnptr_x1[isubmesh] = &pumi_locatecell_in_uni_x1;
-            pumi_updatecell_fnptr_x1[isubmesh] = &pumi_updatecell_in_uni_x1;
-            pumi_calc_weights_fnptr_x1[isubmesh] = &pumi_calc_weights_in_uni_x1;
+            pumi_locatecell_fnptr[0][isubmesh] = &pumi_locatecell_in_uni_x1;
+            pumi_updatecell_fnptr[0][isubmesh] = &pumi_updatecell_in_uni_x1;
+            pumi_calc_weights_fnptr[0][isubmesh] = &pumi_calc_weights_in_uni_x1;
             pumi_calc_elem_size_fnptr[0][isubmesh] = &pumi_calc_elem_size_in_uni_x1;
+            pumi_calc_node_coords_fnptr[isubmesh] = &pumi_calc_node_coords_in_uni;
             printf("submesh=%d -- uniform routines initialized\n",isubmesh );
         }
         else{
@@ -1214,78 +1125,59 @@ void pumi_initialize_locatecell_and_calcweights_functions_2D(pumi_mesh_t *pumi_m
             exit(0);
         }
     }
-
-    for(jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & bottomBL){
-            pumi_locatecell_fnptr_x2[jsubmesh] = &pumi_locatecell_in_bottomBL;
-            printf("submesh=%d -- bottomBL locate cell routine initialized\n",jsubmesh );
-            if (pumi_mesh->BL_elem_coords_cache_flag){
-                pumi_calc_weights_fnptr_x2[jsubmesh] = &pumi_calc_weights_in_bottomBL_cached;
-                pumi_updatecell_fnptr_x2[jsubmesh] = &pumi_updatecell_in_bottomBL_cached;
-                pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_bottomBL_cached;
-                printf("submesh=%d -- bottomBL calc weight and cell update (with cache) routines initialized\n",jsubmesh );
+    if (pumi_mesh->ndim > 1){
+        for(jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
+            if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & bottomBL){
+                pumi_locatecell_fnptr[1][jsubmesh] = &pumi_locatecell_in_bottomBL;
+                printf("submesh=%d -- bottomBL locate cell routine initialized\n",jsubmesh );
+                if (pumi_mesh->BL_elem_coords_cache_flag){
+                    pumi_calc_weights_fnptr[1][jsubmesh] = &pumi_calc_weights_in_bottomBL_cached;
+                    pumi_updatecell_fnptr[1][jsubmesh] = &pumi_updatecell_in_bottomBL_cached;
+                    pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_bottomBL_cached;
+                    printf("submesh=%d -- bottomBL calc weight and cell update (with cache) routines initialized\n",jsubmesh );
+                }
+                else{
+                    pumi_calc_weights_fnptr[1][jsubmesh] = &pumi_calc_weights_in_bottomBL_analytic;
+                    pumi_updatecell_fnptr[1][jsubmesh] = &pumi_updatecell_in_bottomBL_analytic;
+                    pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_bottomBL_analytic;
+                    printf("submesh=%d -- bottomBL calc weight and cell update (without cache) routines initialized\n",jsubmesh );
+                }
+            }
+            else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & topBL){
+                pumi_locatecell_fnptr[1][jsubmesh] = &pumi_locatecell_in_topBL;
+                printf("submesh=%d -- topBL locate cell routine initialized\n",jsubmesh );
+                if (pumi_mesh->BL_elem_coords_cache_flag){
+                    pumi_calc_weights_fnptr[1][jsubmesh] = &pumi_calc_weights_in_topBL_cached;
+                    pumi_updatecell_fnptr[1][jsubmesh] = &pumi_updatecell_in_topBL_cached;
+                    pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_topBL_cached;
+                    printf("submesh=%d -- topBL calc weights and cell update (with cache) routines initialized\n",jsubmesh );
+                }
+                else{
+                    pumi_calc_weights_fnptr[1][jsubmesh] = &pumi_calc_weights_in_topBL_analytic;
+                    pumi_updatecell_fnptr[1][jsubmesh] = &pumi_updatecell_in_topBL_analytic;
+                    pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_topBL_analytic;
+                    printf("submesh=%d -- topBL calc weight and cell update (without cache) routines initialized\n",jsubmesh );
+                }
+            }
+            else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & uniform){
+                pumi_locatecell_fnptr[1][jsubmesh] = &pumi_locatecell_in_uni_x2;
+                pumi_updatecell_fnptr[1][jsubmesh] = &pumi_updatecell_in_uni_x2;
+                pumi_calc_weights_fnptr[1][jsubmesh] = &pumi_calc_weights_in_uni_x2;
+                pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_uni_x2;
+                printf("submesh=%d -- uniform routines initialized\n",jsubmesh );
             }
             else{
-                pumi_calc_weights_fnptr_x2[jsubmesh] = &pumi_calc_weights_in_bottomBL_analytic;
-                pumi_updatecell_fnptr_x2[jsubmesh] = &pumi_updatecell_in_bottomBL_analytic;
-                pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_bottomBL_analytic;
-                printf("submesh=%d -- bottomBL calc weight and cell update (without cache) routines initialized\n",jsubmesh );
+                printf("Error in meshtype for submesh %d \n", jsubmesh);
+                exit(0);
             }
-        }
-        else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & topBL){
-            pumi_locatecell_fnptr_x2[jsubmesh] = &pumi_locatecell_in_topBL;
-            printf("submesh=%d -- topBL locate cell routine initialized\n",jsubmesh );
-            if (pumi_mesh->BL_elem_coords_cache_flag){
-                pumi_calc_weights_fnptr_x2[jsubmesh] = &pumi_calc_weights_in_topBL_cached;
-                pumi_updatecell_fnptr_x2[jsubmesh] = &pumi_updatecell_in_topBL_cached;
-                pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_topBL_cached;
-                printf("submesh=%d -- topBL calc weights and cell update (with cache) routines initialized\n",jsubmesh );
-            }
-            else{
-                pumi_calc_weights_fnptr_x2[jsubmesh] = &pumi_calc_weights_in_topBL_analytic;
-                pumi_updatecell_fnptr_x2[jsubmesh] = &pumi_updatecell_in_topBL_analytic;
-                pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_topBL_analytic;
-                printf("submesh=%d -- topBL calc weight and cell update (without cache) routines initialized\n",jsubmesh );
-            }
-        }
-        else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & uniform){
-            pumi_locatecell_fnptr_x2[jsubmesh] = &pumi_locatecell_in_uni_x2;
-            pumi_updatecell_fnptr_x2[jsubmesh] = &pumi_updatecell_in_uni_x2;
-            pumi_calc_weights_fnptr_x2[jsubmesh] = &pumi_calc_weights_in_uni_x2;
-            pumi_calc_elem_size_fnptr[1][jsubmesh] = &pumi_calc_elem_size_in_uni_x2;
-            printf("submesh=%d -- uniform routines initialized\n",jsubmesh );
-        }
-        else{
-            printf("Error in meshtype for submesh %d \n", jsubmesh);
-            exit(0);
         }
     }
-    /*for(jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & bottomBL){
-            pumi_locatecell_fnptr_x2[jsubmesh] = &pumi_locatecell_in_bottomBL;
-            pumi_calc_elem_size_fnptr_x2[jsubmesh] = &pumi_calc_elem_size_in_bottomBL_analytic;
-            printf("submesh=%d -- bottomBL locate cell routine initialized\n",jsubmesh );
-        }
-        else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & topBL){
-            pumi_locatecell_fnptr_x2[jsubmesh] = &pumi_locatecell_in_topBL;
-            pumi_calc_elem_size_fnptr_x2[jsubmesh] = &pumi_calc_elem_size_in_topBL_analytic;
-            printf("submesh=%d -- topBL locate cell routine initialized\n",jsubmesh );
-        }
-        else if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->pumi_flag & uniform){
-            pumi_locatecell_fnptr_x2[jsubmesh] = &pumi_locatecell_in_uni_x2;
-            pumi_calc_elem_size_fnptr_x2[jsubmesh] = &pumi_calc_elem_size_in_uni_x2;
-            printf("submesh=%d -- uniform routines initialized\n",jsubmesh );
-        }
-        else{
-            printf("Error in meshtype for submesh %d \n", jsubmesh);
-            exit(0);
-        }
-    }*/
 }
 
 /*!
 * \brief Deallocates/Frees the memory allocated to the funciton pointers pumi_*_fnptr
 */
+/*
 void pumi_finalize_locatecell_and_calcweights_functions(){
     free(pumi_locatecell_fnptr);
     free(pumi_updatecell_fnptr);
@@ -1295,17 +1187,21 @@ void pumi_finalize_locatecell_and_calcweights_functions(){
     free(pumi_calc_elem_size_fnptr[1]);
     free(pumi_calc_elem_size_fnptr);
 }
-
-void pumi_finalize_locatecell_and_calcweights_functions_2D(){
-    free(pumi_locatecell_fnptr_x1);
-    free(pumi_locatecell_fnptr_x2);
-    free(pumi_updatecell_fnptr_x1);
-    free(pumi_updatecell_fnptr_x2);
-    free(pumi_calc_weights_fnptr_x1);
-    free(pumi_calc_weights_fnptr_x2);
+*/
+void pumi_finalize_locatecell_and_calcweights_functions(){
+    free(pumi_locatecell_fnptr[0]);
+    free(pumi_locatecell_fnptr[1]);
+    free(pumi_locatecell_fnptr);
+    free(pumi_updatecell_fnptr[0]);
+    free(pumi_updatecell_fnptr[1]);
+    free(pumi_updatecell_fnptr);
+    free(pumi_calc_weights_fnptr[0]);
+    free(pumi_calc_weights_fnptr[1]);
+    free(pumi_calc_weights_fnptr);
     free(pumi_calc_elem_size_fnptr[0]);
     free(pumi_calc_elem_size_fnptr[1]);
     free(pumi_calc_elem_size_fnptr);
+    free(pumi_calc_node_coords_fnptr);
 }
 
 int pumi_calc_elementID_and_nodeID_typeA(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3){

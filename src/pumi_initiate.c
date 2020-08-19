@@ -236,7 +236,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             }
         }
 
-        pumi_initialize_locatecell_and_calcweights_functions_2D(pumi_mesh);
+        pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
     }
 
   }
