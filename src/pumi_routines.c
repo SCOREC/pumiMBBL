@@ -1412,7 +1412,7 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
             return false;
         }
         else{
-            if (left_edge){
+            if (left_edge & !top_edge & !bottom_edge){
                 if (isubmesh==0){
                     return false;
                 }
@@ -1426,35 +1426,41 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 }
             }
 
-            if (right_edge){
-                if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
-                    return false;
-                }
-                else{
-                    if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
-                        return true;
+            if (left_edge & top_edge){
+                if (jsubmesh==pumi_mesh->nsubmeshes_x2-1){
+                    if (isubmesh==0){
+                        return false;
                     }
                     else{
-                        return false;
+                        if(pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==0){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh-1][jsubmesh] | pumi_mesh->isactive[isubmesh-1][jsubmesh+1] | pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
                     }
                 }
             }
 
-            if (bottom_edge){
-                if (jsubmesh==0){
-                    return false;
-                }
-                else{
-                    if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
-                        return true;
-                    }
-                    else{
-                        return false;
-                    }
-                }
-            }
-
-            if (top_edge){
+            if (top_edge & !left_edge & !right_edge){
                 if (jsubmesh==pumi_mesh->nsubmeshes_x2-1){
                     return false;
                 }
@@ -1468,6 +1474,136 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 }
             }
 
+            if (top_edge & right_edge){
+                if (jsubmesh==pumi_mesh->nsubmeshes_x2-1){
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        return false;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh+1][jsubmesh] | pumi_mesh->isactive[isubmesh+1][jsubmesh+1] | pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (right_edge & !top_edge & !bottom_edge){
+                if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                    return false;
+                }
+                else{
+                    if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+
+            if (right_edge & bottom_edge){
+                if (jsubmesh==0){
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        return false;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh+1][jsubmesh] | pumi_mesh->isactive[isubmesh+1][jsubmesh-1] | pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (bottom_edge & !left_edge &!right_edge){
+                if (jsubmesh==0){
+                    return false;
+                }
+                else{
+                    if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+
+            if (bottom_edge & left_edge){
+                if (jsubmesh==0){
+                    if (isubmesh==0){
+                        return false;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==0){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh-1][jsubmesh] | pumi_mesh->isactive[isubmesh-1][jsubmesh-1] | pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+
+            }
         }
     }
 

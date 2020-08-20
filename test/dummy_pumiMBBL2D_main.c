@@ -478,19 +478,22 @@ int main(int argc, char *argv[])
         printf("4 int for FullMesh      = %2.8f s\n2 int for FullMesh      = %2.8f s\nstd.hPIC without locate = %2.8f s\n", time1, time2, time3);
     }
     */
-
-    int icell_x1, icell_x2, kcell, node1, node3;
+    int cell_count = 0;
+    int icell_x1, icell_x2, kcell, kcell_x1, kcell_x2, node1, node3;
     double elemsize, elemsize_new;
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             if (pumi_mesh->isactive[isubmesh][jsubmesh]){
                 for (icell_x2=0; icell_x2<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; icell_x2++){
                     for (icell_x1=0; icell_x1<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; icell_x1++){
-                        kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, icell_x1, icell_x2, &node1, &node3);
+                        kcell_x1 = icell_x1 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
+                        kcell_x2 = icell_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
+                        kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
                         printf("Cell %4d ",kcell);
                         elemsize_new = pumi_calc_elem_size_fnptr[0][isubmesh](pumi_mesh, isubmesh, icell_x1)*
                                        pumi_calc_elem_size_fnptr[1][jsubmesh](pumi_mesh, jsubmesh, icell_x2);
-                        printf("Area=%2.8f \n",elemsize_new);
+                                       cell_count++;
+                        printf("Area=%2.8f cell_count=%d\n",elemsize_new, cell_count);
                     }
                 }
             }
@@ -526,6 +529,7 @@ int main(int argc, char *argv[])
         }
     }
     */
+
     pumi_finalize(pumi_mesh);
     return 0;
 }
