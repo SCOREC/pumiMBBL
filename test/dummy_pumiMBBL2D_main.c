@@ -520,15 +520,21 @@ int main(int argc, char *argv[])
         }
     }
     */
-    /*
+
     bool node_isactive;
+    int node_count = 0;
     for (inp_x2=0; inp_x2<pumi_mesh->pumi_Nnp_total_x2; inp_x2++){
         for (inp_x1=0; inp_x1<pumi_mesh->pumi_Nnp_total_x1; inp_x1++){
-            node_isactive = pumi_is_node_active(pumi_mesh, inp_x1, inp_x2);
-            printf("inp_x1=%3d inp_x2=%3d node=%d\n", inp_x1, inp_x2, node_isactive );
+            node_isactive = pumi_is_node_active(pumi_mesh, inp_x1, inp_x2);//, &isubmesh, &jnp_x1, &jsubmesh, &jnp_x2 );
+            if (node_isactive){
+                //inp = pumi_global_node_ID(pumi_mesh, isubmesh, jnp_x1, jsubmesh, jnp_x2);
+                printf("inp_x1=%3d inp_x2=%3d nodeID=%3d\n", inp_x1, inp_x2, node_count );
+                node_count++;
+                //printf("inp_x1=%3d inp_x2=%3d node=%d -- [X%d - %2d] [Y%d - %2d]\n", inp_x1, inp_x2, node_isactive, isubmesh, jnp_x1, jsubmesh, jnp_x2);
+            }
         }
     }
-    */
+
 
     pumi_finalize(pumi_mesh);
     return 0;

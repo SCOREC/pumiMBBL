@@ -1364,7 +1364,7 @@ bool pumi_mesh_with_no_inactive_blocks(pumi_mesh_t *pumi_mesh){
     return is_fullmesh;
 }
 
-bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
+bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2){//, int *isubmesh_x1, int *inp_x1, int *isubmesh_x2, int *inp_x2){
     int isubmesh, jsubmesh, local_x1_node, local_x2_node;
     bool left_edge, right_edge, bottom_edge, top_edge;
 
@@ -1374,8 +1374,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
         int submesh_right_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
         left_edge =  false;
         right_edge = false;
-        if (inp_x1 >= submesh_left_node && inp_x1 <= submesh_right_node){
-            local_x1_node = inp_x1 - submesh_left_node;
+        if (node_x1 >= submesh_left_node && node_x1 <= submesh_right_node){
+            local_x1_node = node_x1 - submesh_left_node;
             if (local_x1_node == 0){
                 left_edge = true;
             }
@@ -1392,8 +1392,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
         int submesh_top_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel;
         bottom_edge =  false;
         top_edge = false;
-        if (inp_x2 >= submesh_bottom_node && inp_x2 <= submesh_top_node){
-            local_x2_node = inp_x2 - submesh_bottom_node;
+        if (node_x2 >= submesh_bottom_node && node_x2 <= submesh_top_node){
+            local_x2_node = node_x2 - submesh_bottom_node;
             if (local_x2_node == 0){
                 bottom_edge = true;
             }
@@ -1403,6 +1403,11 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
             break;
         }
     }
+
+    //*isubmesh_x1 = isubmesh;
+    //*inp_x1 = local_x1_node;
+    //*isubmesh_x2 = jsubmesh;
+    //*inp_x2 = local_x2_node;
 
     if (pumi_mesh->isactive[isubmesh][jsubmesh]){
         return true;
@@ -1418,6 +1423,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 }
                 else{
                     if (pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                        //*isubmesh_x1 = isubmesh-1;
+                        //*inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
                         return true;
                     }
                     else{
@@ -1433,6 +1440,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                     }
                     else{
                         if(pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            //*isubmesh_x1 = isubmesh-1;
+                            //*inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
                             return true;
                         }
                         else{
@@ -1443,6 +1452,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 else{
                     if (isubmesh==0){
                         if(pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            //*isubmesh_x2 = jsubmesh+1;
+                            //*inp_x2 = 0;
                             return true;
                         }
                         else{
@@ -1453,6 +1464,23 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                         if (pumi_mesh->isactive[isubmesh-1][jsubmesh] | pumi_mesh->isactive[isubmesh-1][jsubmesh+1] | pumi_mesh->isactive[isubmesh][jsubmesh+1]){
                             return true;
                         }
+                        /*if (pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            *isubmesh_x1 = isubmesh-1;
+                            *inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh-1][jsubmesh+1]){
+                            *isubmesh_x1 = isubmesh-1;
+                            *inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
+                            *isubmesh_x2 = jsubmesh+1;
+                            *inp_x2 = 0;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            *isubmesh_x2 = jsubmesh+1;
+                            *inp_x2 = 0;
+                            return true;
+                        }*/
                         else{
                             return false;
                         }
@@ -1466,6 +1494,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 }
                 else{
                     if (pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                        //*isubmesh_x2 = jsubmesh+1;
+                        //*inp_x2 = 0;
                         return true;
                     }
                     else{
@@ -1481,6 +1511,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                     }
                     else{
                         if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            //*isubmesh_x1 = isubmesh+1;
+                            //*inp_x1 = 0;
                             return true;
                         }
                         else{
@@ -1491,6 +1523,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 else{
                     if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
                         if(pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            //*isubmesh_x2 = jsubmesh+1;
+                            //*inp_x2 = 0;
                             return true;
                         }
                         else{
@@ -1501,6 +1535,23 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                         if (pumi_mesh->isactive[isubmesh+1][jsubmesh] | pumi_mesh->isactive[isubmesh+1][jsubmesh+1] | pumi_mesh->isactive[isubmesh][jsubmesh+1]){
                             return true;
                         }
+                        /*if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            *isubmesh_x1 = isubmesh+1;
+                            *inp_x1 = 0;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh+1][jsubmesh+1]){
+                            *isubmesh_x1 = isubmesh+1;
+                            *inp_x1 = 0;
+                            *isubmesh_x2 = jsubmesh+1;
+                            *inp_x2 = 0;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            *isubmesh_x2 = jsubmesh+1;
+                            *inp_x2 = 0;
+                            return true;
+                        }*/
                         else{
                             return false;
                         }
@@ -1514,6 +1565,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 }
                 else{
                     if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                        //*isubmesh_x1 = isubmesh+1;
+                        //*inp_x1 = 0;
                         return true;
                     }
                     else{
@@ -1529,6 +1582,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                     }
                     else{
                         if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            //*isubmesh_x1 = isubmesh+1;
+                            //*inp_x1 = 0;
                             return true;
                         }
                         else{
@@ -1539,6 +1594,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 else{
                     if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
                         if(pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            //*isubmesh_x2 = jsubmesh-1;
+                            //*inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
                             return true;
                         }
                         else{
@@ -1549,6 +1606,23 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                         if (pumi_mesh->isactive[isubmesh+1][jsubmesh] | pumi_mesh->isactive[isubmesh+1][jsubmesh-1] | pumi_mesh->isactive[isubmesh][jsubmesh-1]){
                             return true;
                         }
+                        /*if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            *isubmesh_x1 = isubmesh+1;
+                            *inp_x1 = 0;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh+1][jsubmesh-1]){
+                            *isubmesh_x1 = isubmesh+1;
+                            *inp_x1 = 0;
+                            *isubmesh_x2 = jsubmesh-1;
+                            *inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            *isubmesh_x2 = jsubmesh-1;
+                            *inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
+                            return true;
+                        }*/
                         else{
                             return false;
                         }
@@ -1562,6 +1636,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 }
                 else{
                     if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                        //*isubmesh_x2 = jsubmesh-1;
+                        //*inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
                         return true;
                     }
                     else{
@@ -1577,6 +1653,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                     }
                     else{
                         if(pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            //*isubmesh_x1 = isubmesh-1;
+                            //*inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
                             return true;
                         }
                         else{
@@ -1587,6 +1665,8 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                 else{
                     if (isubmesh==0){
                         if(pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            //*isubmesh_x2 = jsubmesh-1;
+                            //*inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
                             return true;
                         }
                         else{
@@ -1597,6 +1677,23 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
                         if (pumi_mesh->isactive[isubmesh-1][jsubmesh] | pumi_mesh->isactive[isubmesh-1][jsubmesh-1] | pumi_mesh->isactive[isubmesh][jsubmesh-1]){
                             return true;
                         }
+                        /*if (pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            *isubmesh_x1 = isubmesh-1;
+                            *inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh-1][jsubmesh-1]){
+                            *isubmesh_x1 = isubmesh-1;
+                            *inp_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh-1)->submesh_Nel;
+                            *isubmesh_x2 = jsubmesh-1;
+                            *inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
+                            return true;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            *isubmesh_x2 = jsubmesh-1;
+                            *inp_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh-1)->submesh_Nel;
+                            return true;
+                        }*/
                         else{
                             return false;
                         }
@@ -1608,6 +1705,41 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inp_x1, int inp_x2){
     }
 
 }
+/*
+int pumi_global_node_ID(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int inp_x1, int isubmesh_x2, int inp_x2){
+    int kcell_x1, kcell_x2, node1, node3;
+    if (inp_x1 == 0){
+        kcell_x1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->Nel_cumulative;
+    }
+    else{
+        kcell_x1 = (inp_x1-1)+((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->Nel_cumulative;
+    }
+    if (inp_x2 == 0){
+        kcell_x2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->Nel_cumulative;
+    }
+    else{
+        kcell_x2 = (inp_x2-1)+((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->Nel_cumulative;
+    }
+    pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh_x1, isubmesh_x2, kcell_x1, kcell_x2, &node1, &node3);
+    //printf("node1 = %3d node3 = %3d\n", node1, node3);
+    if (inp_x1 == 0){
+        if (inp_x2 == 0){
+            return node1;
+        }
+        else{
+            return node3;
+        }
+    }
+    else{
+        if (inp_x2 == 0){
+            return node1+1;
+        }
+        else{
+            return node3+1;
+        }
+    }
+}
+*/
 
 void pumi_initialize_nodeID_functions(pumi_mesh_t *pumi_mesh){
     pumi_nodeID_fnptr = (pumi_nodeID_ptr**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_nodeID_ptr *));
