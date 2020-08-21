@@ -7,9 +7,15 @@
 
 int pumi_total_elements(pumi_mesh_t *pumi_mesh);
 int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh);
+int pumi_total_elements_2D(pumi_mesh_t *pumi_mesh);
+int pumi_total_nodes(pumi_mesh_t *pumi_mesh);
+int pumi_total_nodes_1D(pumi_mesh_t *pumi_mesh);
+int pumi_total_nodes_2D(pumi_mesh_t *pumi_mesh);
 int pumi_submesh_total_elements_1D(pumi_mesh_t *pumi_mesh, int isubmesh);
-double pumi_global_x_left_1D(pumi_mesh_t *pumi_mesh);
-double pumi_global_x_right_1D(pumi_mesh_t *pumi_mesh);
+double pumi_global_x1_min(pumi_mesh_t *pumi_mesh);
+double pumi_global_x1_max(pumi_mesh_t *pumi_mesh);
+double pumi_global_x2_min(pumi_mesh_t *pumi_mesh);
+double pumi_global_x2_max(pumi_mesh_t *pumi_mesh);
 
 //void pumi_locate_in_uni(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
 //void pumi_locate_in_leftBL(pumi_mesh_t *pumi_mesh, int isubmesh, double coord, int *cell, double *weight);
@@ -60,6 +66,9 @@ double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell,
 int pumi_dummy_elem_node_ID(double coord_x1, double coord_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
 int pumi_dummy_elem_node_ID_v2(int kcell_x1, int kcell_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
 
+
+typedef int (*pumi_locatesubmesh_ptr)(pumi_mesh_t*, double);
+pumi_locatesubmesh_ptr pumi_locatesubmesh_fnptr[MAX_DIM];
 typedef int (*pumi_locatecell_ptr)(pumi_mesh_t*, int, double);
 pumi_locatecell_ptr **pumi_locatecell_fnptr;
 typedef void (*pumi_calc_weights_ptr)(pumi_mesh_t*, int, int, double, int*, double*);
@@ -71,6 +80,8 @@ pumi_calc_elem_size_ptr **pumi_calc_elem_size_fnptr;
 void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh);
 void pumi_finalize_locatecell_and_calcweights_functions();
 
+typedef int (*pumi_updatesubmesh_ptr)(pumi_mesh_t*, double, int, int*);
+pumi_updatesubmesh_ptr pumi_updatesubmesh_fnptr[MAX_DIM];
 typedef int (*pumi_updatecell_ptr)(pumi_mesh_t*, int, int, double);
 pumi_updatecell_ptr **pumi_updatecell_fnptr;
 int pumi_updatecell_in_uni_x1(pumi_mesh_t *pumi_mesh, int isubmesh, int icell, double coord);

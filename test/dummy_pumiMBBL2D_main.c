@@ -6,6 +6,18 @@
 #include <string.h>
 #include "pumiMBBL.h"
 
+void write2file(double *field, int size, int ID){
+    FILE *field_fptr;
+    char field_file[30];
+    sprintf(field_file,"Field_%d.txt",ID);
+    field_fptr = fopen(field_file,"w");
+    int i;
+    for (i=0; i<size; i++ ){
+        fprintf(field_fptr, "%.16e\n", field[i] );
+    }
+}
+
+#define NUMSTEPS 10
 int main(int argc, char *argv[])
 {
     pumi_initiate_input_t    *pumi_inputs;
@@ -358,7 +370,7 @@ int main(int argc, char *argv[])
     }
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
-    pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_ON;
+    pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_OFF;
     pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_OFF;
     pumi_initiate_mesh_options_t pumi_initiate_options;
     pumi_initiate_options.BL_cache_flag = BL_caching_flag;
@@ -367,174 +379,129 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
-    /*
-    int Jnp;
-    for (Jnp=pumi_mesh->pumi_Nel_total_x2; Jnp>-1; Jnp--){
-        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-            printf("nodeoffset[%d][%4d] = %6d   ",isubmesh, Jnp, pumi_mesh->global_nodeoffset[isubmesh][Jnp] );
-        }
-        printf("\n\n");
+    if (!(pumi_mesh_with_no_inactive_blocks(pumi_mesh))){
+        printf("Particle locate/update not implemented for mesh with inactive blocks -- Terminating...\n");
+        exit(0);
     }
 
-    for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
-        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-            printf("nodeoffset_start[%d][%d] = %6d   ",isubmesh, jsubmesh, pumi_mesh->nodeoffset_start[isubmesh][jsubmesh] );
-        }
-        printf("\n\n");
+    int num_particles;
+    printf("\nEnter number of particles in domain : ");
+    scanf("%d", &num_particles); //user supplied
+
+    double **coords;
+    coords = (double**) malloc(2 * sizeof(double *));
+    coords[0] = (double*) malloc(num_particles * sizeof(double));
+    coords[1] = (double*) malloc(num_particles * sizeof(double));
+
+    int **part_isubmesh, **part_icell;
+    part_isubmesh = (int**) malloc (2 * sizeof(int *));
+    part_isubmesh[0] = (int*) malloc( num_particles * sizeof(int));
+    part_isubmesh[1] = (int*) malloc( num_particles * sizeof(int));
+    part_icell = (int**) malloc (2 * sizeof(int *));
+    part_icell[0] = (int*) malloc( num_particles * sizeof(int));
+    part_icell[1] = (int*) malloc( num_particles * sizeof(int));
+
+    double *field;
+    int Nnp_2D = pumi_total_nodes(pumi_mesh);
+    field = (double *) malloc(Nnp_2D * sizeof(double));
+    int inp, jnp;
+    for (inp=0; inp<Nnp_2D; inp++){
+        field[inp] = 0.0;
     }
 
-    int icell_x1, icell_x2, loop;
-    int kcell, node1, node3;
-    clock_t t1, t2, t3;
-    t1 = clock();
-    for (loop=0; loop< 100000; loop++){
-        for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
-            for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-                if (pumi_mesh->isactive[isubmesh][jsubmesh]){
-                    //printf("SUBMESH X1-%d/X2-%d\n",isubmesh+1,jsubmesh+1 );
-                    for (icell_x2=0; icell_x2<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; icell_x2++){
-                        for (icell_x1=0; icell_x1<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; icell_x1++){
-                            kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, icell_x1, icell_x2, &node1, &node3);
-                            //printf("node1=%4d err=%d node3=%4d err=%d\n",node1, node1-node11, node3, node3-node31 );
-                        }
-                    }
-                    //for (inp_x2=0; inp_x2<=((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; inp_x2++){
-                    //    Jnp = inp_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
-                    //    int nodeoffset_1 = pumi_calc_nodeID(pumi_mesh, isubmesh, jsubmesh, inp_x2, &node1, &node3);
-                    //    int nodeoffset_2 = pumi_mesh->global_nodeoffset[isubmesh][Jnp];
-                    //    printf("\tinp_x2=%4d %4d %4d %d\n",inp_x2, node1, node3, node3-node1);
-                    //}
+    x1_min = pumi_global_x1_min(pumi_mesh);
+    double x1_max = pumi_global_x1_max(pumi_mesh);
+    x2_min = pumi_global_x2_min(pumi_mesh);
+    double x2_max = pumi_global_x2_max(pumi_mesh);
+
+    //printf("x1_min = %2.8f  x1_max = %2.8f\n", x1_min, x1_max);
+    //printf("x2_min = %2.8f  x2_max = %2.8f\n", x2_min, x2_max);
+    // particle initiate
+    srand48(time(NULL));
+    int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
+    double Wgh1_x1, Wgh2_x1, Wgh1_x2, Wgh2_x2;
+    for(iparticle=0; iparticle<num_particles; iparticle++){
+        coords[0][iparticle] = (0.75*x1_min + 0.25*x1_max) + 0.5*(x1_max-x1_min)*drand48();
+        coords[1][iparticle] = x2_min + (x2_max-x2_min)*drand48();
+
+        pumi_locate_submesh_and_cell(pumi_mesh, coords[0][iparticle], &isubmesh, &icell, pumi_x1);
+        part_isubmesh[0][iparticle] = isubmesh;
+        part_icell[0][iparticle] = icell;
+
+        pumi_locate_submesh_and_cell(pumi_mesh, coords[1][iparticle], &jsubmesh, &jcell, pumi_x2);
+        part_isubmesh[1][iparticle] = jsubmesh;
+        part_icell[1][iparticle] = jcell;
+        //printf("jsubmesh=%d jcell=%3d\n",jsubmesh, jcell );
+        pumi_calc_weights(pumi_mesh, isubmesh, icell, coords[0][iparticle], &kcell_x1, &Wgh2_x1, pumi_x1);
+        Wgh1_x1 = 1.0 - Wgh2_x1;
+        //printf("Wgh1_x1 = %1.3e", Wgh1_x1);
+        pumi_calc_weights(pumi_mesh, jsubmesh, jcell, coords[1][iparticle], &kcell_x2, &Wgh2_x2, pumi_x2);
+        Wgh1_x2 = 1.0 - Wgh2_x2;
+        //printf("    Wgh1_x2 = %1.3e\n", Wgh1_x2);
+        kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
+
+        field[node1]   += Wgh1_x1*Wgh1_x2;
+        field[node1+1] += Wgh2_x1*Wgh1_x2;
+        field[node3]   += Wgh1_x1*Wgh2_x2;
+        field[node3+1] += Wgh2_x1*Wgh2_x2;
+    }
+
+    int nodeID = 0;
+    for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            if (pumi_is_node_active(pumi_mesh, inp, jnp)){
+                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp, jnp);
+                nodeID++;
+            }
+        }
+    }
+
+    write2file(field,Nnp_2D,0);
+
+    //particle push
+    int istep;
+    for (istep=1; istep<=NUMSTEPS; istep++){
+        printf("TIME STEP %d\n", istep);
+        for (inp=0; inp<Nnp_2D; inp++){
+            field[inp] = 0.0;
+        }
+        for (iparticle=0; iparticle<num_particles; iparticle++){
+            coords[0][iparticle] += 1.0;
+
+            pumi_update_submesh_and_update_cell(pumi_mesh, coords[0][iparticle], part_isubmesh[0][iparticle], part_icell[0][iparticle], &isubmesh, &icell, pumi_x1);
+            part_isubmesh[0][iparticle] = isubmesh;
+            part_icell[0][iparticle] = icell;
+
+            pumi_update_submesh_and_update_cell(pumi_mesh, coords[1][iparticle], part_isubmesh[1][iparticle], part_icell[1][iparticle], &jsubmesh, &jcell, pumi_x2);
+            part_isubmesh[1][iparticle] = jsubmesh;
+            part_icell[1][iparticle] = jcell;
+
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, coords[0][iparticle], &kcell_x1, &Wgh2_x1, pumi_x1);
+            Wgh1_x1 = 1.0 - Wgh2_x1;
+
+            pumi_calc_weights(pumi_mesh, jsubmesh, jcell, coords[1][iparticle], &kcell_x2, &Wgh2_x2, pumi_x2);
+            Wgh1_x2 = 1.0 - Wgh2_x2;
+
+            kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
+
+            field[node1]   += Wgh1_x1*Wgh1_x2;
+            field[node1+1] += Wgh2_x1*Wgh1_x2;
+            field[node3]   += Wgh1_x1*Wgh2_x2;
+            field[node3+1] += Wgh2_x1*Wgh2_x2;
+
+        }
+
+        nodeID = 0;
+        for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
+            for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+                if (pumi_is_node_active(pumi_mesh, inp, jnp)){
+                    field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp, jnp);
+                    nodeID++;
                 }
             }
         }
+        write2file(field,Nnp_2D,istep);
     }
-    t1 = clock()-t1;
-
-    int icell, isubmesh_x1, isubmesh_x2, nsubmesh_tot, i;
-    nsubmesh_tot = pumi_mesh->nsubmeshes_x1*pumi_mesh->nsubmeshes_x2;
-    int *ncell_tot = (int*) malloc(nsubmesh_tot*sizeof(int));
-    bool *block_isactive = (bool*) malloc(nsubmesh_tot*sizeof(int));
-    for (i=0; i<nsubmesh_tot; i++){
-        isubmesh_x2 = i/pumi_mesh->nsubmeshes_x1;
-        isubmesh_x1 = i-isubmesh_x2*pumi_mesh->nsubmeshes_x1;
-        if(pumi_mesh->isactive[isubmesh_x1][isubmesh_x2]){
-            block_isactive[i]=true;
-        }
-        else{
-            block_isactive[i]=false;
-        }
-        ncell_tot[i] = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->submesh_Nel;
-    }
-
-    t2 = clock();
-    for (loop=0; loop< 100000; loop++){
-        for(isubmesh=0; isubmesh<nsubmesh_tot; isubmesh++){
-            if(block_isactive[isubmesh]){
-                for(icell=0; icell<ncell_tot[isubmesh]; icell++){
-                    isubmesh_x2 = isubmesh/pumi_mesh->nsubmeshes_x1;
-                    isubmesh_x1 = isubmesh-isubmesh_x2*pumi_mesh->nsubmeshes_x1;
-                    icell_x2 = icell/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->submesh_Nel;
-                    icell_x1 = icell-icell_x2*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh_x1)->submesh_Nel;
-                    kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x1, icell_x2, &node1, &node3);
-                }
-            }
-        }
-    }
-    t2 = clock()-t2;
-
-    t3 = clock();
-    double pt_x1 = 15.0;
-    double pt_x2 = 50.0;
-    int ncell_x1 = pumi_mesh->pumi_Nel_total_x1;
-    int ncell_x2 = pumi_mesh->pumi_Nel_total_x2;
-    //double dx1 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + 0)->t0;
-    //double dx2 = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + 0)->t0;
-    double dx1 = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (pumi_mesh->nsubmeshes_x1-1))->coord_max)/ncell_x1;
-    double dx2 = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (pumi_mesh->nsubmeshes_x2-1))->coord_max)/ncell_x2;
-    for (loop=0; loop< 100000; loop++){
-        for(icell_x2=0; icell_x2<ncell_x2; icell_x2++){
-            for(icell_x1=0; icell_x1<ncell_x1; icell_x1++){
-                //kcell = pumi_dummy_elem_node_ID(pt_x1, pt_x2, dx1, dx2, ncell_x1, &node1, &node3 );
-                kcell = pumi_dummy_elem_node_ID_v2(icell_x1, icell_x2, dx1, dx2, ncell_x1, &node1, &node3);
-            }
-        }
-    }
-    t3 = clock()-t3;
-
-    double time1, time2, time3;
-    time1 = ((double) t1)/CLOCKS_PER_SEC;
-    time2 = ((double) t2)/CLOCKS_PER_SEC;
-    time3 = ((double) t3)/CLOCKS_PER_SEC;
-
-    if(!(pumi_mesh_with_no_inactive_blocks(pumi_mesh))){
-        if (nodeoffset_caching_flag){
-            printf("4 int with nodeoffset   = %2.8f s\n2 int with nodeoffset   = %2.8f s\nstd.hPIC without locate = %2.8f s\n", time1, time2, time3);
-        }
-        else{
-            printf("4 int without nodeoffset = %2.8f s\n2 int without nodeoffset = %2.8f s\nstd.hPIC without locate  = %2.8f s\n", time1, time2, time3);
-        }
-    }
-    else{
-        printf("4 int for FullMesh      = %2.8f s\n2 int for FullMesh      = %2.8f s\nstd.hPIC without locate = %2.8f s\n", time1, time2, time3);
-    }
-    */
-    int cell_count = 0;
-    int icell_x1, icell_x2, kcell, kcell_x1, kcell_x2, node1, node3;
-    double elemsize, elemsize_new;
-    for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
-        for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-            if (pumi_mesh->isactive[isubmesh][jsubmesh]){
-                for (icell_x2=0; icell_x2<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel; icell_x2++){
-                    for (icell_x1=0; icell_x1<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; icell_x1++){
-                        kcell_x1 = icell_x1 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
-                        kcell_x2 = icell_x2 + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
-                        kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
-                        printf("Cell %4d ",kcell);
-                        elemsize_new = pumi_calc_elem_size_fnptr[0][isubmesh](pumi_mesh, isubmesh, icell_x1)*
-                                       pumi_calc_elem_size_fnptr[1][jsubmesh](pumi_mesh, jsubmesh, icell_x2);
-                                       cell_count++;
-                        printf("Area=%2.8f cell_count=%d\n",elemsize_new, cell_count);
-                    }
-                }
-            }
-        }
-    }
-
-    int inp_x1, inp_x2;
-
-    double r1, r2;
-    for (inp_x2=1; inp_x2<pumi_mesh->pumi_Nel_total_x2; inp_x2++){
-        for (inp_x1=1; inp_x1<pumi_mesh->pumi_Nel_total_x1; inp_x1++){
-            r1 = pumi_return_gradingratio(pumi_mesh, inp_x1, pumi_x1);
-            r2 = pumi_return_gradingratio(pumi_mesh, inp_x2, pumi_x2);
-            //printf("inp_x1=%3d inp_x2=%3d r1=%2.8f r2=%2.8f\n", inp_x1, inp_x2, r1, r2 );
-        }
-    }
-
-    /*
-    double covolume;
-    for (inp_x2=0; inp_x2<pumi_mesh->pumi_Nnp_total_x2; inp_x2++){
-        for (inp_x1=0; inp_x1<pumi_mesh->pumi_Nnp_total_x1; inp_x1++){
-            covolume = pumi_calc_covolume_2D(pumi_mesh, inp_x1, inp_x2);
-            printf("inp_x1=%3d inp_x2=%3d covolume=%2.8f\n", inp_x1, inp_x2, covolume );
-        }
-    }
-    */
-
-    bool node_isactive;
-    int node_count = 0;
-    for (inp_x2=0; inp_x2<pumi_mesh->pumi_Nnp_total_x2; inp_x2++){
-        for (inp_x1=0; inp_x1<pumi_mesh->pumi_Nnp_total_x1; inp_x1++){
-            node_isactive = pumi_is_node_active(pumi_mesh, inp_x1, inp_x2);//, &isubmesh, &jnp_x1, &jsubmesh, &jnp_x2 );
-            if (node_isactive){
-                //inp = pumi_global_node_ID(pumi_mesh, isubmesh, jnp_x1, jsubmesh, jnp_x2);
-                printf("inp_x1=%3d inp_x2=%3d nodeID=%3d\n", inp_x1, inp_x2, node_count );
-                node_count++;
-                //printf("inp_x1=%3d inp_x2=%3d node=%d -- [X%d - %2d] [Y%d - %2d]\n", inp_x1, inp_x2, node_isactive, isubmesh, jnp_x1, jsubmesh, jnp_x2);
-            }
-        }
-    }
-
 
     pumi_finalize(pumi_mesh);
     return 0;

@@ -210,6 +210,14 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             pumi_setsubmesh_elemoffsets(pumi_mesh);
             pumi_setsubmesh_nodeoffsets(pumi_mesh);
         }
+        else{
+            pumi_mesh->pumi_Nel_total_2D = pumi_mesh->pumi_Nel_total_x1*pumi_mesh->pumi_Nel_total_x2;
+            pumi_mesh->pumi_Nnp_total_2D = pumi_mesh->pumi_Nnp_total_x1*pumi_mesh->pumi_Nnp_total_x2;
+        }
+
+        printf("PUMI 2D mesh info :\n\n");
+        printf("\tTotal ACTIVE elements in 2D mesh = %3d\n", pumi_mesh->pumi_Nel_total_2D);
+        printf("\tTotal ACTIVE nodes in 2D mesh    = %3d\n\n\n", pumi_mesh->pumi_Nnp_total_2D);
 
         pumi_initialize_nodeID_functions(pumi_mesh);
         if(!(pumi_mesh_with_no_inactive_blocks(pumi_mesh)) && !(pumi_initiate_options.nodeoffset_cache_flag)){
@@ -236,7 +244,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             }
         }
 
-        pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
+        //pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
     }
 
   }
@@ -250,7 +258,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   else{
       pumi_mesh->BL_elem_coords_cache_flag = 0;
   }
-
+  pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
   return (pumi_mesh);
 }
 
@@ -414,6 +422,7 @@ void pumi_setsubmesh_elemoffsets(pumi_mesh_t *pumi_mesh){
         pumi_mesh->elemoffset_skip[jsubmesh] = elemskip;
         elemstart = elemstart_init + elemskip*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel;
     }
+    pumi_mesh->pumi_Nel_total_2D = pumi_mesh->pumi_Nel_total_x1*pumi_mesh->pumi_Nel_total_x2 - elemstart;
 }
 
 void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
@@ -627,6 +636,8 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
             }
         }
     }
+
+    pumi_mesh->pumi_Nnp_total_2D = pumi_mesh->pumi_Nnp_total_x1*pumi_mesh->pumi_Nnp_total_x2 - nodestart;
 
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
         int Jnp = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
