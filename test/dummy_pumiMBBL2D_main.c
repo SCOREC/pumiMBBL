@@ -438,19 +438,21 @@ int main(int argc, char *argv[])
         coords[1][iparticle] = x2_min + (x2_max-x2_min)*drand48();
         //coords[0][iparticle] = 25.5;
         //coords[1][iparticle] = 10.2;
+        double q0 = coords[0][iparticle];
+        double q1 = coords[1][iparticle];
 
-        pumi_locate_submesh_and_cell(pumi_mesh, coords[0][iparticle], &isubmesh, &icell, pumi_x1);
+        pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
         part_isubmesh[0][iparticle] = isubmesh;
         part_icell[0][iparticle] = icell;
 
-        pumi_locate_submesh_and_cell(pumi_mesh, coords[1][iparticle], &jsubmesh, &jcell, pumi_x2);
+        pumi_locate_submesh_and_cell(pumi_mesh, q1, &jsubmesh, &jcell, pumi_x2);
         part_isubmesh[1][iparticle] = jsubmesh;
         part_icell[1][iparticle] = jcell;
         //printf("jsubmesh=%d jcell=%3d\n",jsubmesh, jcell );
-        pumi_calc_weights(pumi_mesh, isubmesh, icell, coords[0][iparticle], &kcell_x1, &Wgh2_x1, pumi_x1);
+        pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell_x1, &Wgh2_x1, pumi_x1);
         Wgh1_x1 = 1.0 - Wgh2_x1;
         //printf("Wgh2_x1 = %1.3e\n", Wgh2_x1);
-        pumi_calc_weights(pumi_mesh, jsubmesh, jcell, coords[1][iparticle], &kcell_x2, &Wgh2_x2, pumi_x2);
+        pumi_calc_weights(pumi_mesh, jsubmesh, jcell, q1, &kcell_x2, &Wgh2_x2, pumi_x2);
         Wgh1_x2 = 1.0 - Wgh2_x2;
         //printf("Wgh2_x2 = %1.3e\n", Wgh2_x2);
         kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
@@ -483,18 +485,21 @@ int main(int argc, char *argv[])
         for (iparticle=0; iparticle<num_particles; iparticle++){
             coords[0][iparticle] += 1.0;
 
-            pumi_update_submesh_and_update_cell(pumi_mesh, coords[0][iparticle], part_isubmesh[0][iparticle], part_icell[0][iparticle], &isubmesh, &icell, pumi_x1);
+            double q0 = coords[0][iparticle];
+            double q1 = coords[1][iparticle];
+
+            pumi_update_submesh_and_update_cell(pumi_mesh, q0, part_isubmesh[0][iparticle], part_icell[0][iparticle], &isubmesh, &icell, pumi_x1);
             part_isubmesh[0][iparticle] = isubmesh;
             part_icell[0][iparticle] = icell;
 
-            pumi_update_submesh_and_update_cell(pumi_mesh, coords[1][iparticle], part_isubmesh[1][iparticle], part_icell[1][iparticle], &jsubmesh, &jcell, pumi_x2);
+            pumi_update_submesh_and_update_cell(pumi_mesh, q1, part_isubmesh[1][iparticle], part_icell[1][iparticle], &jsubmesh, &jcell, pumi_x2);
             part_isubmesh[1][iparticle] = jsubmesh;
             part_icell[1][iparticle] = jcell;
 
-            pumi_calc_weights(pumi_mesh, isubmesh, icell, coords[0][iparticle], &kcell_x1, &Wgh2_x1, pumi_x1);
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell_x1, &Wgh2_x1, pumi_x1);
             Wgh1_x1 = 1.0 - Wgh2_x1;
 
-            pumi_calc_weights(pumi_mesh, jsubmesh, jcell, coords[1][iparticle], &kcell_x2, &Wgh2_x2, pumi_x2);
+            pumi_calc_weights(pumi_mesh, jsubmesh, jcell, q1, &kcell_x2, &Wgh2_x2, pumi_x2);
             Wgh1_x2 = 1.0 - Wgh2_x2;
 
             kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
@@ -634,6 +639,18 @@ int main(int argc, char *argv[])
 
     printf("pumi = %2.8f s    hpic = %2.8f s       slowdown = %2.2fx\n",t_p, t_h, t_p/t_h );
 
+    free(coords[0]);
+    free(coords[1]);
+    free(coords);
+
+    free(part_isubmesh[0]);
+    free(part_isubmesh[1]);
+    free(part_isubmesh);
+
+    free(part_icell[0]);
+    free(part_icell[1]);
+    free(part_icell);
+    
     pumi_finalize(pumi_mesh);
     return 0;
 }
