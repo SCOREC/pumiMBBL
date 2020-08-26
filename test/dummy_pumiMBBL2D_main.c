@@ -381,11 +381,11 @@ int main(int argc, char *argv[])
     }
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
-    pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_OFF;
-    pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_OFF;
+    //pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_OFF;
+    //pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_OFF;
     pumi_initiate_mesh_options_t pumi_initiate_options;
-    pumi_initiate_options.BL_cache_flag = BL_caching_flag;
-    pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
+    //pumi_initiate_options.BL_cache_flag = BL_caching_flag;
+    //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_initiate_options);
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
@@ -436,8 +436,7 @@ int main(int argc, char *argv[])
     for(iparticle=0; iparticle<num_particles; iparticle++){
         coords[0][iparticle] = (0.75*x1_min + 0.25*x1_max) + 0.5*(x1_max-x1_min)*drand48();
         coords[1][iparticle] = x2_min + (x2_max-x2_min)*drand48();
-        //coords[0][iparticle] = 25.5;
-        //coords[1][iparticle] = 10.2;
+
         double q0 = coords[0][iparticle];
         double q1 = coords[1][iparticle];
 
@@ -448,13 +447,13 @@ int main(int argc, char *argv[])
         pumi_locate_submesh_and_cell(pumi_mesh, q1, &jsubmesh, &jcell, pumi_x2);
         part_isubmesh[1][iparticle] = jsubmesh;
         part_icell[1][iparticle] = jcell;
-        //printf("jsubmesh=%d jcell=%3d\n",jsubmesh, jcell );
+
         pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell_x1, &Wgh2_x1, pumi_x1);
         Wgh1_x1 = 1.0 - Wgh2_x1;
-        //printf("Wgh2_x1 = %1.3e\n", Wgh2_x1);
+
         pumi_calc_weights(pumi_mesh, jsubmesh, jcell, q1, &kcell_x2, &Wgh2_x2, pumi_x2);
         Wgh1_x2 = 1.0 - Wgh2_x2;
-        //printf("Wgh2_x2 = %1.3e\n", Wgh2_x2);
+
         kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
 
         field[node1]   += Wgh1_x1*Wgh1_x2;
@@ -546,10 +545,10 @@ int main(int argc, char *argv[])
 
         Wgh2_x1 = (q0-icell*dx1)/dx1;
         Wgh1_x1 = 1.0 - Wgh2_x1;
-        //printf("W2_x1=%1.4f\n",Wgh2_x1 );
+
         Wgh2_x2 = (q1-jcell*dx2)/dx2;
         Wgh1_x2 = 1.0 - Wgh2_x2;
-        //printf("W2_x2=%1.4f\n",Wgh2_x2 );
+
 
         field[kcell+jcell]   += Wgh1_x1*Wgh1_x2;
         field[kcell+jcell+1] += Wgh2_x1*Wgh1_x2;
@@ -650,7 +649,7 @@ int main(int argc, char *argv[])
     free(part_icell[0]);
     free(part_icell[1]);
     free(part_icell);
-    
+
     pumi_finalize(pumi_mesh);
     return 0;
 }

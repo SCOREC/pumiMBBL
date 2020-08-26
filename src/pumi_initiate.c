@@ -43,6 +43,9 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   else if (pumi_input_initiate_flag == initiate_from_commandline_inputs){
     //only use this if pumi_initiate_input struct members are populated accordingly
     pumi_mesh->ndim = pumi_inputs->ndim;
+    //DEFAULT PUMI options
+    pumi_mesh->BL_elem_coords_cache_flag = 1;
+    pumi_mesh->nodeoffset_cache_flag = 0;
 
     if (pumi_mesh->ndim == 1){
       pumi_mesh->nsubmeshes_x1 = pumi_inputs->nsubmeshes;
@@ -249,15 +252,32 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 
   }
 
-  pumi_verify_params(pumi_mesh);
-  pumi_print_node_coordinates(pumi_mesh);
-  if (pumi_initiate_options.BL_cache_flag){
+  if (pumi_initiate_options.BL_cache_flag != pumi_cache_BL_elemsize_OFF){
       pumi_mesh->BL_elem_coords_cache_flag = 1;
-      pumi_BL_elemsize_ON(pumi_mesh);
+      //pumi_BL_elemsize_ON(pumi_mesh);
   }
   else{
       pumi_mesh->BL_elem_coords_cache_flag = 0;
   }
+
+  if (pumi_mesh->BL_elem_coords_cache_flag){
+      printf("BL CACHING OPTION  -- BL element sizes and node coordinates to be stored in arrays\n");
+      pumi_BL_elemsize_ON(pumi_mesh);
+  }
+  else{
+      printf("BL CACHING OPTION  -- BL element sizes and node coordinates to be calculated on-the-fly\n");
+  }
+
+  if (!(pumi_mesh->nodeoffset_cache_flag)){
+      printf("NODE OFFSET OPTION -- Node Offsets to be calculated on-the-fly \n\n");
+  }
+  else{
+      printf("NODE OFFSET OPTION -- Node Offsets to be stored in an array \n\n");
+  }
+
+  pumi_verify_params(pumi_mesh);
+  pumi_print_node_coordinates(pumi_mesh);
+
   pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
   return (pumi_mesh);
 }
@@ -673,10 +693,14 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
     }
 
     if (!(pumi_mesh->nodeoffset_cache_flag)){
+        //printf("\tNode Offsets to be calculated on-the-fly \n\n");
         for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             free(pumi_mesh->global_nodeoffset[isubmesh]);
         }
         free(pumi_mesh->global_nodeoffset);
+    }
+    else{
+        //printf("\tNode Offsets to be stored in an array \n\n");
     }
 
 }

@@ -22,8 +22,8 @@ typedef enum pumi_initiate_flag{
 * \brief options to calculate the BL element sizes
 */
 typedef enum pumi_cache_BL_elemsize{
-  pumi_cache_BL_elemsize_OFF = 0, //!< no caching of BL element sizes (will be calculated on-the-fly)
-  pumi_cache_BL_elemsize_ON = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
+  pumi_cache_BL_elemsize_ON = 0, //!< no caching of BL element sizes (will be calculated on-the-fly)
+  pumi_cache_BL_elemsize_OFF = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
 } pumi_cache_BL_elemsize_t;
 
 typedef enum pumi_cache_nodeoffset{
