@@ -32,8 +32,8 @@ typedef enum pumi_cache_nodeoffset{
 } pumi_cache_nodeoffset_t;
 
 typedef struct pumi_initiate_mesh_options{
-    int BL_cache_flag;
-    int nodeoffset_cache_flag;
+    pumi_cache_BL_elemsize_t BL_cache_flag;
+    pumi_cache_nodeoffset_t nodeoffset_cache_flag;
 } pumi_initiate_mesh_options_t;
 
 /*!

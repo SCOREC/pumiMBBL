@@ -381,11 +381,9 @@ int main(int argc, char *argv[])
     }
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
-    //pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_OFF;
-    //pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_OFF;
     pumi_initiate_mesh_options_t pumi_initiate_options;
-    //pumi_initiate_options.BL_cache_flag = BL_caching_flag;
-    //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
+    //pumi_initiate_options.BL_cache_flag = pumi_cache_BL_elemsize_OFF;
+    //pumi_initiate_options.nodeoffset_cache_flag = pumi_cache_nodeoffset_ON;
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_initiate_options);
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);

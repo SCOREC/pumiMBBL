@@ -204,7 +204,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         printf("\n\n");
 
         if (!(pumi_mesh_with_no_inactive_blocks(pumi_mesh))){
-            if (pumi_initiate_options.nodeoffset_cache_flag){
+            if (pumi_initiate_options.nodeoffset_cache_flag == pumi_cache_nodeoffset_ON){
                 pumi_mesh->nodeoffset_cache_flag = 1;
             }
             else{

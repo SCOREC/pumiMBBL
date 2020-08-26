@@ -178,10 +178,9 @@ int main(int argc, char *argv[])
         *(pumi_inputs->right_Nel + isubmesh)   = right_Nel;
     }
 
-    //pumi_cache_BL_elemsize_t BL_caching_flag = pumi_cache_BL_elemsize_ON;
-    //pumi_cache_nodeoffset_t nodeoffset_caching_flag = pumi_cache_nodeoffset_ON;
+
     pumi_initiate_mesh_options_t pumi_initiate_options;
-    //pumi_initiate_options.BL_cache_flag = BL_caching_flag;
+    pumi_initiate_options.BL_cache_flag = pumi_cache_BL_elemsize_OFF;
     //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
