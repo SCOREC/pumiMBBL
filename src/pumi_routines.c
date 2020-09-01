@@ -151,7 +151,10 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
   return covolume;
 }
 
-double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inp_x1, int inp_x2){
+double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int node){
+    int inp_x1, inp_x2;
+    inp_x2 = node/pumi_mesh->pumi_Nel_total_x1;
+    inp_x1 = node - inp_x2*pumi_mesh->pumi_Nel_total_x1;
     double dx1_left, dx1_right, dx2_bottom, dx2_top;
     if (inp_x1 == 0){
       dx1_left = 0.0;
@@ -1141,7 +1144,7 @@ void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh
     pumi_locatesubmesh_fnptr[0] = &pumi_locate_submesh_x1;
     pumi_locatesubmesh_fnptr[1] = &pumi_locate_submesh_x2;
     pumi_updatesubmesh_fnptr[0] = &pumi_update_submesh_x1;
-    pumi_updatesubmesh_fnptr[1] = &pumi_update_submesh_x2;    
+    pumi_updatesubmesh_fnptr[1] = &pumi_update_submesh_x2;
 
     pumi_locatecell_fnptr = (pumi_locatecell_ptr**) malloc(MAX_DIM * sizeof(pumi_locatecell_ptr *));
     pumi_locatecell_fnptr[0] = (pumi_locatecell_ptr*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_locatecell_ptr));
@@ -1462,7 +1465,10 @@ bool pumi_mesh_with_no_inactive_blocks(pumi_mesh_t *pumi_mesh){
     return is_fullmesh;
 }
 
-bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2){//, int *isubmesh_x1, int *inp_x1, int *isubmesh_x2, int *inp_x2){
+bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int node){
+    int node_x1, node_x2;
+    node_x2 = node/pumi_mesh->pumi_Nel_total_x1;
+    node_x1 = node - node_x2*pumi_mesh->pumi_Nel_total_x1;
     int isubmesh, jsubmesh, local_x1_node, local_x2_node;
     bool left_edge, right_edge, bottom_edge, top_edge;
 

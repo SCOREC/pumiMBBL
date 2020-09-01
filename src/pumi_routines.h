@@ -123,7 +123,7 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node, int dir);
 double pumi_return_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset, int dir);
 
 double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode);
-double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inp_x1, int inp_x2);
+double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inode);
 //double (*pumi_covolume_fnptr[])(pumi_mesh_t*, int) = {pumi_return_covolume_1D, pumi_return_covolume_2D};
 
 typedef int (*pumi_nodeID_ptr)(pumi_mesh_t*, int, int, int, int, int*, int*);
@@ -158,8 +158,8 @@ int pumi_calc_elementID_and_nodeID(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int 
 int pumi_calc_elementID_and_nodeID_with_global_offset(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
 int pumi_calc_elementID_and_nodeID_on_fullmesh(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
 
-bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2);//, int *isubmesh_x1, int *inp_x1, int *isubmesh_x2, int *inp_x2);
-//int pumi_global_node_ID(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int inp_x1, int isubmesh_x2, int inp_x2);
+bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inode);
+
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 
 void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID, int dir);

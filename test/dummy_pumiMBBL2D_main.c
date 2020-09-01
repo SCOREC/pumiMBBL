@@ -479,12 +479,10 @@ int main(int argc, char *argv[])
     }
 
     nodeID = 0;
-    for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
-        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-            if (pumi_is_node_active(pumi_mesh, inp, jnp)){
-                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp, jnp);
-                nodeID++;
-            }
+    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x2*pumi_mesh->pumi_Nnp_total_x1; inp++){
+        if (pumi_is_node_active(pumi_mesh, inp)){
+            field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp);
+            nodeID++;
         }
     }
 
@@ -551,12 +549,10 @@ int main(int argc, char *argv[])
         time_pumi_loop += time_pumi_loop_var;
 
         nodeID = 0;
-        for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
-            for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-                if (pumi_is_node_active(pumi_mesh, inp, jnp)){
-                    field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp, jnp);
-                    nodeID++;
-                }
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x2*pumi_mesh->pumi_Nnp_total_x1; inp++){
+            if (pumi_is_node_active(pumi_mesh, inp)){
+                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp);
+                nodeID++;
             }
         }
         write2file(field,Nnp_2D,istep);
