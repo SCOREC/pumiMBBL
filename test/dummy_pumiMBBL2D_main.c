@@ -28,9 +28,23 @@ void write2file_uni(double *field, int size, int ID){
     }
 }
 
+void std_hpic_calc(double q0, double q1, double dx1, double dx2, int Nel_x1, double *Wgh2_x1, double *Wgh2_x2, int *node1, int *node3){
+    int icell, jcell, kcell;
+    icell = floor(q0/dx1);
+    jcell = floor(q1/dx2);
+    kcell = jcell*Nel_x1 + icell;
+    *node1 = kcell+jcell;
+    *node3 = kcell+jcell+Nel_x1+1;
+
+    *Wgh2_x1 = (q0-icell*dx1)/dx1;
+    *Wgh2_x2 = (q1-jcell*dx2)/dx2;
+}
+
 #define NUMSTEPS 10
 int main(int argc, char *argv[])
 {
+    clock_t total_run_time;
+    total_run_time = clock();
     pumi_initiate_input_t    *pumi_inputs;
 
     ///*
@@ -430,10 +444,14 @@ int main(int argc, char *argv[])
     int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
     double Wgh1_x1, Wgh2_x1, Wgh1_x2, Wgh2_x2;
     clock_t time_pumi, time_hpic;
+    clock_t time_pumi_loop, time_pumi_loop_var;
+    time_pumi_loop = 0.0;
+    int istep, nodeID;
+
     time_pumi = clock();
     for(iparticle=0; iparticle<num_particles; iparticle++){
-        coords[0][iparticle] = (0.75*x1_min + 0.25*x1_max) + 0.5*(x1_max-x1_min)*drand48();
-        coords[1][iparticle] = x2_min + (x2_max-x2_min)*drand48();
+        coords[0][iparticle] = (0.9*x1_min + 0.1*x1_max) + 0.25*(x1_max-x1_min)*drand48();
+        coords[1][iparticle] = (0.9*x2_min + 0.1*x2_max) + 0.25*(x2_max-x2_min)*drand48();
 
         double q0 = coords[0][iparticle];
         double q1 = coords[1][iparticle];
@@ -460,7 +478,7 @@ int main(int argc, char *argv[])
         field[node3+1] += Wgh2_x1*Wgh2_x2;
     }
 
-    int nodeID = 0;
+    nodeID = 0;
     for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
         for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
             if (pumi_is_node_active(pumi_mesh, inp, jnp)){
@@ -470,26 +488,48 @@ int main(int argc, char *argv[])
         }
     }
 
-    //write2file(field,Nnp_2D,0);
+    write2file(field,Nnp_2D,0);
 
     //particle push
-    int istep;
     for (istep=1; istep<=NUMSTEPS; istep++){
         printf("TIME STEP %d\n", istep);
         for (inp=0; inp<Nnp_2D; inp++){
             field[inp] = 0.0;
         }
+        time_pumi_loop_var = clock();
         for (iparticle=0; iparticle<num_particles; iparticle++){
-            coords[0][iparticle] += 1.0;
-
             double q0 = coords[0][iparticle];
             double q1 = coords[1][iparticle];
 
-            pumi_update_submesh_and_update_cell(pumi_mesh, q0, part_isubmesh[0][iparticle], part_icell[0][iparticle], &isubmesh, &icell, pumi_x1);
+            isubmesh = part_isubmesh[0][iparticle];
+            jsubmesh = part_isubmesh[1][iparticle];
+            icell = part_icell[0][iparticle];
+            jcell = part_icell[1][iparticle];
+
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell_x1, &Wgh2_x1, pumi_x1);
+            Wgh1_x1 = 1.0 - Wgh2_x1;
+
+            pumi_calc_weights(pumi_mesh, jsubmesh, jcell, q1, &kcell_x2, &Wgh2_x2, pumi_x2);
+            Wgh1_x2 = 1.0 - Wgh2_x2;
+
+            kcell = pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
+
+            //Ex = E1[node1]*Wgh1_x1*Wgh1_x2 + E1[node1+1]*Wgh2_x1*Wgh1_x2 + E1[node3]*Wgh1_x1*Wgh2_x2 + E1[node3+1]*Wgh2_x1*Wgh2_x2;
+            //Ey = E2[node1]*Wgh1_x1*Wgh1_x2 + E2[node1+1]*Wgh2_x1*Wgh1_x2 + E2[node3]*Wgh1_x1*Wgh2_x2 + E2[node3+1]*Wgh2_x1*Wgh2_x2;
+
+            //coords[0][iparticle] += 3.0;
+            //coords[1][iparticle] += 1.0;
+            coords[0][iparticle] += 3.0*drand48();
+            coords[1][iparticle] += 1.0*drand48();
+
+            q0 = coords[0][iparticle];
+            q1 = coords[1][iparticle];
+
+            pumi_update_submesh_and_update_cell(pumi_mesh, q0, isubmesh, icell, &isubmesh, &icell, pumi_x1);
             part_isubmesh[0][iparticle] = isubmesh;
             part_icell[0][iparticle] = icell;
 
-            pumi_update_submesh_and_update_cell(pumi_mesh, q1, part_isubmesh[1][iparticle], part_icell[1][iparticle], &jsubmesh, &jcell, pumi_x2);
+            pumi_update_submesh_and_update_cell(pumi_mesh, q1, jsubmesh, jcell, &jsubmesh, &jcell, pumi_x2);
             part_isubmesh[1][iparticle] = jsubmesh;
             part_icell[1][iparticle] = jcell;
 
@@ -507,6 +547,8 @@ int main(int argc, char *argv[])
             field[node3+1] += Wgh2_x1*Wgh2_x2;
 
         }
+        time_pumi_loop_var = clock() - time_pumi_loop_var;
+        time_pumi_loop += time_pumi_loop_var;
 
         nodeID = 0;
         for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
@@ -517,7 +559,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        //write2file(field,Nnp_2D,istep);
+        write2file(field,Nnp_2D,istep);
     }
     time_pumi = clock() - time_pumi;
 
@@ -531,8 +573,8 @@ int main(int argc, char *argv[])
 
     time_hpic = clock();
     for(iparticle=0; iparticle<num_particles; iparticle++){
-        coords[0][iparticle] = (0.75*x1_min + 0.25*x1_max) + 0.5*(x1_max-x1_min)*drand48();
-        coords[1][iparticle] = x2_min + (x2_max-x2_min)*drand48();
+        coords[0][iparticle] = (0.9*x1_min + 0.1*x1_max) + 0.25*(x1_max-x1_min)*drand48();
+        coords[1][iparticle] = (0.9*x2_min + 0.1*x2_max) + 0.25*(x2_max-x2_min)*drand48();
 
         double q0 = coords[0][iparticle];
         double q1 = coords[1][iparticle];
@@ -576,35 +618,47 @@ int main(int argc, char *argv[])
         }
     }
 
-    //write2file_uni(field, Nnp_2D, 0);
-
+    write2file_uni(field, Nnp_2D, 0);
+    clock_t time_hpic_loop, time_hpic_loop_var;
+    time_hpic_loop = 0.0;
     for (istep=1; istep<=NUMSTEPS; istep++){
         printf("TIME STEP %d\n", istep);
         for (inp=0; inp<Nnp_2D; inp++){
             field[inp] = 0.0;
         }
+        time_hpic_loop_var = clock();
         for (iparticle=0; iparticle<num_particles; iparticle++){
-            coords[0][iparticle] += 1.0;
-
             double q0 = coords[0][iparticle];
             double q1 = coords[1][iparticle];
 
-            icell = floor(q0/dx1);
-            jcell = floor(q1/dx2);
-            kcell = jcell*Nel_x1 + icell;
-            //printf("kcell=%d\n",kcell );
-            Wgh2_x1 = (q0-icell*dx1)/dx1;
+            std_hpic_calc(q0, q1, dx1, dx2, Nel_x1, &Wgh2_x1, &Wgh2_x2, &node1, &node3);
             Wgh1_x1 = 1.0 - Wgh2_x1;
-            Wgh2_x2 = (q1-jcell*dx2)/dx2;
             Wgh1_x2 = 1.0 - Wgh2_x2;
 
-            field[kcell+jcell]   += Wgh1_x1*Wgh1_x2;
-            field[kcell+jcell+1] += Wgh2_x1*Wgh1_x2;
-            field[kcell+jcell+Nel_x1+1] += Wgh1_x1*Wgh2_x2;
-            field[kcell+jcell+Nel_x1+2] += Wgh2_x1*Wgh2_x2;
+            //Ex = E1[node1]*Wgh1_x1*Wgh1_x2 + E1[node1+1]*Wgh2_x1*Wgh1_x2 + E1[node3]*Wgh1_x1*Wgh2_x2 + E1[node3+1]*Wgh2_x1*Wgh2_x2;
+            //Ey = E2[node1]*Wgh1_x1*Wgh1_x2 + E2[node1+1]*Wgh2_x1*Wgh1_x2 + E2[node3]*Wgh1_x1*Wgh2_x2 + E2[node3+1]*Wgh2_x1*Wgh2_x2;
+
+            //coords[0][iparticle] += 3.0;
+            //coords[1][iparticle] += 1.0;
+            coords[0][iparticle] += 3.0*drand48();
+            coords[1][iparticle] += 1.0*drand48();
+
+            q0 = coords[0][iparticle];
+            q1 = coords[1][iparticle];
+
+
+            std_hpic_calc(q0, q1, dx1, dx2, Nel_x1, &Wgh2_x1, &Wgh2_x2, &node1, &node3);
+            Wgh1_x1 = 1.0 - Wgh2_x1;
+            Wgh1_x2 = 1.0 - Wgh2_x2;
+
+            field[node1]   += Wgh1_x1*Wgh1_x2;
+            field[node1+1] += Wgh2_x1*Wgh1_x2;
+            field[node3]   += Wgh1_x1*Wgh2_x2;
+            field[node3+1] += Wgh2_x1*Wgh2_x2;
 
         }
-
+        time_hpic_loop_var = clock() - time_hpic_loop_var;
+        time_hpic_loop += time_hpic_loop_var;
         nodeID=0;
         double x1_cov, x2_cov;
         for (jnp=0; jnp<=Nel_x2; jnp++){
@@ -626,13 +680,13 @@ int main(int argc, char *argv[])
                 nodeID++;
             }
         }
-        //write2file_uni(field, Nnp_2D, istep);
+        write2file_uni(field, Nnp_2D, istep);
     }
     time_hpic = clock() - time_hpic;
 
-    double t_p, t_h;
-    t_p = ((double) time_pumi)/CLOCKS_PER_SEC;
-    t_h = ((double) time_hpic)/CLOCKS_PER_SEC;
+    double t_p, t_h, t_t;
+    t_p = ((double) time_pumi_loop)/CLOCKS_PER_SEC;
+    t_h = ((double) time_hpic_loop)/CLOCKS_PER_SEC;
 
     printf("pumi = %2.8f s    hpic = %2.8f s       slowdown = %2.2fx\n",t_p, t_h, t_p/t_h );
 
@@ -649,5 +703,8 @@ int main(int argc, char *argv[])
     free(part_icell);
 
     pumi_finalize(pumi_mesh);
+    total_run_time = clock() - total_run_time;
+    t_t = ((double) total_run_time)/CLOCKS_PER_SEC;
+    printf("Total Run Time = %2.8f s\n",t_t );
     return 0;
 }
