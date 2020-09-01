@@ -6,8 +6,12 @@
 #include <string.h>
 #include "pumiMBBL.h"
 
+#define NUMSTEPS 10
+
 int main(int argc, char *argv[])
 {
+    clock_t total_run_time;
+    total_run_time = clock();
     pumi_initiate_input_t    *pumi_inputs;
     ///*
     if (argc < 6){
@@ -107,7 +111,7 @@ int main(int argc, char *argv[])
 
     //pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
 
-    double lambda_D = 4.7016e-05;
+    double lambda_D = 1.0;
     double x1_min = 0.0;
     int NumberDebyeLengthsInDomain=0;
     for(isubmesh=0; isubmesh<pumi_inputs->nsubmeshes; isubmesh++){
@@ -189,100 +193,183 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
-    int Nel_total = pumi_total_elements(pumi_mesh);
+    int num_particles;
+    printf("\nEnter number of particles in domain : ");
+    scanf("%d", &num_particles); //user supplied
 
-    int num_particles_per_debyelength;
-    printf("\nEnter number of particles per Debye Length : ");
-    scanf("%d", &num_particles_per_debyelength); //user supplied
-    int num_particles = num_particles_per_debyelength*NumberDebyeLengthsInDomain;
-    double *coordinates = (double*) malloc(num_particles * sizeof(double));
-    //int *particle_isactive = (int*) malloc(num_particles * sizeof(int));
+    double *coords;
+    coords = (double*) malloc(num_particles * sizeof(double));
 
+    int *part_isubmesh, *part_icell;
+    part_isubmesh = (int*) malloc( num_particles * sizeof(int));
+    part_icell = (int*) malloc( num_particles * sizeof(int));
+
+    double *field;
+    int Nnp = pumi_total_nodes(pumi_mesh);
+    field = (double *) malloc(Nnp * sizeof(double));
+    int inp, jnp;
+    for (inp=0; inp<Nnp; inp++){
+        field[inp] = 0.0;
+    }
+
+    x1_min = pumi_global_x1_min(pumi_mesh);
+    double x1_max = pumi_global_x1_max(pumi_mesh);
+
+    //printf("x1_min = %2.8f  x1_max = %2.8f\n", x1_min, x1_max);
+    //printf("x2_min = %2.8f  x2_max = %2.8f\n", x2_min, x2_max);
+    // particle initiate
     srand48(time(NULL));
-    int iparticle=0;
-    for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-        double submesh_x1left = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min;
-        double submesh_x1right = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_max;
-        double submesh_L = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_T;
-        double deblenth = submesh_L/lambda_D;
-        int submesh_debyelengths = (int) deblenth;
-        int numparticle_submesh = num_particles_per_debyelength*submesh_debyelengths;
-        int j;
-        for(j=0; j<numparticle_submesh;j++){
-            coordinates[iparticle] = submesh_x1left + submesh_L*drand48();
-            //particle_isactive[iparticle] = isubmesh+1;
-            //particle_isactive[iparticle] = pumi_locate_submesh_1D(pumi_mesh, coordinates[iparticle]);
-            iparticle++;
-        }
-    }
-
-    /*for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-        int submesh_total_Nel, icell;
-        double left_node, right_node, elem_size, err;
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & leftBL){
-            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->left_Nel;
-            for(icell=0; icell<submesh_total_Nel; icell++){
-                pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
-                elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
-                err = right_node-left_node-elem_size;
-                printf("icell=%d left_node=%2.8e right_node=%2.8e err=%2.8e\n", icell, left_node, right_node, err);
-            }
-            printf("\n\n");
-        }
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & uniform){
-            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->uniform_Nel;
-            for(icell=0; icell<submesh_total_Nel; icell++){
-                pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
-                elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
-                err = right_node-left_node-elem_size;
-                printf("icell=%d left_node=%2.8e right_node=%2.8e err=%2.8e\n", icell, left_node, right_node, err);
-            }
-            printf("\n\n");
-        }
-        if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & rightBL){
-            submesh_total_Nel = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->right_Nel;
-            for(icell=0; icell<submesh_total_Nel; icell++){
-                pumi_calc_node_coords(pumi_mesh, isubmesh, icell, &left_node, &right_node);
-                elem_size = pumi_calc_elem_size(pumi_mesh, isubmesh, icell);
-                err = right_node-left_node-elem_size;
-                printf("icell=%d left_node=%2.8e right_node=%2.8e err=%2.8e\n", icell, left_node, right_node, err);
-            }
-            printf("\n\n");
-        }
-    }*/
-
-    double *grid_weights = (double*) malloc((Nel_total+1)*sizeof(double));
-    int i;
-    for (i=0; i<= Nel_total; i++){
-      grid_weights[i] = 0.0; //intialize charge to be zero at all nodes
-    }
-    int kcell;
+    int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
     double Wgh1, Wgh2;
-    int submesh_icell;
-    for (iparticle=0; iparticle<num_particles; iparticle++){ //loop over all particles
-      //isubmesh = particle_isactive[iparticle];
-      //pumiMBBL_locatepoint_1D(pumi_mesh, coordinates[iparticle], isubmesh, &kcell, &Wgh2); // computes paricle cell and weight (based on linear weighting)
-      //pumi_locate_function[isubmesh](pumi_mesh, isubmesh, coordinates[iparticle], &kcell, &Wgh2);
-      pumi_locate_submesh_and_cell(pumi_mesh, coordinates[iparticle], &isubmesh, &submesh_icell, pumi_x1);
-      //printf("particle %d located at submesh %d and local cell %d\n",iparticle, isubmesh, submesh_icell );
-      pumi_calc_weights(pumi_mesh, isubmesh, submesh_icell, coordinates[iparticle], &kcell, &Wgh2, pumi_x1);
-      Wgh1 = 1.0 - Wgh2;
-      grid_weights[kcell]   += Wgh1;
-      grid_weights[kcell+1] += Wgh2; //accumulate the weights for each particle
+    clock_t time_pumi, time_hpic;
+    time_pumi = clock();
+    for(iparticle=0; iparticle<num_particles; iparticle++){
+        coords[iparticle] = (0.9*x1_min + 0.1*x1_max) + 0.25*(x1_max-x1_min)*drand48();
+
+        double q0 = coords[iparticle];
+
+        pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
+        part_isubmesh[iparticle] = isubmesh;
+        part_icell[iparticle] = icell;
+
+        pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+        Wgh1 = 1.0 - Wgh2;
+
+        field[kcell] += Wgh1;
+        field[kcell+1] += Wgh2;
     }
-    double sumweights=0;
-    for (i=0; i<(Nel_total+1); i++){
-      printf("node=%d   gridweight=%lf\n", i, grid_weights[i]);
-      sumweights += grid_weights[i];
+
+    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+        field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
     }
 
-    printf("Total weight = %lf\n\n", sumweights );
 
-    free(coordinates);
-    //free(particle_isactive);
-    free(grid_weights);
+    //write2file(field,Nnp_2D,0);
 
-    pumi_finalize(pumi_mesh); //deallocates pumi_mesh object
+    //particle push
+    clock_t time_pumi_loop, time_pumi_loop_var;
+    time_pumi_loop = 0.0;
+    int istep;
+    for (istep=1; istep<=NUMSTEPS; istep++){
+        printf("TIME STEP %d\n", istep);
+        for (inp=0; inp<Nnp; inp++){
+            field[inp] = 0.0;
+        }
+        time_pumi_loop_var = clock();
+        for (iparticle=0; iparticle<num_particles; iparticle++){
+            double q0 = coords[iparticle];
 
+            isubmesh = part_isubmesh[iparticle];
+            icell = part_icell[iparticle];
+
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+            Wgh1 = 1.0 - Wgh2;
+
+            // Ex = E1[kcell]*Wgh1 + E1[kcell+1]*Wgh2;
+
+            coords[iparticle] += 1.0*drand48();
+            q0 = coords[iparticle];
+
+            pumi_update_submesh_and_update_cell(pumi_mesh, q0, isubmesh, icell, &isubmesh, &icell, pumi_x1);
+            part_isubmesh[iparticle] = isubmesh;
+            part_icell[iparticle] = icell;
+
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+            Wgh1 = 1.0 - Wgh2;
+
+            field[kcell] += Wgh1;
+            field[kcell+1] += Wgh2;
+
+        }
+        time_pumi_loop_var = clock() - time_pumi_loop_var;
+        time_pumi_loop += time_pumi_loop_var;
+
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+        }
+        //write2file(field,Nnp_2D,istep);
+    }
+    time_pumi = clock() - time_pumi;
+
+    int Nel_x1 = pumi_mesh->pumi_Nel_total_x1;
+    double dx1 = (x1_max - x1_min)/(double) Nel_x1;
+    for (inp=0; inp<Nnp; inp++){
+        field[inp] = 0.0;
+    }
+
+    time_hpic = clock();
+    for(iparticle=0; iparticle<num_particles; iparticle++){
+        coords[iparticle] = (0.9*x1_min + 0.1*x1_max) + 0.25*(x1_max-x1_min)*drand48();
+
+        double q0 = coords[iparticle];
+
+        kcell = floor(q0/dx1);
+
+        Wgh2 = (q0-kcell*dx1)/dx1;
+        Wgh1 = 1.0 - Wgh2;
+
+        field[kcell] += Wgh1;
+        field[kcell+1] += Wgh2;
+
+    }
+
+    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+        field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+    }
+
+    //write2file_uni(field, Nnp_2D, 0);
+    clock_t time_hpic_loop, time_hpic_loop_var;
+    time_hpic_loop = 0.0;
+    for (istep=1; istep<=NUMSTEPS; istep++){
+        printf("TIME STEP %d\n", istep);
+        for (inp=0; inp<Nnp; inp++){
+            field[inp] = 0.0;
+        }
+        time_hpic_loop_var = clock();
+        for (iparticle=0; iparticle<num_particles; iparticle++){
+            double q0 = coords[iparticle];
+
+            kcell = floor(q0/dx1);
+
+            Wgh2 = (q0-kcell*dx1)/dx1;
+            Wgh1 = 1.0 - Wgh2;
+
+            // Ex = E1[kcell]*Wgh1 + E1[kcell+1]*Wgh2;
+
+            coords[iparticle] += 1.0*drand48();
+            q0 = coords[iparticle];
+
+            kcell = floor(q0/dx1);
+
+            Wgh2 = (q0-kcell*dx1)/dx1;
+            Wgh1 = 1.0 - Wgh2;
+
+            field[kcell] += Wgh1;
+            field[kcell+1] += Wgh2;
+
+        }
+        time_hpic_loop_var = clock() - time_hpic_loop_var;
+        time_hpic_loop += time_hpic_loop_var;
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+        }
+        //write2file_uni(field, Nnp_2D, istep);
+    }
+    time_hpic = clock() - time_hpic;
+
+    double t_p, t_h, t_t;
+    t_p = ((double) time_pumi_loop)/CLOCKS_PER_SEC;
+    t_h = ((double) time_hpic_loop)/CLOCKS_PER_SEC;
+
+    printf("pumi = %2.8f s    hpic = %2.8f s       slowdown = %2.2fx\n",t_p, t_h, t_p/t_h );
+
+    free(coords);
+    free(part_isubmesh);
+    free(part_icell);
+
+    pumi_finalize(pumi_mesh);
+    total_run_time = clock() - total_run_time;
+    t_t = ((double) total_run_time)/CLOCKS_PER_SEC;
+    printf("Total Run Time = %2.8f s\n",t_t );
     return 0;
 }
