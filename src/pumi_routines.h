@@ -159,6 +159,7 @@ int pumi_calc_elementID_and_nodeID_with_global_offset(pumi_mesh_t* pumi_mesh, in
 int pumi_calc_elementID_and_nodeID_on_fullmesh(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int icell_x1, int icell_x2, int *node1, int *node3);
 
 bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int inode);
+void pumi_node_ID(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2, bool *is_active_node, int *nodeID);
 
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 

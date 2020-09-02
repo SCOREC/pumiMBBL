@@ -1809,6 +1809,428 @@ bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int node){
     }
 
 }
+
+void pumi_node_ID(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2, bool *is_active_node, int *nodeID){
+    int isubmesh, jsubmesh, local_x1_node, local_x2_node, kcell_x1, kcell_x2, node1, node3;
+    bool left_edge, right_edge, bottom_edge, top_edge;
+
+    for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+
+        int submesh_left_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
+        int submesh_right_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
+        left_edge =  false;
+        right_edge = false;
+        if (node_x1 >= submesh_left_node && node_x1 <= submesh_right_node){
+            local_x1_node = node_x1 - submesh_left_node;
+            if (local_x1_node == 0){
+                left_edge = true;
+                kcell_x1 = node_x1;
+            }
+            else if (local_x1_node == ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel){
+                right_edge = true;
+                kcell_x1 = node_x1-1;
+            }
+            else{
+                kcell_x1 = node_x1-1;
+            }
+            break;
+        }
+    }
+
+    for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
+
+        int submesh_bottom_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
+        int submesh_top_node = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel;
+        bottom_edge =  false;
+        top_edge = false;
+        if (node_x2 >= submesh_bottom_node && node_x2 <= submesh_top_node){
+            local_x2_node = node_x2 - submesh_bottom_node;
+            if (local_x2_node == 0){
+                bottom_edge = true;
+                kcell_x2 = node_x2;
+            }
+            else if (local_x2_node == ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel){
+                top_edge = true;
+                kcell_x2 = node_x2-1;
+            }
+            else{
+                kcell_x2 = node_x2-1;
+            }
+            break;
+        }
+    }
+
+    int isubmesh_x1 = isubmesh;
+    int inp_x1 = local_x1_node;
+    int isubmesh_x2 = jsubmesh;
+    int inp_x2 = local_x2_node;
+
+    if (pumi_mesh->isactive[isubmesh][jsubmesh]){
+        *is_active_node = true;
+        pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh, kcell_x1, kcell_x2, &node1, &node3);
+        if (inp_x1==0 && inp_x2==0){
+            *nodeID = node1;
+            return;
+        }
+        else if (inp_x1==0 && inp_x2!=0){
+            *nodeID = node3;
+            return;
+        }
+        else if (inp_x1!=0 && inp_x2==0){
+            *nodeID = node1+1;
+            return;
+        }
+        else{
+            *nodeID = node3+1;
+            return;
+        }
+    }
+    else{
+        if (!left_edge && !right_edge && !bottom_edge && !top_edge){
+            *is_active_node = false;
+            *nodeID = -1;
+            return;
+        }
+        else{
+            if (left_edge & !top_edge & !bottom_edge){
+                if (isubmesh==0){
+                    *is_active_node = false;
+                    *nodeID = -1;
+                    return;
+                }
+                else{
+                    if (pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                        *is_active_node = true;
+                        pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh, kcell_x1-1, kcell_x2, &node1, &node3);
+                        *nodeID = node3+1;
+                        return;
+                    }
+                    else{
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                }
+            }
+
+            if (left_edge & top_edge){
+                if (jsubmesh==pumi_mesh->nsubmeshes_x2-1){
+                    if (isubmesh==0){
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh, kcell_x1-1, kcell_x2, &node1, &node3);
+                            *nodeID = node3+1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==0){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh+1, kcell_x1, kcell_x2+1, &node1, &node3);
+                            *nodeID = node1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            *is_active_node  = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh, kcell_x1-1, kcell_x2, &node1, &node3);
+                            *nodeID = node3+1;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh-1][jsubmesh+1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh+1, kcell_x1-1, kcell_x2+1, &node1, &node3);
+                            *nodeID = node1+1;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh+1, kcell_x1, kcell_x2+1, &node1, &node3);
+                            *nodeID = node1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (top_edge & !left_edge & !right_edge){
+                if (jsubmesh==pumi_mesh->nsubmeshes_x2-1){
+                    *is_active_node = false;
+                    *nodeID = -1;
+                    return;
+                }
+                else{
+                    if (pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                        *is_active_node = true;
+                        pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh+1, kcell_x1, kcell_x2+1, &node1, &node3);
+                        *nodeID = node1+1;
+                        return;
+                    }
+                    else{
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                }
+            }
+
+            if (top_edge & right_edge){
+                if (jsubmesh==pumi_mesh->nsubmeshes_x2-1){
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh, kcell_x1+1, kcell_x2, &node1, &node3);
+                            *nodeID = node3;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh+1, kcell_x1, kcell_x2+1, &node1, &node3);
+                            *nodeID = node1+1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh, kcell_x1+1, kcell_x2, &node1, &node3);
+                            *nodeID = node3;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh+1][jsubmesh+1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh+1, kcell_x1+1, kcell_x2+1, &node1, &node3);
+                            *nodeID = node1;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh+1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh+1, kcell_x1, kcell_x2+1, &node1, &node3);
+                            *nodeID = node1+1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (right_edge & !top_edge & !bottom_edge){
+                if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                    *is_active_node = false;
+                    *nodeID = -1;
+                    return;
+                }
+                else{
+                    if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                        *is_active_node = true;
+                        pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh, kcell_x1+1, kcell_x2, &node1, &node3);
+                        *nodeID = node3;
+                        return;
+                    }
+                    else{
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                }
+            }
+
+            if (right_edge & bottom_edge){
+                if (jsubmesh==0){
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh, kcell_x1+1, kcell_x2, &node1, &node3);
+                            *nodeID = node1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==pumi_mesh->nsubmeshes_x1-1){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh-1, kcell_x1, kcell_x2-1, &node1, &node3);
+                            *nodeID = node3+1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh+1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh, kcell_x1+1, kcell_x2, &node1, &node3);
+                            *nodeID = node1;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh+1][jsubmesh-1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh+1, jsubmesh-1, kcell_x1+1, kcell_x2-1, &node1, &node3);
+                            *nodeID = node3;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh-1, kcell_x1, kcell_x2-1, &node1, &node3);
+                            *nodeID = node3+1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            if (bottom_edge & !left_edge &!right_edge){
+                if (jsubmesh==0){
+                    *is_active_node = false;
+                    *nodeID = -1;
+                    return;
+                }
+                else{
+                    if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                        *is_active_node = true;
+                        pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh-1, kcell_x1, kcell_x2-1, &node1, &node3);
+                        *nodeID = node3+1;
+                        return;
+                    }
+                    else{
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                }
+            }
+
+            if (bottom_edge & left_edge){
+                if (jsubmesh==0){
+                    if (isubmesh==0){
+                        *is_active_node = false;
+                        *nodeID = -1;
+                        return;
+                    }
+                    else{
+                        if(pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh, kcell_x1-1, kcell_x2, &node1, &node3);
+                            *nodeID = node1+1;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==0){
+                        if(pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh-1, kcell_x1, kcell_x2-1, &node1, &node3);
+                            *nodeID = node3;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                    else{
+                        if (pumi_mesh->isactive[isubmesh-1][jsubmesh]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh, kcell_x1-1, kcell_x2, &node1, &node3);
+                            *nodeID = node1+1;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh-1][jsubmesh-1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh-1, jsubmesh-1, kcell_x1-1, kcell_x2-1, &node1, &node3);
+                            *nodeID = node3+1;
+                            return;
+                        }
+                        else if (pumi_mesh->isactive[isubmesh][jsubmesh-1]){
+                            *is_active_node = true;
+                            pumi_calc_elementID_and_nodeID(pumi_mesh, isubmesh, jsubmesh-1, kcell_x1, kcell_x2-1, &node1, &node3);
+                            *nodeID = node3;
+                            return;
+                        }
+                        else{
+                            *is_active_node = false;
+                            *nodeID = -1;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
 /*
 int pumi_global_node_ID(pumi_mesh_t *pumi_mesh, int isubmesh_x1, int inp_x1, int isubmesh_x2, int inp_x2){
     int kcell_x1, kcell_x2, node1, node3;

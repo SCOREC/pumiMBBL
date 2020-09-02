@@ -402,6 +402,28 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
+    int inp, jnp, nodeID, err;
+    bool is_active_node;
+    int nodecount=0;
+    for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
+            if (is_active_node){
+                //printf("inp = %d jnp = %d err = %d\n",inp, jnp, nodeID-nodecount );
+                err = nodeID-nodecount;
+                //printf("err = %d\n", err);
+                if (err){
+                    printf("Non zero error -- Exiting\n");
+                    exit(0);
+                }
+                nodecount++;
+            }
+        }
+    }
+    printf("Nodecount = %d Total nodes = %d\n",nodecount, pumi_mesh->pumi_Nnp_total_2D );
+
+
+    /*
     if (!(pumi_is_fullmesh(pumi_mesh))){
         printf("Particle locate/update not implemented for mesh with inactive blocks -- Terminating...\n");
         exit(0);
@@ -680,7 +702,7 @@ int main(int argc, char *argv[])
     }
     time_hpic = clock() - time_hpic;
 
-    double t_p, t_h, t_t;
+    double t_p, t_h;
     t_p = ((double) time_pumi_loop)/CLOCKS_PER_SEC;
     t_h = ((double) time_hpic_loop)/CLOCKS_PER_SEC;
 
@@ -696,11 +718,11 @@ int main(int argc, char *argv[])
 
     free(part_icell[0]);
     free(part_icell[1]);
-    free(part_icell);
+    free(part_icell);*/
 
     pumi_finalize(pumi_mesh);
     total_run_time = clock() - total_run_time;
-    t_t = ((double) total_run_time)/CLOCKS_PER_SEC;
+    double t_t = ((double) total_run_time)/CLOCKS_PER_SEC;
     printf("Total Run Time = %2.8f s\n",t_t );
     return 0;
 }
