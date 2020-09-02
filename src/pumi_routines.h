@@ -122,8 +122,8 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node, int dir);
 
 double pumi_return_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset, int dir);
 
-double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode);
-double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inode);
+double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int *inode);
+double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int *inode);
 //double (*pumi_covolume_fnptr[])(pumi_mesh_t*, int) = {pumi_return_covolume_1D, pumi_return_covolume_2D};
 
 typedef int (*pumi_nodeID_ptr)(pumi_mesh_t*, int, int, int, int, int*, int*);

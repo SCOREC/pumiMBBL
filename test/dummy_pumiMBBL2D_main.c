@@ -401,12 +401,13 @@ int main(int argc, char *argv[])
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_initiate_options);
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
-
+    /*
     int inp, jnp, nodeID, err;
     bool is_active_node;
     int nodecount=0;
     for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
         for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            int inode[2] = {inp,jnp};
             pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
             if (is_active_node){
                 //printf("inp = %d jnp = %d err = %d\n",inp, jnp, nodeID-nodecount );
@@ -416,14 +417,15 @@ int main(int argc, char *argv[])
                     printf("Non zero error -- Exiting\n");
                     exit(0);
                 }
+                //printf("cov_err = %2.8f\n",pumi_return_covolume_2D(pumi_mesh,inode)-pumi_return_covolume_2D(pumi_mesh,inp, jnp) );
                 nodecount++;
             }
         }
     }
-    printf("Nodecount = %d Total nodes = %d\n",nodecount, pumi_mesh->pumi_Nnp_total_2D );
+    printf("Nodecount = %d Total nodes = %d\n",nodecount, pumi_mesh->pumi_Nnp_total_2D );*/
 
 
-    /*
+
     if (!(pumi_is_fullmesh(pumi_mesh))){
         printf("Particle locate/update not implemented for mesh with inactive blocks -- Terminating...\n");
         exit(0);
@@ -464,6 +466,7 @@ int main(int argc, char *argv[])
     // particle initiate
     srand48(time(NULL));
     int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
+    bool is_active_node;
     double Wgh1_x1, Wgh2_x1, Wgh1_x2, Wgh2_x2;
     clock_t time_pumi, time_hpic;
     clock_t time_pumi_loop, time_pumi_loop_var;
@@ -500,11 +503,13 @@ int main(int argc, char *argv[])
         field[node3+1] += Wgh2_x1*Wgh2_x2;
     }
 
-    nodeID = 0;
-    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x2*pumi_mesh->pumi_Nnp_total_x1; inp++){
-        if (pumi_is_node_active(pumi_mesh, inp)){
-            field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp);
-            nodeID++;
+    for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            int inode[2] = {inp,jnp};
+            pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
+            if (is_active_node){
+                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
+            }
         }
     }
 
@@ -570,11 +575,13 @@ int main(int argc, char *argv[])
         time_pumi_loop_var = clock() - time_pumi_loop_var;
         time_pumi_loop += time_pumi_loop_var;
 
-        nodeID = 0;
-        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x2*pumi_mesh->pumi_Nnp_total_x1; inp++){
-            if (pumi_is_node_active(pumi_mesh, inp)){
-                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp);
-                nodeID++;
+        for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
+            for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+                int inode[2] = {inp,jnp};
+                pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
+                if (is_active_node){
+                    field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
+                }
             }
         }
         write2file(field,Nnp_2D,istep);
@@ -630,8 +637,9 @@ int main(int argc, char *argv[])
             else{
                 x2_cov = dx2;
             }
-            field[nodeID] /= x1_cov*x2_cov;
-            //field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp, jnp);
+            //field[nodeID] /= x1_cov*x2_cov;
+            int inode[2] = {inp,jnp};
+            field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
             nodeID++;
         }
     }
@@ -693,8 +701,9 @@ int main(int argc, char *argv[])
                 else{
                     x2_cov = dx2;
                 }
-                field[nodeID] /= x1_cov*x2_cov;
-                //field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inp, jnp);
+                //field[nodeID] /= x1_cov*x2_cov;
+                int inode[2] = {inp,jnp};
+                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
                 nodeID++;
             }
         }
@@ -718,7 +727,7 @@ int main(int argc, char *argv[])
 
     free(part_icell[0]);
     free(part_icell[1]);
-    free(part_icell);*/
+    free(part_icell);
 
     pumi_finalize(pumi_mesh);
     total_run_time = clock() - total_run_time;

@@ -133,16 +133,16 @@ double pumi_global_x2_max(pumi_mesh_t *pumi_mesh)
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] node number
 */
-double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
+double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int *inode){
   double covolume;
-  if (inode == 0){
-    covolume = pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_right_offset, pumi_x1)/2.0;
+  if (inode[0] == 0){
+    covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
   }
-  else if (inode == pumi_mesh->pumi_Nel_total_x1){
-    covolume = pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_left_offset, pumi_x1)/2.0;
+  else if (inode[0] == pumi_mesh->pumi_Nel_total_x1){
+    covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0;
   }
-  else if (inode > 0 && inode < pumi_mesh->pumi_Nel_total_x1){
-    covolume = pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_left_offset, pumi_x1)/2.0 + pumi_return_elemsize(pumi_mesh, inode, pumi_elem_on_right_offset, pumi_x1)/2.0;
+  else if (inode[0] > 0 && inode[0] < pumi_mesh->pumi_Nel_total_x1){
+    covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 + pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
   }
   else{
     printf("\tInvalid node number for covolume\n");
@@ -151,10 +151,10 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int inode){
   return covolume;
 }
 
-double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int node){
+double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int *inode){
     int inp_x1, inp_x2;
-    inp_x2 = node/pumi_mesh->pumi_Nel_total_x1;
-    inp_x1 = node - inp_x2*pumi_mesh->pumi_Nel_total_x1;
+    inp_x1 = inode[0];
+    inp_x2 = inode[1];
     double dx1_left, dx1_right, dx2_bottom, dx2_top;
     if (inp_x1 == 0){
       dx1_left = 0.0;
@@ -194,7 +194,6 @@ double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int node){
     return covolume;
 
 }
-
 /*
 * \brief Call appropriate subroutine (based on the dimension of the problem) to compute BL element sizes
 * \param *pumi_mesh pointer object to struct pumi_mesh

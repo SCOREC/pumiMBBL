@@ -240,7 +240,8 @@ int main(int argc, char *argv[])
     }
 
     for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-        field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+        int inode[1] = {inp};
+        field[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);
     }
 
 
@@ -285,7 +286,8 @@ int main(int argc, char *argv[])
         time_pumi_loop += time_pumi_loop_var;
 
         for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-            field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+            int inode[1] = {inp};
+            field[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);
         }
         //write2file(field,Nnp_2D,istep);
     }
@@ -314,7 +316,8 @@ int main(int argc, char *argv[])
     }
 
     for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-        field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+        int inode[1] = {inp};
+        field[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);
     }
 
     //write2file_uni(field, Nnp_2D, 0);
@@ -351,7 +354,8 @@ int main(int argc, char *argv[])
         time_hpic_loop_var = clock() - time_hpic_loop_var;
         time_hpic_loop += time_hpic_loop_var;
         for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-            field[inp] /= pumi_return_covolume_1D(pumi_mesh, inp);
+            int inode[1] = {inp};
+            field[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);
         }
         //write2file_uni(field, Nnp_2D, istep);
     }
