@@ -129,7 +129,7 @@ double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int inode);
 typedef int (*pumi_nodeID_ptr)(pumi_mesh_t*, int, int, int, int, int*, int*);
 pumi_nodeID_ptr **pumi_nodeID_fnptr;
 
-bool pumi_mesh_with_no_inactive_blocks(pumi_mesh_t *pumi_mesh);
+bool pumi_is_fullmesh(pumi_mesh_t *pumi_mesh);
 void pumi_initialize_nodeID_functions(pumi_mesh_t *pumi_mesh);
 void pumi_finalize_nodeID_functions(pumi_mesh_t *pumi_mesh);
 

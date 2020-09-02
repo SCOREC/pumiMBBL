@@ -1452,7 +1452,7 @@ int pumi_dummy_elem_node_ID_v2(int kcell_x1, int kcell_x2, double dx1, double dx
     return kcell;
 }
 
-bool pumi_mesh_with_no_inactive_blocks(pumi_mesh_t *pumi_mesh){
+bool pumi_is_fullmesh(pumi_mesh_t *pumi_mesh){
     bool is_fullmesh = true;
     int isubmesh, jsubmesh;
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
@@ -1852,7 +1852,7 @@ void pumi_initialize_nodeID_functions(pumi_mesh_t *pumi_mesh){
         pumi_nodeID_fnptr[isubmesh] = (pumi_nodeID_ptr*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_nodeID_ptr));
     }
 
-    if (pumi_mesh_with_no_inactive_blocks(pumi_mesh)){
+    if (pumi_is_fullmesh(pumi_mesh)){
         printf("No INACTIVE blocks in mesh detected -- Intializing element/node ID routines without offsets\n\n");
         for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
             for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){

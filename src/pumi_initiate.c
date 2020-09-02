@@ -203,7 +203,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         }
         printf("\n\n");
 
-        if (!(pumi_mesh_with_no_inactive_blocks(pumi_mesh))){
+        if (!(pumi_is_fullmesh(pumi_mesh))){
             if (pumi_initiate_options.nodeoffset_cache_flag == pumi_cache_nodeoffset_ON){
                 pumi_mesh->nodeoffset_cache_flag = 1;
             }
@@ -223,7 +223,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         printf("\tTotal ACTIVE nodes in 2D mesh    = %3d\n\n\n", pumi_mesh->pumi_Nnp_total_2D);
 
         pumi_initialize_nodeID_functions(pumi_mesh);
-        if(!(pumi_mesh_with_no_inactive_blocks(pumi_mesh)) && !(pumi_initiate_options.nodeoffset_cache_flag)){
+        if(!(pumi_is_fullmesh(pumi_mesh)) && !(pumi_initiate_options.nodeoffset_cache_flag)){
             printf("PUMI submesh type for nodeoffset calculations :\n\n");
             for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
                 for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
@@ -927,7 +927,7 @@ void pumi_finalize(pumi_mesh_t* pumi_mesh){
       pumi_BL_elemsize_OFF(pumi_mesh);
   }
 
-  if (!(pumi_mesh_with_no_inactive_blocks(pumi_mesh))){
+  if (!(pumi_is_fullmesh(pumi_mesh))){
       pumi_free_offset_variables(pumi_mesh);
   }
 
