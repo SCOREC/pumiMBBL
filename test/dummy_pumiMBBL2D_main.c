@@ -424,6 +424,13 @@ int main(int argc, char *argv[])
         printf("\n");
     }
 
+    // for (inp=1; inp<=pumi_mesh->pumi_Nel_total_x1-1; inp++){
+    //     printf("gr_x=%2.3f\n",pumi_return_gradingratio(pumi_mesh, inp, pumi_x1));
+    // }
+    // for (jnp=1; jnp<=pumi_mesh->pumi_Nel_total_x2-1; jnp++){
+    //     printf("gr_y=%2.3f\n",pumi_return_gradingratio(pumi_mesh, jnp, pumi_x2));
+    // }
+
     /*
     if (!(pumi_is_fullmesh(pumi_mesh))){
         printf("Particle locate/update not implemented for mesh with inactive blocks -- Terminating...\n");

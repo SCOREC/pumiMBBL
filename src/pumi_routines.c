@@ -417,7 +417,12 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node, int dir){
             int submesh_min_node = (submeshes + isubmesh)->Nel_cumulative;
             int submesh_max_node = submesh_min_node + (submeshes + isubmesh)->submesh_Nel;
             if (node > submesh_min_node && node < submesh_max_node){
-                return (submeshes + isubmesh)->r;
+                if ((submeshes + isubmesh)->pumi_flag & rightBL){
+                    return (1.0/(submeshes + isubmesh)->r);
+                }
+                else{
+                    return (submeshes + isubmesh)->r;
+                }
             }
             else if (node == (submeshes + isubmesh)->Nel_cumulative){
                 double min_elem_size;
