@@ -340,7 +340,7 @@ double pumi_return_1D_gradingratio(pumi_mesh_t *pumi_mesh, int node){
         if (((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->pumi_flag & rightBL){
           int submesh_right_Nel = ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_Nel;
           if (node <= submesh_right_node-1 && node >= submesh_right_node-submesh_right_Nel+1){
-            return ((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r;
+            return (1.0/((pumi_submesh1D_t*) pumi_mesh->pumi_submeshes + isubmesh)->right_r);
             break;
           }
         }
