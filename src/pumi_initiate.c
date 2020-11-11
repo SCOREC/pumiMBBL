@@ -272,31 +272,43 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   }
 
   if (pumi_mesh->BL_elem_coords_cache_flag){
-      printf("BL CACHING OPTION  -- BL element sizes and node coordinates to be stored in arrays\n");
       pumi_BL_elemsize_ON(pumi_mesh);
-  }
-  else{
-      printf("BL CACHING OPTION  -- BL element sizes and node coordinates to be calculated on-the-fly\n");
-  }
-
-  if (!(pumi_mesh->nodeoffset_cache_flag)){
-      printf("NODE OFFSET OPTION -- Node Offsets to be calculated on-the-fly \n");
-  }
-  else{
-      printf("NODE OFFSET OPTION -- Node Offsets to be stored in an array \n");
-  }
-
-  if (pumi_mesh->bspline_flag){
-      printf("B-SPLINE OPTION    -- B-spline routines to be initiated for charge distribution\n\n");
-  }
-  else{
-      printf("B-SPLINE OPTION    -- B-spline routines NOT to be initiated for charge distribution\n\n");
   }
 
   pumi_verify_params(pumi_mesh);
   pumi_print_node_coordinates(pumi_mesh);
 
   pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
+
+  if (pumi_mesh->bspline_flag){
+      pumi_mesh->pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, pumi_x1);
+      if (pumi_mesh->ndim == 2){
+          printf("Bsplines not implemented for 2D -- Using Linear interpolation\n");
+          pumi_mesh->bspline_flag = 0;
+      }
+  }
+
+  printf("MESH OPTIONS USED:\n");
+  if (pumi_mesh->BL_elem_coords_cache_flag){
+      printf("\tBL CACHING OPTION  -- BL element sizes and node coordinates to be stored in arrays\n");
+  }
+  else{
+      printf("\tBL CACHING OPTION  -- BL element sizes and node coordinates to be calculated on-the-fly\n");
+  }
+
+  if (!(pumi_mesh->nodeoffset_cache_flag)){
+      printf("\tNODE OFFSET OPTION -- Node Offsets to be calculated on-the-fly \n");
+  }
+  else{
+      printf("\tNODE OFFSET OPTION -- Node Offsets to be stored in an array \n");
+  }
+
+  if (pumi_mesh->bspline_flag){
+      printf("\tB-SPLINE OPTION    -- B-spline routines initiated for charge distribution\n\n");
+  }
+  else{
+      printf("\tB-SPLINE OPTION    -- B-spline routines NOT initiated for charge distribution\n\n");
+  }
   return (pumi_mesh);
 }
 
@@ -1555,4 +1567,133 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           }
           printf("\n");
         }
+}
+
+int nchoosek(int n, int k){
+    if (k==0){
+        return 1;
+    }
+    else{
+        return ((n*nchoosek(n-1,k-1))/k);
+    }
+}
+
+pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir){
+    int i,j,k,l;
+
+    double t0_left, t0_right, node1, node2, xleft, xright;
+    pumi_calc_node_coords(pumi_mesh, 0, 0, &node1, &node2);
+    t0_left = node2-node1;
+    xleft = node1;
+    pumi_calc_node_coords(pumi_mesh, pumi_mesh->nsubmeshes_x1-1, (pumi_submesh_total_elements_1D(pumi_mesh, pumi_mesh->nsubmeshes_x1-1)-1), &node1, &node2);
+    t0_right = node2-node1;
+    xright = node2;
+
+    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int p = pumi_mesh->P_spline;
+    int knot_length = nel+1+4*p;
+
+    double *knot_tmp;
+    knot_tmp = (double*) malloc(knot_length*sizeof(double));
+    pumi_mesh->nCk4spline = (int*) malloc((p+1)*sizeof(int));
+
+    for (i=0; i<p+1; i++){
+        pumi_mesh->nCk4spline[i] = nchoosek(p,i);
+    }
+
+    for (i=0; i<p+1; i++){
+        knot_tmp[i] = xleft-p*t0_left; // repeat first p+1 knots
+    }
+    for (i=p+1; i<2*p; i++){
+        knot_tmp[i] = knot_tmp[i-1]+t0_left; //p-1
+    }
+    i=2*p;
+    knot_tmp[i] = xleft;//1
+    for (i=2*p+1; i<2*p+nel+1; i++){
+        int iel = i-(2*p+1);
+        double elemsize = pumi_return_elemsize(pumi_mesh, iel, pumi_elem_input_offset, dir);
+        knot_tmp[i] = knot_tmp[i-1]+elemsize;//nel
+    }
+    for (i=2*p+nel+1; i<3*p+nel; i++){
+        knot_tmp[i] = knot_tmp[i-1]+t0_right;//p-1
+    }
+    for (i=3*p+nel; i<4*p+nel+1; i++){
+        knot_tmp[i] = xright+p*t0_right;// repeart last p+1 knots
+    }
+
+    int knot_nel = nel+2*p;
+    pumi_bezier_extractor_t *bez_ex;
+    bez_ex = (pumi_bezier_extractor_t*) malloc(knot_nel*sizeof(pumi_bezier_extractor_t));
+
+    for (i=0; i<knot_nel; i++){
+        bez_ex[i].C = (double**) malloc((p+1)*sizeof(double*));
+        for (j=0; j<p+1; j++){
+            bez_ex[i].C[j] = (double*) malloc((p+1)*sizeof(double));
+        }
+    }
+
+    for (i=0; i<knot_nel; i++){
+        for (j=0; j<p+1; j++){
+            for (k=0; k<p+1; k++){
+                if (j==k){
+                    bez_ex[i].C[j][k]=1.0;
+                }
+                else{
+                    bez_ex[i].C[j][k]=0.0;
+                }
+            }
+        }
+    }
+
+    int m = nel+1+4*p;
+    int a = p+1;
+    int b = a+1;
+    int nb = 1;
+    int mult, r, save, s;
+    double numer, alpha;
+    double *alphas = (double*) malloc((p+1)*sizeof(double));
+    while (b < m) {
+        i = b;
+        
+        while ( b<m && knot_tmp[b]==knot_tmp[b-1] ){
+            b++;
+        }
+        mult = b-i+1;
+
+        if (mult < p){
+            numer = knot_tmp[b-1]-knot_tmp[a-1];
+
+            for (j=p; j>mult; j--){
+                alphas[j-mult-1] = numer/(knot_tmp[a+j-1]-knot_tmp[a-1]);
+            }
+            r = p-mult;
+
+            for (j=1; j<=r; j++){
+                save = r-j+1;
+                s = mult+j;
+                for (k=p+1; k>s; k--){
+                    alpha = alphas[k-s-1];
+                    for (l=0; l<p+1; l++){
+                        bez_ex[nb-1].C[l][k-1] = alpha*bez_ex[nb-1].C[l][k-1] + (1.0-alpha)*bez_ex[nb-1].C[l][k-2];
+                    }
+                }
+
+                if (b < m){
+                    for (l=0; l<j+1; l++){
+                        bez_ex[nb].C[save-1+l][save-1] = bez_ex[nb-1].C[p-j+l][p];
+                    }
+                }
+            }
+            nb++;
+
+            if (b < m){
+                a=b;
+                b++;
+            }
+
+        }
+    }
+    free(alphas);
+    free(knot_tmp);
+    return bez_ex;
 }

@@ -198,6 +198,22 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
+    // int p = pumi_mesh->P_spline;
+    // int i,j,k;
+    // int knot_nel = pumi_mesh->pumi_Nel_total_x1+2*p;
+    // for (i=0; i<knot_nel; i++){
+    //     printf("knot_iel=%d\n",i+1);
+    //     for (j=0; j<p+1; j++){
+    //         for (k=0; k<p+1; k++){
+    //             printf("%2.4f ",pumi_mesh->pumi_bez_ex_x1[i].C[j][k] );
+    //         }
+    //         printf("\n");
+    //     }
+    // }
+    // for (i=0; i<p+1; i++){
+    //     printf("nCK[%d]=%d\n",i+1,pumi_mesh->nCk4spline[i] );
+    // }
+    // exit(0);
     int num_particles;
     printf("\nEnter number of particles in domain : ");
     scanf("%d", &num_particles); //user supplied
