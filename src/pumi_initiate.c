@@ -43,6 +43,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   else if (pumi_input_initiate_flag == initiate_from_commandline_inputs){
     //only use this if pumi_initiate_input struct members are populated accordingly
     pumi_mesh->ndim = pumi_inputs->ndim;
+    pumi_mesh->P_spline = pumi_inputs->P_spline;
     //DEFAULT PUMI options
     pumi_mesh->BL_elem_coords_cache_flag = 1;
     pumi_mesh->nodeoffset_cache_flag = 0;
@@ -86,6 +87,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           printf("\t right_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel);
         }
       }
+      printf("\tB-spline order for charge distribution = %d\n\n",pumi_mesh->P_spline );
 
       //pumi_initialize_locate_functions(pumi_mesh);
       pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
@@ -170,6 +172,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             printf("\t top_Nel   = %d    \t\t Number of Cells in right BL mesh region\n\n", ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel);
           }
         }
+        printf("\tB-spline order for charge distribution = %d\n\n",pumi_mesh->P_spline );
 
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
             pumi_mesh->isactive[isubmesh] = (bool*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(bool));

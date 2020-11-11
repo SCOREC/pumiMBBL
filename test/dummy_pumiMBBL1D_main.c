@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     total_run_time = clock();
     pumi_initiate_input_t    *pumi_inputs;
     ///*
-    if (argc < 6){
+    if (argc < 7){
       printf("Execute the code with the following command line arguments -- \n\n" );
       printf("\t ./install/bin/pumiMBBL_Demo N \"typeflag_i\" \"p1_i\" \"p2_max_i\" \"p2_min_i\"\n\n\n");
       printf("\t N     \t\t\t Total Number of submeshes in the domain \n\n");
@@ -23,9 +23,11 @@ int main(int argc, char *argv[])
       printf("\t \"Nel_i\" \t\t Number of elements in i-th submesh \n");
       printf("\t \"p2_min_i\"  \t\t For leftBL/rightBL, Number of minimum size cells in a Debye Length for i-th submesh \n");
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
+      printf("\t P     \t\t\t B-spline polynomial order for charge distirbution\n");
+      printf("\t \t  \t\t Input will be ignored if bspline flag is turned off in main function\n\n");
       printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
       printf("  E.g.\n\n");
-      printf("    ./install/bin/pumiMBBL1D_Demo 3 \"leftBL,uniform,rightBL\" \"20,60,20\" \"12,23,12\" \"5,0,5\"\n");
+      printf("    ./install/bin/pumiMBBL1D_Demo 3 \"leftBL,uniform,rightBL\" \"20,60,20\" \"12,23,12\" \"5,0,5\" 2\n");
       exit(0);
     }
 
@@ -109,6 +111,8 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    int P_spline = atoi( argv[6] );
+    pumi_inputs->P_spline = P_spline;
     //pumi_inputs_allocate(pumi_inputs, pumi_inputs->nsubmeshes);
 
     double lambda_D = 1.0;

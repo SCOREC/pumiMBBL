@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     pumi_initiate_input_t    *pumi_inputs;
 
     ///*
-    if (argc != 12){
+    if (argc != 13){
       printf("Execute the code with the following command line arguments -- \n\n" );
       printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 \"typeflag_i_x1\" \"p1_i_x1\" \"Nel_i_x1\" \"p2min_i_x1\" N_x2 \"typeflag_i_x2\" \"p1_i_x2\" \"Nel_i_x2\" \"p2min_i_x2\" \"block_isactive\"\n\n\n");
       printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
@@ -65,11 +65,13 @@ int main(int argc, char *argv[])
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
       printf("\t block_isactive \t Activity info of each submesh-block (N_x1*N_x2 inputs required)\n" );
       printf("\t \t  \t\t 0 is inactive \n\n");
+      printf("\t P        \t\t B-spline polynomial order for charge distirbution\n");
+      printf("\t \t  \t\t Input will be ignored if bspline flag is turned off in main function\n\n");
       printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
       printf("  E.g.#1\n\n");
-      printf("    ./install/bin/pumiMBBL2D_Demo 4 \"leftBL,uniform,uniform,rightBL\" \"20,30,30,20\" \"10,10,10,10\" \"1.0,0,0,1.0\" 3 \"bottomBL,uniform,topBL\" \"10,30,10\" \"5,10,5\" \"1.0,0,1.0\" \"1,0,0,1,1,1,1,1,1,0,0,1\"\n\n");
+      printf("    ./install/bin/pumiMBBL2D_Demo 4 \"leftBL,uniform,uniform,rightBL\" \"20,30,30,20\" \"10,10,10,10\" \"1.0,0,0,1.0\" 3 \"bottomBL,uniform,topBL\" \"10,30,10\" \"5,10,5\" \"1.0,0,1.0\" \"1,0,0,1,1,1,1,1,1,0,0,1\" 2\n\n");
       printf("  E.g.#2\n\n");
-      printf("    ./install/bin/pumiMBBL2D_Demo 3 \"leftBL,uniform,rightBL\" \"30,90,30\" \"15,25,15\" \"1.0,0.0,1.0\" 2 \"topBL,bottomBL\" \"50,50\" \"25,25\" \"1.0,1.0\" \"1,1,1,1,1,1\"\n\n");
+      printf("    ./install/bin/pumiMBBL2D_Demo 3 \"leftBL,uniform,rightBL\" \"30,90,30\" \"15,25,15\" \"1.0,0.0,1.0\" 2 \"topBL,bottomBL\" \"50,50\" \"25,25\" \"1.0,1.0\" \"1,1,1,1,1,1\" 2\n\n");
       exit(0);
     }
 
@@ -242,6 +244,8 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    int P_spline = atoi( argv[12] );
+    pumi_inputs->P_spline = P_spline;
 
     double lambda_D = 1.0;
     double x1_min = 0.0;

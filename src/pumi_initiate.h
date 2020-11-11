@@ -47,7 +47,7 @@ typedef struct pumi_initiate_mesh_options{
 */
 typedef struct pumi_initiate_input{
   int ndim; //!< number of physical dimensions of the problem space
-  int p_spline; //!< order of b-spline used for charge distribution
+  int P_spline; //!< order of b-spline used for charge distribution
   //1D params
   int nsubmeshes; //!< number of submesh blocks in the domain
   int *p1_i;//! Number of debye lenghts in a submesh
