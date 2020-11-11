@@ -31,9 +31,15 @@ typedef enum pumi_cache_nodeoffset{
   pumi_cache_nodeoffset_ON = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
 } pumi_cache_nodeoffset_t;
 
+typedef enum pumi_bspline{
+  pumi_bspline_OFF = 0, //!< no bspline based charge distribution
+  pumi_bspline_ON = 1, //!< initiate routines to allow bspline based charge distribution
+} pumi_bspline_t;
+
 typedef struct pumi_initiate_mesh_options{
     pumi_cache_BL_elemsize_t BL_cache_flag;
     pumi_cache_nodeoffset_t nodeoffset_cache_flag;
+    pumi_bspline_t bspline_flag;
 } pumi_initiate_mesh_options_t;
 
 /*!
@@ -41,6 +47,7 @@ typedef struct pumi_initiate_mesh_options{
 */
 typedef struct pumi_initiate_input{
   int ndim; //!< number of physical dimensions of the problem space
+  int p_spline; //!< order of b-spline used for charge distribution
   //1D params
   int nsubmeshes; //!< number of submesh blocks in the domain
   int *p1_i;//! Number of debye lenghts in a submesh

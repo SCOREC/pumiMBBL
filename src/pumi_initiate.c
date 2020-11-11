@@ -46,6 +46,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     //DEFAULT PUMI options
     pumi_mesh->BL_elem_coords_cache_flag = 1;
     pumi_mesh->nodeoffset_cache_flag = 0;
+    pumi_mesh->bspline_flag = 0;
 
     if (pumi_mesh->ndim == 1){
       pumi_mesh->nsubmeshes_x1 = pumi_inputs->nsubmeshes;
@@ -260,6 +261,13 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
       pumi_mesh->BL_elem_coords_cache_flag = 0;
   }
 
+  if (pumi_initiate_options.bspline_flag == pumi_bspline_ON){
+      pumi_mesh->bspline_flag = 1;
+  }
+  else{
+      pumi_mesh->bspline_flag = 0;
+  }
+
   if (pumi_mesh->BL_elem_coords_cache_flag){
       printf("BL CACHING OPTION  -- BL element sizes and node coordinates to be stored in arrays\n");
       pumi_BL_elemsize_ON(pumi_mesh);
@@ -269,10 +277,17 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   }
 
   if (!(pumi_mesh->nodeoffset_cache_flag)){
-      printf("NODE OFFSET OPTION -- Node Offsets to be calculated on-the-fly \n\n");
+      printf("NODE OFFSET OPTION -- Node Offsets to be calculated on-the-fly \n");
   }
   else{
-      printf("NODE OFFSET OPTION -- Node Offsets to be stored in an array \n\n");
+      printf("NODE OFFSET OPTION -- Node Offsets to be stored in an array \n");
+  }
+
+  if (pumi_mesh->bspline_flag){
+      printf("B-SPLINE OPTION    -- B-spline routines to be initiated for charge distribution\n\n");
+  }
+  else{
+      printf("B-SPLINE OPTION    -- B-spline routines NOT to be initiated for charge distribution\n\n");
   }
 
   pumi_verify_params(pumi_mesh);

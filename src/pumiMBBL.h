@@ -29,6 +29,9 @@ typedef enum pumi_2D_blocktype_for_nodeoffset{
     type_D = 4, //nodeoffset_skip is diffrent for first 2 nodes and last node
 }pumi_2D_blocktype_for_nodeoffset_t;
 
+typedef struct pumi_bezier_extractor{
+    double **C; // local element bspline extraction operator
+}pumi_bezier_extractor_t;
 
 /*!
 * \brief Contains the parameters used to define a submesh
@@ -78,6 +81,8 @@ typedef struct pumi_mesh{
   int *elemoffset_skip;
   int **global_nodeoffset;
   pumi_2D_blocktype_for_nodeoffset_t **blocktype;
+  pumi_bezier_extractor_t *pumi_bez_ex;
+  int bspline_flag;
 } pumi_mesh_t;
 
 #include "pumi_initiate.h"
