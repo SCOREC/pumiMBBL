@@ -2438,3 +2438,22 @@ void pumi_finalize_nodeID_functions(pumi_mesh_t *pumi_mesh){
     }
     free(pumi_nodeID_fnptr);
 }
+
+
+void pumi_compute_bspline_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle, double *qhat_spline){
+    int i,j;
+    double one_minus_xi = 1.0-xi;
+    double xi_term = 1.0;
+    double one_minus_xi_term = pow(one_minus_xi,pumi_mesh->P_spline);
+    for (i=0; i<pumi_mesh->P_spline+1; i++){
+        pumi_mesh->bernstein_vector[i] = pumi_mesh->nCk4spline[i]*xi_term*one_minus_xi_term;
+        xi_term *= xi;
+        one_minus_xi_term /= one_minus_xi;
+    }
+
+    for (i=0; i<pumi_mesh->P_spline+1; i++){
+        for (j=0; j<pumi_mesh->P_spline+1; j++){
+            qhat_spline[pumi_mesh->P_spline+iel+i] += pumi_mesh->pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->bernstein_vector[j];
+        }
+    }
+}

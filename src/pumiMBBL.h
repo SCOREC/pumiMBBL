@@ -82,8 +82,10 @@ typedef struct pumi_mesh{
   int **global_nodeoffset;
   pumi_2D_blocktype_for_nodeoffset_t **blocktype;
   int P_spline;
+  int N_spline;
   pumi_bezier_extractor_t *pumi_bez_ex_x1;
   pumi_bezier_extractor_t *pumi_bez_ex_x2;
+  double *bernstein_vector;
   int *nCk4spline;
   int bspline_flag;
 } pumi_mesh_t;

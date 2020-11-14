@@ -1592,9 +1592,11 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     int nel = pumi_mesh->pumi_Nel_total_x1;
     int p = pumi_mesh->P_spline;
     int knot_length = nel+1+4*p;
+    pumi_mesh->N_spline = knot_length-p-1;
 
     double *knot_tmp;
     knot_tmp = (double*) malloc(knot_length*sizeof(double));
+    pumi_mesh->bernstein_vector = (double*) malloc((p+1)*sizeof(double));
     pumi_mesh->nCk4spline = (int*) malloc((p+1)*sizeof(int));
 
     for (i=0; i<p+1; i++){
