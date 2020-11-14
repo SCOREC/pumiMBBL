@@ -31,15 +31,15 @@ typedef enum pumi_cache_nodeoffset{
   pumi_cache_nodeoffset_ON = 1, //!< caching of BL element sizes (precomputed while mesh initialization)
 } pumi_cache_nodeoffset_t;
 
-typedef enum pumi_bspline{
+typedef enum pumi_use_bspline{
   pumi_bspline_OFF = 0, //!< no bspline based charge distribution
   pumi_bspline_ON = 1, //!< initiate routines to allow bspline based charge distribution
-} pumi_bspline_t;
+} pumi_use_bspline_t;
 
 typedef struct pumi_initiate_mesh_options{
     pumi_cache_BL_elemsize_t BL_cache_flag;
     pumi_cache_nodeoffset_t nodeoffset_cache_flag;
-    pumi_bspline_t bspline_flag;
+    pumi_use_bspline_t bspline_flag;
 } pumi_initiate_mesh_options_t;
 
 /*!
@@ -113,5 +113,5 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh);
 void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh);
 int nchoosek(int n, int k);
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir);
-
+void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir);
 #endif /* pumi_initiate_h */

@@ -281,7 +281,9 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
 
   if (pumi_mesh->bspline_flag){
-      pumi_mesh->pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, pumi_x1);
+      // pumi_mesh->pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, pumi_x1);
+      // pumi_mesh->pumi_bspl = pumi_initiate_bsplines(pumi_mesh, pumi_x1);
+      pumi_initiate_bsplines(pumi_mesh, pumi_x1);
       if (pumi_mesh->ndim == 2){
           printf("Bsplines not implemented for 2D -- Using Linear interpolation\n");
           pumi_mesh->bspline_flag = 0;
@@ -1578,6 +1580,22 @@ int nchoosek(int n, int k){
     }
 }
 
+void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
+    int nel = pumi_mesh->pumi_Nel_total_x1;
+
+    int p = pumi_mesh->P_spline;
+    pumi_mesh->pumi_bspl.N_spline = nel+3*p;
+    pumi_mesh->pumi_bspl.bernstein_vector = (double*) malloc((p+1)*sizeof(double));
+    pumi_mesh->pumi_bspl.nCk4spline = (int*) malloc((p+1)*sizeof(int));
+    pumi_mesh->pumi_bspl.cov_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+    pumi_mesh->pumi_bspl.Q_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+    int i;
+    for (i=0; i<p+1; i++){
+        pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
+    }
+    pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, dir);
+}
+
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir){
     int i,j,k,l;
 
@@ -1592,16 +1610,16 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     int nel = pumi_mesh->pumi_Nel_total_x1;
     int p = pumi_mesh->P_spline;
     int knot_length = nel+1+4*p;
-    pumi_mesh->N_spline = knot_length-p-1;
+    // pumi_mesh->N_spline = knot_length-p-1;
 
     double *knot_tmp;
     knot_tmp = (double*) malloc(knot_length*sizeof(double));
-    pumi_mesh->bernstein_vector = (double*) malloc((p+1)*sizeof(double));
-    pumi_mesh->nCk4spline = (int*) malloc((p+1)*sizeof(int));
-
-    for (i=0; i<p+1; i++){
-        pumi_mesh->nCk4spline[i] = nchoosek(p,i);
-    }
+    // pumi_mesh->bernstein_vector = (double*) malloc((p+1)*sizeof(double));
+    // pumi_mesh->nCk4spline = (int*) malloc((p+1)*sizeof(int));
+    //
+    // for (i=0; i<p+1; i++){
+    //     pumi_mesh->nCk4spline[i] = nchoosek(p,i);
+    // }
 
     for (i=0; i<p+1; i++){
         knot_tmp[i] = xleft-p*t0_left; // repeat first p+1 knots
@@ -1626,7 +1644,7 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     int knot_nel = nel+2*p;
     pumi_bezier_extractor_t *bez_ex;
     bez_ex = (pumi_bezier_extractor_t*) malloc(knot_nel*sizeof(pumi_bezier_extractor_t));
-
+    printf("here2\n");
     for (i=0; i<knot_nel; i++){
         bez_ex[i].C = (double**) malloc((p+1)*sizeof(double*));
         for (j=0; j<p+1; j++){
@@ -1656,7 +1674,7 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     double *alphas = (double*) malloc((p+1)*sizeof(double));
     while (b < m) {
         i = b;
-        
+
         while ( b<m && knot_tmp[b]==knot_tmp[b-1] ){
             b++;
         }

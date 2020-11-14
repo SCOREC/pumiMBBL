@@ -205,13 +205,13 @@ int main(int argc, char *argv[])
     //     printf("knot_iel=%d\n",i+1);
     //     for (j=0; j<p+1; j++){
     //         for (k=0; k<p+1; k++){
-    //             printf("%2.4f ",pumi_mesh->pumi_bez_ex_x1[i].C[j][k] );
+    //             printf("%2.4f ",pumi_mesh->pumi_bspl.pumi_bez_ex_x1[i].C[j][k] );
     //         }
     //         printf("\n");
     //     }
     // }
     // for (i=0; i<p+1; i++){
-    //     printf("nCK[%d]=%d\n",i+1,pumi_mesh->nCk4spline[i] );
+    //     printf("nCK[%d]=%d\n",i+1,pumi_mesh->pumi_bspl.nCk4spline[i] );
     // }
     // exit(0);
     int num_particles;
@@ -239,17 +239,18 @@ int main(int argc, char *argv[])
     //printf("x1_min = %2.8f  x1_max = %2.8f\n", x1_min, x1_max);
     //printf("x2_min = %2.8f  x2_max = %2.8f\n", x2_min, x2_max);
     // particle initiate
-    srand48(time(NULL));
+    // srand48(time(NULL));
     int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
     double Q_macro_particle = 1.0;
     double Wgh1, Wgh2;
-    double *qhat_spline = (double*) malloc(pumi_mesh->N_spline * sizeof(double));
+    // double *qhat_spline = (double*) malloc(pumi_mesh->N_spline * sizeof(double));
     int ispline;
-    for (ispline=0; ispline<pumi_mesh->N_spline; ispline++){
-        qhat_spline[ispline] = 0.0;
-    }
+    // for (ispline=0; ispline<pumi_mesh->N_spline; ispline++){
+    //     qhat_spline[ispline] = 0.0;
+    // }
     // clock_t time_pumi, time_hpic;
     // time_pumi = clock();
+    pumi_reset_Qcoeffs(pumi_mesh);
     for(iparticle=0; iparticle<num_particles; iparticle++){
         coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
 
@@ -262,15 +263,15 @@ int main(int argc, char *argv[])
         pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
         // Wgh1 = 1.0 - Wgh2;
 
-        pumi_compute_bspline_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle, qhat_spline);
+        pumi_compute_bspline_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle);
 
         // field[kcell] += Wgh1;
         // field[kcell+1] += Wgh2;
     }
     double q_tot;
-    for (ispline=0; ispline<pumi_mesh->N_spline; ispline++){
-        printf("spline_coeff[%d]=%2.4f\n",ispline,qhat_spline[ispline] );
-        q_tot += qhat_spline[ispline];
+    for (ispline=0; ispline<pumi_mesh->pumi_bspl.N_spline; ispline++){
+        printf("spline_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.Q_coeffs[ispline] );
+        q_tot += pumi_mesh->pumi_bspl.Q_coeffs[ispline];
     }
 
     printf("Q_tot=%2.4f\n", q_tot);
