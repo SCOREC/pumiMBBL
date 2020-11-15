@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 
     double *field;
     int Nnp = pumi_total_nodes(pumi_mesh);
-    // field = (double *) malloc(Nnp * sizeof(double));
+    field = (double *) malloc(Nnp * sizeof(double));
     int inp, jnp;
     // for (inp=0; inp<Nnp; inp++){
     //     field[inp] = 0.0;
@@ -268,20 +268,21 @@ int main(int argc, char *argv[])
         // field[kcell] += Wgh1;
         // field[kcell+1] += Wgh2;
     }
-    double q_tot;
-    // printf("N_spline = %d\n",pumi_mesh->pumi_bspl.N_spline );
-    for (ispline=0; ispline<pumi_mesh->pumi_bspl.N_spline; ispline++){
-        // printf("spline_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.Q_coeffs[ispline] );
-        printf("cov_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.cov_coeffs[ispline] );
-        // q_tot += pumi_mesh->pumi_bspl.Q_coeffs[ispline];
-    }
-//
-    // printf("Q_tot=%2.4f\n", q_tot);
-//
-    // for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
-    //     int inode[1] = {inp};
-    //     field[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);
+
+    pumi_compute_bspline_nodal_density(pumi_mesh, pumi_x1, field);
+    double q_tot = 0.0;
+    // // printf("N_spline = %d\n",pumi_mesh->pumi_bspl.N_spline );
+    // for (ispline=0; ispline<pumi_mesh->pumi_bspl.N_spline; ispline++){
+    //     // printf("spline_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.Q_coeffs[ispline] );
+    //     printf("cov_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.cov_coeffs[ispline] );
+    //     // q_tot += pumi_mesh->pumi_bspl.Q_coeffs[ispline];
     // }
+
+    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+        int inode[1] = {inp};
+        q_tot += field[inp]*pumi_return_covolume_1D(pumi_mesh, inode);
+    }
+    printf("Q_tot=%2.4f\n", q_tot);
     //
     //
     // //write2file(field,Nnp_2D,0);
