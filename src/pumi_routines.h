@@ -167,6 +167,9 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID, int dir);
 void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID, int dir);
 int pumi_global_cell_ID(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
+
+// B-spline APIs
 void pumi_reset_Qcoeffs(pumi_mesh_t* pumi_mesh);
 void pumi_compute_bspline_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle);
+void pumi_compute_covolume_coeffs(pumi_mesh_t* pumi_mesh, int dir);
 #endif /* pumi_routines_h */

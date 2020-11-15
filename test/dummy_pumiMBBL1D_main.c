@@ -269,13 +269,15 @@ int main(int argc, char *argv[])
         // field[kcell+1] += Wgh2;
     }
     double q_tot;
+    // printf("N_spline = %d\n",pumi_mesh->pumi_bspl.N_spline );
     for (ispline=0; ispline<pumi_mesh->pumi_bspl.N_spline; ispline++){
-        printf("spline_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.Q_coeffs[ispline] );
-        q_tot += pumi_mesh->pumi_bspl.Q_coeffs[ispline];
+        // printf("spline_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.Q_coeffs[ispline] );
+        printf("cov_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.cov_coeffs[ispline] );
+        // q_tot += pumi_mesh->pumi_bspl.Q_coeffs[ispline];
     }
-
-    printf("Q_tot=%2.4f\n", q_tot);
-
+//
+    // printf("Q_tot=%2.4f\n", q_tot);
+//
     // for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
     //     int inode[1] = {inp};
     //     field[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);

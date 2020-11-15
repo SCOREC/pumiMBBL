@@ -1594,6 +1594,7 @@ void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
         pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
     }
     pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, dir);
+    pumi_compute_covolume_coeffs(pumi_mesh, dir);
 }
 
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir){
@@ -1644,7 +1645,6 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     int knot_nel = nel+2*p;
     pumi_bezier_extractor_t *bez_ex;
     bez_ex = (pumi_bezier_extractor_t*) malloc(knot_nel*sizeof(pumi_bezier_extractor_t));
-    printf("here2\n");
     for (i=0; i<knot_nel; i++){
         bez_ex[i].C = (double**) malloc((p+1)*sizeof(double*));
         for (j=0; j<p+1; j++){
