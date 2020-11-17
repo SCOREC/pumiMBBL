@@ -2543,11 +2543,14 @@ void pumi_compute_bspline_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, dou
         xi_term *= xi;
         one_minus_xi_term /= one_minus_xi;
     }
-
+    double spl_contribution;
     for (i=0; i<pumi_mesh->P_spline+1; i++){
+        spl_contribution = 0.0;
         for (j=0; j<pumi_mesh->P_spline+1; j++){
-            pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
+            // pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
+            spl_contribution += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
         }
+        pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*spl_contribution;
     }
 }
 

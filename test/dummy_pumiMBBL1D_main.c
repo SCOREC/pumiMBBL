@@ -8,6 +8,17 @@
 
 #define NUMSTEPS 10
 
+void write2file(double *field, int size, int ID){
+    FILE *field_fptr;
+    char field_file[30];
+    sprintf(field_file,"Field_%d.txt",ID);
+    field_fptr = fopen(field_file,"w");
+    int i;
+    for (i=0; i<size; i++ ){
+        fprintf(field_fptr, "%.16e\n", field[i] );
+    }
+}
+
 int main(int argc, char *argv[])
 {
     clock_t total_run_time;
@@ -225,13 +236,15 @@ int main(int argc, char *argv[])
     part_isubmesh = (int*) malloc( num_particles * sizeof(int));
     part_icell = (int*) malloc( num_particles * sizeof(int));
 
-    double *field;
+    double *field1, *field2;
     int Nnp = pumi_total_nodes(pumi_mesh);
-    field = (double *) malloc(Nnp * sizeof(double));
+    field1 = (double *) malloc(Nnp * sizeof(double));
+    field2 = (double *) malloc(Nnp * sizeof(double));
     int inp, jnp;
-    // for (inp=0; inp<Nnp; inp++){
-    //     field[inp] = 0.0;
-    // }
+    for (inp=0; inp<Nnp; inp++){
+        field1[inp] = 0.0;
+        field2[inp] = 0.0;
+    }
 
     x1_min = pumi_global_x1_min(pumi_mesh);
     double x1_max = pumi_global_x1_max(pumi_mesh);
@@ -241,7 +254,7 @@ int main(int argc, char *argv[])
     // particle initiate
     // srand48(time(NULL));
     int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
-    double Q_macro_particle = 1.0;
+    double Q_macro_particle = 1e-3;
     double Wgh1, Wgh2;
     // double *qhat_spline = (double*) malloc(pumi_mesh->N_spline * sizeof(double));
     int ispline;
@@ -261,16 +274,16 @@ int main(int argc, char *argv[])
         part_icell[iparticle] = icell;
 
         pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
-        // Wgh1 = 1.0 - Wgh2;
+        Wgh1 = 1.0 - Wgh2;
 
         pumi_compute_bspline_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle);
 
-        // field[kcell] += Wgh1;
-        // field[kcell+1] += Wgh2;
+        field2[kcell] += Q_macro_particle*Wgh1;
+        field2[kcell+1] += Q_macro_particle*Wgh2;
     }
 
-    pumi_compute_bspline_nodal_density(pumi_mesh, pumi_x1, field);
-    double q_tot = 0.0;
+    pumi_compute_bspline_nodal_density(pumi_mesh, pumi_x1, field1);
+    // double q_tot = 0.0;
     // // printf("N_spline = %d\n",pumi_mesh->pumi_bspl.N_spline );
     // for (ispline=0; ispline<pumi_mesh->pumi_bspl.N_spline; ispline++){
     //     // printf("spline_coeff[%d]=%2.4f\n",ispline,pumi_mesh->pumi_bspl.Q_coeffs[ispline] );
@@ -280,12 +293,16 @@ int main(int argc, char *argv[])
 
     for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
         int inode[1] = {inp};
-        q_tot += field[inp]*pumi_return_covolume_1D(pumi_mesh, inode);
+        // q_tot += field1[inp]*pumi_return_covolume_1D(pumi_mesh, inode);
+        field2[inp] /= pumi_return_covolume_1D(pumi_mesh, inode);
+        // printf("diff = %2.4e\n", (field1[inp]-field2[inp])/field2[inp] );
+        // q_tot += field2[inp];
     }
-    printf("Q_tot=%2.4f\n", q_tot);
+    // printf("Q_tot=%2.4f\n", q_tot);
     //
     //
-    // //write2file(field,Nnp_2D,0);
+    write2file(field1,pumi_mesh->pumi_Nnp_total_x1,1);
+    write2file(field2,pumi_mesh->pumi_Nnp_total_x1,2);
     //
     // //particle push
     // clock_t time_pumi_loop, time_pumi_loop_var;
