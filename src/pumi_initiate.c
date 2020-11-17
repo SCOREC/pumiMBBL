@@ -1589,12 +1589,13 @@ void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
     pumi_mesh->pumi_bspl.nCk4spline = (int*) malloc((p+1)*sizeof(int));
     pumi_mesh->pumi_bspl.cov_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
     pumi_mesh->pumi_bspl.Q_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+    pumi_mesh->pumi_bspl.E_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
     int i;
     for (i=0; i<p+1; i++){
         pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
     }
     pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, dir);
-    pumi_compute_covolume_coeffs(pumi_mesh, dir);
+    pumi_compute_covspl_coeffs(pumi_mesh, dir);
 }
 
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir){

@@ -40,6 +40,7 @@ typedef struct pumi_bspline{
     double *bernstein_vector;
     double *cov_coeffs;
     double *Q_coeffs;
+    double *E_coeffs;
     int *nCk4spline;
 }pumi_bspline_t;
 

@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
     // }
     // clock_t time_pumi, time_hpic;
     // time_pumi = clock();
-    pumi_reset_Qcoeffs(pumi_mesh);
+    pumi_reset_Qspl_coeffs(pumi_mesh);
     for(iparticle=0; iparticle<num_particles; iparticle++){
         coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
 
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
         pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
         Wgh1 = 1.0 - Wgh2;
 
-        pumi_compute_bspline_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle);
+        pumi_compute_Qspl_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle);
 
         field2[kcell] += Q_macro_particle*Wgh1;
         field2[kcell+1] += Q_macro_particle*Wgh2;

@@ -169,8 +169,10 @@ void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, 
 int pumi_global_cell_ID(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
 
 // B-spline APIs
-void pumi_reset_Qcoeffs(pumi_mesh_t* pumi_mesh);
-void pumi_compute_bspline_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle);
-void pumi_compute_covolume_coeffs(pumi_mesh_t* pumi_mesh, int dir);
+void pumi_reset_Qspl_coeffs(pumi_mesh_t* pumi_mesh);
+void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle);
+void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir);
+void pumi_reset_Espl_coeffs(pumi_mesh_t* pumi_mesh);
+void pumi_compute_Espl_coeffs(pumi_mesh_t *pumi_mesh, double *E_dir, int dir);
 void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double* charge_density);
 #endif /* pumi_routines_h */
