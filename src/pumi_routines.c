@@ -2723,5 +2723,93 @@ void pumi_reset_Espl_coeffs(pumi_mesh_t* pumi_mesh){
 }
 
 void pumi_compute_Espl_coeffs(pumi_mesh_t *pumi_mesh, double *E_dir, int dir){
+    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nq = floor((2*pumi_mesh->P_spline+1.0)/2.0)+1;
+    int Nspline = pumi_mesh->pumi_bspl.N_spline;
+    double *N1 = (double*) malloc(nq * sizeof(double));
+    double *N2 = (double*) malloc(nq * sizeof(double));
+    double *elem_splines = (double*) malloc((pumi_mesh->P_spline+1)*sizeof(double));
+    double dN1 = -0.5;
+    double dN2 = 0.5;
+    int iq, iel;
+    for (iq=0; iq<nq; iq++){
+        N1[iq] = 0.5*(1.0-gauss_pts[nq-1][iq]);
+        N2[iq] = 0.5*(1.0+gauss_pts[nq-1][iq]);
+    }
+    double node1, node2;
+    double xl[2];
+    double dxdxi, xi, WdetJ, xglobal, Eq;
+    node1 = pumi_global_x1_min(pumi_mesh);
+    int i,j,ishl,jshl;
+    double **A;
+    A = (double**) malloc(Nspline*sizeof(double*));
+    for (i=0; i<Nspline; i++){
+        A[i] = (double*) malloc(Nspline*sizeof(double));
+    }
+    double *b = (double*) malloc(Nspline*sizeof(double));
+    for (i=0; i<Nspline; i++){
+        b[i] = 0.0;
+        for (j=0; j<Nspline; j++){
+            A[i][j] = 0.0;
+        }
+    }
 
+    for (iel=0; iel<nel; iel++){
+        node2 = node1 + pumi_return_elemsize(pumi_mesh, iel, pumi_elem_input_offset, dir);
+        xl[0] = node1;
+        xl[1] = node2;
+        node1 = node2;
+        double E_e[2] = {E_dir[iel], E_dir[iel+1]};
+
+        for (iq=0; iq<nq; iq++){
+            double Nq[2] = {N1[iq], N2[iq]};
+            double dNq[2] = {dN1, dN2};
+            dxdxi = dNq[0]*xl[0]+dNq[1]*xl[1];
+            xglobal = Nq[0]*xl[0]+Nq[1]*xl[1];
+            Eq = Nq[0]*E_e[0]+Nq[1]*E_e[1];
+            WdetJ = gauss_wts[nq-1][iq]*dxdxi;
+            xi = (xglobal-xl[0])/(xl[1]-xl[0]);
+
+            int i,j;
+            double one_minus_xi = 1.0-xi;
+            double xi_term = 1.0;
+            double one_minus_xi_term = pow(one_minus_xi,pumi_mesh->P_spline);
+            for (i=0; i<pumi_mesh->P_spline+1; i++){
+                pumi_mesh->pumi_bspl.bernstein_vector[i] = pumi_mesh->pumi_bspl.nCk4spline[i]*xi_term*one_minus_xi_term;
+                xi_term *= xi;
+                one_minus_xi_term /= one_minus_xi;
+            }
+            for (i=0; i<pumi_mesh->P_spline+1; i++){
+                elem_splines[i] = 0.0;
+                for (j=0; j<pumi_mesh->P_spline+1; j++){
+                    elem_splines[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
+                }
+            }
+
+            for (i=0; i<pumi_mesh->P_spline+1; i++){
+                b[i+pumi_mesh->P_spline+iel] += Eq*elem_splines[i]*WdetJ;
+                for (j=0; j<pumi_mesh->P_spline+1; j++){
+                    A[i+pumi_mesh->P_spline+iel][j+pumi_mesh->P_spline+iel] += elem_splines[i]*elem_splines[j]*WdetJ;
+                }
+            }
+
+        }
+    }
+
+    for (i=pumi_mesh->P_spline; i<2*pumi_mesh->P_spline+nel; i++){
+        double Arowsum=0.0;
+        for (j=pumi_mesh->P_spline; j<2*pumi_mesh->P_spline+nel; j++){
+            Arowsum += A[i][j];
+        }
+        pumi_mesh->pumi_bspl.E_coeffs[i] = b[i]/Arowsum;
+    }
+
+    for (i=0; i<Nspline; i++){
+        free(A[i]);
+    }
+    free(A);
+    free(b);
+    free(elem_splines);
+    free(N1);
+    free(N2);
 }

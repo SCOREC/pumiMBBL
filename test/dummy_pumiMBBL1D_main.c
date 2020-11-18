@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     // particle initiate
     // srand48(time(NULL));
     int iparticle, icell, jcell, kcell_x1, kcell_x2, kcell, node1, node3;
-    double Q_macro_particle = 1e-3;
+    double Q_macro_particle = 1.0;
     double Wgh1, Wgh2;
     // double *qhat_spline = (double*) malloc(pumi_mesh->N_spline * sizeof(double));
     int ispline;
@@ -303,6 +303,11 @@ int main(int argc, char *argv[])
     //
     write2file(field1,pumi_mesh->pumi_Nnp_total_x1,1);
     write2file(field2,pumi_mesh->pumi_Nnp_total_x1,2);
+
+    pumi_reset_Espl_coeffs(pumi_mesh);
+    pumi_compute_Espl_coeffs(pumi_mesh, field1, pumi_x1);
+
+    write2file(pumi_mesh->pumi_bspl.E_coeffs, pumi_mesh->pumi_bspl.N_spline, 3);
     //
     // //particle push
     // clock_t time_pumi_loop, time_pumi_loop_var;
