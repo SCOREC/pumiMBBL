@@ -2533,7 +2533,7 @@ void pumi_reset_Qspl_coeffs(pumi_mesh_t* pumi_mesh){
     }
 }
 
-void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle){
+void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle, bool* left_bdry_flux, bool* right_bdry_flux, double *bdry_flux_val){
     int i,j;
     double one_minus_xi = 1.0-xi;
     double xi_term = 1.0;
@@ -2543,15 +2543,34 @@ void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double
         xi_term *= xi;
         one_minus_xi_term /= one_minus_xi;
     }
-    double spl_contribution;
+    double spl_contribution[100];
     for (i=0; i<pumi_mesh->P_spline+1; i++){
-        spl_contribution = 0.0;
+        spl_contribution[i] = 0.0;
         for (j=0; j<pumi_mesh->P_spline+1; j++){
             // pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
-            spl_contribution += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
+            spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
         }
-        pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*spl_contribution;
+        pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*spl_contribution[i];
     }
+    *bdry_flux_val = 0.0;
+    *left_bdry_flux = false;
+    *right_bdry_flux = false;
+    if (iel <= pumi_mesh->P_spline){
+        *left_bdry_flux = true;
+        for (i=iel; i<pumi_mesh->P_spline+1; i++){
+            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline].C[i][0]*spl_contribution[i-iel];
+        }
+        return;
+    }
+    if (iel >= pumi_mesh->pumi_Nel_total_x1-pumi_mesh->P_spline-1){
+        *right_bdry_flux = true;
+        int iel_new = pumi_mesh->pumi_Nel_total_x1-1-iel;
+        for (i=iel_new; i<pumi_mesh->P_spline+1; i++){
+            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+pumi_mesh->pumi_Nel_total_x1-1].C[i-iel_new][pumi_mesh->P_spline]*spl_contribution[i];
+        }
+        return;
+    }
+    return;
 }
 
 void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir){
@@ -2812,4 +2831,26 @@ void pumi_compute_Espl_coeffs(pumi_mesh_t *pumi_mesh, double *E_dir, int dir){
     free(elem_splines);
     free(N1);
     free(N2);
+}
+
+double pumi_compute_Espl_value(pumi_mesh_t* pumi_mesh, double xi, int iel){
+    int i,j;
+    double one_minus_xi = 1.0-xi;
+    double xi_term = 1.0;
+    double one_minus_xi_term = pow(one_minus_xi,pumi_mesh->P_spline);
+    for (i=0; i<pumi_mesh->P_spline+1; i++){
+        pumi_mesh->pumi_bspl.bernstein_vector[i] = pumi_mesh->pumi_bspl.nCk4spline[i]*xi_term*one_minus_xi_term;
+        xi_term *= xi;
+        one_minus_xi_term /= one_minus_xi;
+    }
+    double spl_contribution;
+    double Ex=0.0;
+    for (i=0; i<pumi_mesh->P_spline+1; i++){
+        spl_contribution = 0.0;
+        for (j=0; j<pumi_mesh->P_spline+1; j++){
+            spl_contribution += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
+        }
+        Ex += pumi_mesh->pumi_bspl.E_coeffs[pumi_mesh->P_spline+iel+i]*spl_contribution;
+    }
+    return Ex;
 }

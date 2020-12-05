@@ -263,10 +263,19 @@ int main(int argc, char *argv[])
     // }
     // clock_t time_pumi, time_hpic;
     // time_pumi = clock();
+    bool left_bdry, right_bdry;
+    double bdry_Wgh;
+    double left_bc = 0.0;
+    double right_bc = 0.0;
+    double left_bc2 = 0.0;
+    double right_bc2 = 0.0;
+    int npart_0=0;
+    int npart_N=0;
     pumi_reset_Qspl_coeffs(pumi_mesh);
+    double delx_particle = (x1_max-0.0001)/(num_particles-1);
     for(iparticle=0; iparticle<num_particles; iparticle++){
-        coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
-
+        // coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
+        coords[iparticle] = iparticle*delx_particle;
         double q0 = coords[iparticle];
 
         pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
@@ -276,12 +285,31 @@ int main(int argc, char *argv[])
         pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
         Wgh1 = 1.0 - Wgh2;
 
-        pumi_compute_Qspl_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle);
+        pumi_compute_Qspl_coeffs(pumi_mesh, Wgh2, kcell, Q_macro_particle, &left_bdry, &right_bdry, &bdry_Wgh);
 
         field2[kcell] += Q_macro_particle*Wgh1;
         field2[kcell+1] += Q_macro_particle*Wgh2;
+        if (kcell==0){
+            left_bc2 += Wgh1;
+            npart_0 ++;
+        }
+        if (kcell==pumi_mesh->pumi_Nel_total_x1-1){
+            right_bc2 += Wgh2;
+            npart_N ++;
+        }
+        if (left_bdry){
+            printf("left_bdry_wts = %2.4f\n", bdry_Wgh );
+            left_bc += bdry_Wgh;
+        }
+        if (right_bdry){
+            printf("right_bdry_wts = %2.4f\n", bdry_Wgh );
+            right_bc += bdry_Wgh;
+        }
     }
 
+    printf("\n\nleft_bdry_tot  = %2.4f     %2.4f\n", left_bc, left_bc2 );
+    printf("right_bdry_tot = %2.4f     %2.4f\n", right_bc, right_bc2 );
+    printf("first cell = %d       last cell = %d\n",npart_0, npart_N );
     pumi_compute_bspline_nodal_density(pumi_mesh, pumi_x1, field1);
     // double q_tot = 0.0;
     // // printf("N_spline = %d\n",pumi_mesh->pumi_bspl.N_spline );
