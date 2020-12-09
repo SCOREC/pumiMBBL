@@ -209,14 +209,14 @@ int main(int argc, char *argv[])
     // deallocate memory allocated to pumi_inputs -- Always do this IMMEDIATELY AFTER pumi_initiate()
     pumi_inputs_deallocate(pumi_inputs);
 
-    // int p = pumi_mesh->P_spline;
-    // int i,j,k;
-    // int knot_nel = pumi_mesh->pumi_Nel_total_x1+2*p;
+    int p = pumi_mesh->P_spline;
+    int i,j,k;
+    // int knot_nel = pumi_mesh->pumi_Nel_total_x1;
     // for (i=0; i<knot_nel; i++){
     //     printf("knot_iel=%d\n",i+1);
     //     for (j=0; j<p+1; j++){
     //         for (k=0; k<p+1; k++){
-    //             printf("%2.4f ",pumi_mesh->pumi_bspl.pumi_bez_ex_x1[i].C[j][k] );
+    //             printf("%1.8f ",pumi_mesh->pumi_bspl.pumi_bez_ex_x1[i].C[j][k] );
     //         }
     //         printf("\n");
     //     }
@@ -272,10 +272,10 @@ int main(int argc, char *argv[])
     int npart_0=0;
     int npart_N=0;
     pumi_reset_Qspl_coeffs(pumi_mesh);
-    double delx_particle = (x1_max-0.0001)/(num_particles-1);
+    // double delx_particle = (x1_max-0.0001)/(num_particles-1);
     for(iparticle=0; iparticle<num_particles; iparticle++){
-        // coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
-        coords[iparticle] = iparticle*delx_particle;
+        coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
+        // coords[iparticle] = iparticle*delx_particle;
         double q0 = coords[iparticle];
 
         pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
@@ -298,11 +298,11 @@ int main(int argc, char *argv[])
             npart_N ++;
         }
         if (left_bdry){
-            printf("left_bdry_wts = %2.4f\n", bdry_Wgh );
+            // printf("left_bdry_wts  = %2.4f    kcell = %d\n", bdry_Wgh, kcell );
             left_bc += bdry_Wgh;
         }
         if (right_bdry){
-            printf("right_bdry_wts = %2.4f\n", bdry_Wgh );
+            // printf("right_bdry_wts = %2.4f    kcell = %d\n", bdry_Wgh, pumi_mesh->pumi_Nel_total_x1-1-kcell );
             right_bc += bdry_Wgh;
         }
     }
@@ -332,10 +332,10 @@ int main(int argc, char *argv[])
     write2file(field1,pumi_mesh->pumi_Nnp_total_x1,1);
     write2file(field2,pumi_mesh->pumi_Nnp_total_x1,2);
 
-    pumi_reset_Espl_coeffs(pumi_mesh);
-    pumi_compute_Espl_coeffs(pumi_mesh, field1, pumi_x1);
+    // pumi_reset_Espl_coeffs(pumi_mesh);
+    // pumi_compute_Espl_coeffs(pumi_mesh, field1, pumi_x1);
 
-    write2file(pumi_mesh->pumi_bspl.E_coeffs, pumi_mesh->pumi_bspl.N_spline, 3);
+    // write2file(pumi_mesh->pumi_bspl.E_coeffs, pumi_mesh->pumi_bspl.N_spline, 3);
     //
     // //particle push
     // clock_t time_pumi_loop, time_pumi_loop_var;

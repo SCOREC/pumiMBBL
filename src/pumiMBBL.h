@@ -42,6 +42,8 @@ typedef struct pumi_bspline{
     double *Q_coeffs;
     double *E_coeffs;
     int *nCk4spline;
+    int *iel_bezex_map;
+    int num_unique_matrices;
 }pumi_bspline_t;
 
 /*!

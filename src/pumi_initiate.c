@@ -958,7 +958,9 @@ void pumi_finalize(pumi_mesh_t* pumi_mesh){
   if (pumi_mesh->BL_elem_coords_cache_flag){
       pumi_BL_elemsize_OFF(pumi_mesh);
   }
-
+  if (pumi_mesh->bspline_flag == 1){
+      pumi_finalize_bsplines(pumi_mesh);
+  }
   if (!(pumi_is_fullmesh(pumi_mesh))){
       pumi_free_offset_variables(pumi_mesh);
   }
@@ -1345,7 +1347,7 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
     if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & leftBL){
       FILE *lBL_fptr;
       char lBL_coord_file[30];
-      sprintf(lBL_coord_file,"submesh%d_coord_leftBL.txt",isubmesh+1);
+      sprintf(lBL_coord_file,"submesh%d_coords.dat",isubmesh+1);
       lBL_fptr = fopen(lBL_coord_file,"w");
       printf("\tLeft BL segment:\n");
       inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative+1;
@@ -1368,7 +1370,7 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
     if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & uniform){
       FILE *uni_fptr;
       char uni_coord_file[30];
-      sprintf(uni_coord_file,"submesh%d_coord_uniform.txt",isubmesh+1);
+      sprintf(uni_coord_file,"submesh%d_coords.dat",isubmesh+1);
       uni_fptr = fopen(uni_coord_file,"w");
       printf("\tUniform segment:\n");
       inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative+1;
@@ -1390,7 +1392,7 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
     if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & rightBL){
       FILE *rBL_fptr;
       char rBL_coord_file[30];
-      sprintf(rBL_coord_file,"submesh%d_coord_rightBL.txt",isubmesh+1);
+      sprintf(rBL_coord_file,"submesh%d_coords.dat",isubmesh+1);
       rBL_fptr = fopen(rBL_coord_file,"w");
       printf("\tRight BL segment:\n");
       inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative+1;
@@ -1584,29 +1586,63 @@ void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
     int nel = pumi_mesh->pumi_Nel_total_x1;
 
     int p = pumi_mesh->P_spline;
-    pumi_mesh->pumi_bspl.N_spline = nel+3*p;
+    pumi_mesh->pumi_bspl.N_spline = nel+p;
     pumi_mesh->pumi_bspl.bernstein_vector = (double*) malloc((p+1)*sizeof(double));
     pumi_mesh->pumi_bspl.nCk4spline = (int*) malloc((p+1)*sizeof(int));
     pumi_mesh->pumi_bspl.cov_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
     pumi_mesh->pumi_bspl.Q_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
     pumi_mesh->pumi_bspl.E_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+    pumi_mesh->pumi_bspl.iel_bezex_map = (int*) malloc(nel * sizeof(int));
     int i;
     for (i=0; i<p+1; i++){
         pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
     }
-    pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, dir);
+    pumi_bezier_extractor_t *pumi_bez_ex_full = pumi_bezier_extraction(pumi_mesh, dir);
+    pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_unique_bezier_extractor_matrices(pumi_mesh, dir, pumi_bez_ex_full);
+    // int knot_nel = pumi_mesh->pumi_Nel_total_x1;
+    // for (i=0; i<knot_nel; i++){
+    //     int j,k;
+    //     printf("knot_iel=%d\n",i+1);
+    //     for (j=0; j<p+1; j++){
+    //         for (k=0; k<p+1; k++){
+    //             printf("%1.8f ",pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[i]].C[j][k] );
+    //         }
+    //         printf("\n");
+    //     }
+    // }
+    // exit(0);
     pumi_compute_covspl_coeffs(pumi_mesh, dir);
+}
+
+void pumi_finalize_bsplines(pumi_mesh_t* pumi_mesh){
+    pumi_mesh->bspline_flag = 0;
+    free(pumi_mesh->pumi_bspl.bernstein_vector);
+    free(pumi_mesh->pumi_bspl.nCk4spline);
+    free(pumi_mesh->pumi_bspl.cov_coeffs);
+    free(pumi_mesh->pumi_bspl.Q_coeffs);
+    free(pumi_mesh->pumi_bspl.E_coeffs);
+    free(pumi_mesh->pumi_bspl.iel_bezex_map);
+    int i,j,k;
+    for (i=0; i<pumi_mesh->pumi_bspl.num_unique_matrices; i++){
+        for (j=0; j<pumi_mesh->P_spline+1; j++){
+            free(pumi_mesh->pumi_bspl.pumi_bez_ex_x1[i].C[j]);
+        }
+        free(pumi_mesh->pumi_bspl.pumi_bez_ex_x1[i].C);
+    }
+    free(pumi_mesh->pumi_bspl.pumi_bez_ex_x1);
 }
 
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir){
     int i,j,k,l;
 
-    double t0_left, t0_right, node1, node2, xleft, xright;
+    double t0_left, t0_right, node1, node2, xleft, xright, r_left, r_right;
     pumi_calc_node_coords(pumi_mesh, 0, 0, &node1, &node2);
     t0_left = node2-node1;
+    r_left = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + 0)->r;
     xleft = node1;
     pumi_calc_node_coords(pumi_mesh, pumi_mesh->nsubmeshes_x1-1, (pumi_submesh_total_elements_1D(pumi_mesh, pumi_mesh->nsubmeshes_x1-1)-1), &node1, &node2);
     t0_right = node2-node1;
+    r_right = 1.0/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (pumi_mesh->nsubmeshes_x1-1))->r);
     xright = node2;
 
     int nel = pumi_mesh->pumi_Nel_total_x1;
@@ -1616,37 +1652,45 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
 
     double *knot_tmp;
     knot_tmp = (double*) malloc(knot_length*sizeof(double));
-    // pumi_mesh->bernstein_vector = (double*) malloc((p+1)*sizeof(double));
-    // pumi_mesh->nCk4spline = (int*) malloc((p+1)*sizeof(int));
-    //
-    // for (i=0; i<p+1; i++){
-    //     pumi_mesh->nCk4spline[i] = nchoosek(p,i);
-    // }
 
-    for (i=0; i<p+1; i++){
-        knot_tmp[i] = xleft-p*t0_left; // repeat first p+1 knots
+    double knot_size = t0_left/r_left;
+    knot_tmp[2*p-1] = xleft - knot_size;//1
+    for (i=2*p-2; i>=p; i--){
+        knot_size /= r_left;
+        knot_tmp[i] = knot_tmp[i+1] - knot_size;//p-1
     }
-    for (i=p+1; i<2*p; i++){
-        knot_tmp[i] = knot_tmp[i-1]+t0_left; //p-1
+    for (i=p-1; i>=0; i--){
+        knot_tmp[i] = knot_tmp[i+1];//p
     }
     i=2*p;
     knot_tmp[i] = xleft;//1
-    for (i=2*p+1; i<2*p+nel+1; i++){
+    for (i=2*p+1; i<2*p+nel; i++){
         int iel = i-(2*p+1);
         double elemsize = pumi_return_elemsize(pumi_mesh, iel, pumi_elem_input_offset, dir);
-        knot_tmp[i] = knot_tmp[i-1]+elemsize;//nel
+        knot_tmp[i] = knot_tmp[i-1]+elemsize;//nel-1
     }
-    for (i=2*p+nel+1; i<3*p+nel; i++){
-        knot_tmp[i] = knot_tmp[i-1]+t0_right;//p-1
+    i=2*p+nel;
+    knot_tmp[i] = xright;//1
+    knot_size = t0_right*r_right;
+    for (i=2*p+nel+1; i<=3*p+nel; i++){
+        knot_tmp[i] = knot_tmp[i-1]+knot_size;//p
+        knot_size *= r_right;
     }
-    for (i=3*p+nel; i<4*p+nel+1; i++){
-        knot_tmp[i] = xright+p*t0_right;// repeart last p+1 knots
+    for (i=3*p+nel+1; i<4*p+nel+1; i++){
+        knot_tmp[i] = knot_tmp[i-1];// repeat last p knots
     }
 
     int knot_nel = nel+2*p;
-    pumi_bezier_extractor_t *bez_ex;
-    bez_ex = (pumi_bezier_extractor_t*) malloc(knot_nel*sizeof(pumi_bezier_extractor_t));
+    pumi_bezier_extractor_t *bez_ex_tmp, *bez_ex;
+    bez_ex_tmp = (pumi_bezier_extractor_t*) malloc(knot_nel*sizeof(pumi_bezier_extractor_t));
+    bez_ex = (pumi_bezier_extractor_t*) malloc(nel*sizeof(pumi_bezier_extractor_t));
     for (i=0; i<knot_nel; i++){
+        bez_ex_tmp[i].C = (double**) malloc((p+1)*sizeof(double*));
+        for (j=0; j<p+1; j++){
+            bez_ex_tmp[i].C[j] = (double*) malloc((p+1)*sizeof(double));
+        }
+    }
+    for (i=0; i<nel; i++){
         bez_ex[i].C = (double**) malloc((p+1)*sizeof(double*));
         for (j=0; j<p+1; j++){
             bez_ex[i].C[j] = (double*) malloc((p+1)*sizeof(double));
@@ -1657,10 +1701,10 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
         for (j=0; j<p+1; j++){
             for (k=0; k<p+1; k++){
                 if (j==k){
-                    bez_ex[i].C[j][k]=1.0;
+                    bez_ex_tmp[i].C[j][k]=1.0;
                 }
                 else{
-                    bez_ex[i].C[j][k]=0.0;
+                    bez_ex_tmp[i].C[j][k]=0.0;
                 }
             }
         }
@@ -1695,13 +1739,13 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
                 for (k=p+1; k>s; k--){
                     alpha = alphas[k-s-1];
                     for (l=0; l<p+1; l++){
-                        bez_ex[nb-1].C[l][k-1] = alpha*bez_ex[nb-1].C[l][k-1] + (1.0-alpha)*bez_ex[nb-1].C[l][k-2];
+                        bez_ex_tmp[nb-1].C[l][k-1] = alpha*bez_ex_tmp[nb-1].C[l][k-1] + (1.0-alpha)*bez_ex_tmp[nb-1].C[l][k-2];
                     }
                 }
 
                 if (b < m){
                     for (l=0; l<j+1; l++){
-                        bez_ex[nb].C[save-1+l][save-1] = bez_ex[nb-1].C[p-j+l][p];
+                        bez_ex_tmp[nb].C[save-1+l][save-1] = bez_ex_tmp[nb-1].C[p-j+l][p];
                     }
                 }
             }
@@ -1716,5 +1760,94 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     }
     free(alphas);
     free(knot_tmp);
+
+    for (i=0; i<nel; i++){
+        for (j=0; j<p+1; j++){
+            for (k=0; k<p+1; k++){
+                bez_ex[i].C[j][k] = bez_ex_tmp[i+p].C[j][k];
+            }
+        }
+    }
+
+    for (i=0; i<knot_nel; i++){
+        for (j=0; j<p+1; j++){
+            free(bez_ex_tmp[i].C[j]);
+        }
+        free(bez_ex_tmp[i].C);
+    }
+    free(bez_ex_tmp);
+
+    return bez_ex;
+}
+
+pumi_bezier_extractor_t* pumi_unique_bezier_extractor_matrices(pumi_mesh_t* pumi_mesh, int dir, pumi_bezier_extractor_t *pumi_bez_ex_full){
+    int i,j,k;
+    double tol = 1e-7;
+    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int p = pumi_mesh->P_spline;
+    int num_unique_matrices=1;
+    int ref_id = 0;
+    int *local_map = (int*) malloc(nel*sizeof(int));
+    int *map_unique = (int*) malloc(nel*sizeof(int));
+    local_map[0] = ref_id;
+    map_unique[num_unique_matrices-1] = ref_id;
+    pumi_mesh->pumi_bspl.iel_bezex_map[0] = num_unique_matrices-1;
+    bool match = true;
+    for (i=1; i<nel; i++){
+        for (j=0; j<p+1; j++){
+            for (k=0; k<p+1; k++){
+                if (fabs(pumi_bez_ex_full[i].C[j][k]-pumi_bez_ex_full[ref_id].C[j][k]) > tol){
+                    match = false;
+                }
+            }
+        }
+        if (match){
+            local_map[i] = ref_id;
+            pumi_mesh->pumi_bspl.iel_bezex_map[i] = num_unique_matrices-1;
+        }
+        else{
+            ref_id = i;
+            local_map[i] = ref_id;
+            num_unique_matrices++;
+            map_unique[num_unique_matrices-1] = ref_id;
+            pumi_mesh->pumi_bspl.iel_bezex_map[i] = num_unique_matrices-1;
+            match = true;
+        }
+    }
+    printf("Unique matrices = %d\n",num_unique_matrices );
+    // for (i=0; i<nel; i++){
+    //     printf("iel = %2d matrix_id = %2d\n", i, local_map[i]);
+    // }
+    pumi_mesh->pumi_bspl.num_unique_matrices = num_unique_matrices;
+    pumi_bezier_extractor_t *bez_ex;
+    bez_ex = (pumi_bezier_extractor_t*) malloc(num_unique_matrices*sizeof(pumi_bezier_extractor_t));
+
+    for (i=0; i<num_unique_matrices; i++){
+        bez_ex[i].C = (double**) malloc((p+1)*sizeof(double*));
+        for (j=0; j<p+1; j++){
+            bez_ex[i].C[j] = (double*) malloc((p+1)*sizeof(double));
+        }
+    }
+
+    for (i=0; i<num_unique_matrices; i++){
+        for (j=0; j<p+1; j++){
+            for (k=0; k<p+1; k++){
+                bez_ex[i].C[j][k] = pumi_bez_ex_full[map_unique[i]].C[j][k];
+            }
+        }
+    }
+
+    for (i=0; i<nel; i++){
+        for (j=0; j<p+1; j++){
+            free(pumi_bez_ex_full[i].C[j]);
+        }
+        free(pumi_bez_ex_full[i].C);
+    }
+    free(pumi_bez_ex_full);
+    free(local_map);
+    free(map_unique);
+    // for (i=0; i<nel; i++){
+    //     printf("iel = %2d matrix_id = %2d\n", i, pumi_mesh->pumi_bspl.iel_bezex_map[i]);
+    // }
     return bez_ex;
 }

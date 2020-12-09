@@ -2548,9 +2548,9 @@ void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double
         spl_contribution[i] = 0.0;
         for (j=0; j<pumi_mesh->P_spline+1; j++){
             // pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
-            spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
+            spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
         }
-        pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i] += Q_macro_particle*spl_contribution[i];
+        pumi_mesh->pumi_bspl.Q_coeffs[iel+i] += Q_macro_particle*spl_contribution[i];
     }
     *bdry_flux_val = 0.0;
     *left_bdry_flux = false;
@@ -2558,7 +2558,7 @@ void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double
     if (iel <= pumi_mesh->P_spline){
         *left_bdry_flux = true;
         for (i=iel; i<pumi_mesh->P_spline+1; i++){
-            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline].C[i][0]*spl_contribution[i-iel];
+            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[0]].C[i][0]*spl_contribution[i-iel];
         }
         return;
     }
@@ -2566,7 +2566,7 @@ void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double
         *right_bdry_flux = true;
         int iel_new = pumi_mesh->pumi_Nel_total_x1-1-iel;
         for (i=iel_new; i<pumi_mesh->P_spline+1; i++){
-            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+pumi_mesh->pumi_Nel_total_x1-1].C[i-iel_new][pumi_mesh->P_spline]*spl_contribution[i];
+            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[pumi_mesh->pumi_Nel_total_x1-1]].C[i-iel_new][pumi_mesh->P_spline]*spl_contribution[i];
         }
         return;
     }
@@ -2621,7 +2621,7 @@ void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir){
 
             for (i=0; i<pumi_mesh->P_spline+1; i++){
                 for (j=0; j<pumi_mesh->P_spline+1; j++){
-                    pumi_mesh->pumi_bspl.cov_coeffs[pumi_mesh->P_spline+iel+i] += WdetJ*pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
+                    pumi_mesh->pumi_bspl.cov_coeffs[iel+i] += WdetJ*pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
                 }
             }
         }
@@ -2694,10 +2694,10 @@ void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double*
             for (i=0; i<pumi_mesh->P_spline+1; i++){
                 Ni_q = 0.0;
                 for (j=0; j<pumi_mesh->P_spline+1; j++){
-                    Ni_q += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->P_spline+iel].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
+                    Ni_q += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
                 }
-                cov_q += Ni_q*pumi_mesh->pumi_bspl.cov_coeffs[pumi_mesh->P_spline+iel+i];
-                Q_q += Ni_q*pumi_mesh->pumi_bspl.Q_coeffs[pumi_mesh->P_spline+iel+i];
+                cov_q += Ni_q*pumi_mesh->pumi_bspl.cov_coeffs[iel+i];
+                Q_q += Ni_q*pumi_mesh->pumi_bspl.Q_coeffs[iel+i];
             }
 
             for (ishl=0; ishl<2; ishl++){
