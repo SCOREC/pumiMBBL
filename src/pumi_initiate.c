@@ -90,7 +90,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
       printf("\tB-spline order for charge distribution = %d\n\n",pumi_mesh->P_spline );
 
       //pumi_initialize_locate_functions(pumi_mesh);
-      pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
+      // pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
     }
     else{
         pumi_mesh->nsubmeshes_x1 = pumi_inputs->nsubmeshes_x1;
@@ -275,20 +275,21 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
       pumi_BL_elemsize_ON(pumi_mesh);
   }
 
-  pumi_verify_params(pumi_mesh);
-  pumi_print_node_coordinates(pumi_mesh);
-
   pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
 
   if (pumi_mesh->bspline_flag){
       // pumi_mesh->pumi_bez_ex_x1 = pumi_bezier_extraction(pumi_mesh, pumi_x1);
       // pumi_mesh->pumi_bspl = pumi_initiate_bsplines(pumi_mesh, pumi_x1);
       pumi_initiate_bsplines(pumi_mesh, pumi_x1);
+      printf("PUMI Info    :   Number of unique bezier matrices -- %d \n\n",pumi_mesh->pumi_bspl.num_unique_matrices );
       if (pumi_mesh->ndim == 2){
           printf("Bsplines not implemented for 2D -- Using Linear interpolation\n");
           pumi_mesh->bspline_flag = 0;
       }
   }
+
+  pumi_verify_params(pumi_mesh);
+  pumi_print_node_coordinates(pumi_mesh);
 
   printf("MESH OPTIONS USED:\n");
   if (pumi_mesh->BL_elem_coords_cache_flag){
@@ -1814,7 +1815,7 @@ pumi_bezier_extractor_t* pumi_unique_bezier_extractor_matrices(pumi_mesh_t* pumi
             match = true;
         }
     }
-    printf("Unique matrices = %d\n",num_unique_matrices );
+    // printf("Unique matrices = %d\n",num_unique_matrices );
     // for (i=0; i<nel; i++){
     //     printf("iel = %2d matrix_id = %2d\n", i, local_map[i]);
     // }
@@ -1846,6 +1847,8 @@ pumi_bezier_extractor_t* pumi_unique_bezier_extractor_matrices(pumi_mesh_t* pumi
     free(pumi_bez_ex_full);
     free(local_map);
     free(map_unique);
+    int total_byte_size = num_unique_matrices*(p+1)*(p+1)*sizeof(double);
+    printf("PUMI Info    :   Size allocated for stored bezier matrices -- %d bytes\n",total_byte_size );
     // for (i=0; i<nel; i++){
     //     printf("iel = %2d matrix_id = %2d\n", i, pumi_mesh->pumi_bspl.iel_bezex_map[i]);
     // }

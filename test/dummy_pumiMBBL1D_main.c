@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 
 
     pumi_initiate_mesh_options_t pumi_initiate_options;
-    pumi_initiate_options.BL_cache_flag = pumi_cache_BL_elemsize_OFF;
+    pumi_initiate_options.BL_cache_flag = pumi_cache_BL_elemsize_ON;
     //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
     pumi_initiate_options.bspline_flag = pumi_bspline_ON;
 
