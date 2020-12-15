@@ -238,6 +238,26 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int *inode){
   return covolume;
 }
 
+double pumi_return_covolume_periodic_1D(pumi_mesh_t* pumi_mesh, int *inode){
+  double covolume;
+  if (inode[0] == 0){
+    covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
+               pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
+  }
+  else if (inode[0] == pumi_mesh->pumi_Nel_total_x1){
+    covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
+               pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
+  }
+  else if (inode[0] > 0 && inode[0] < pumi_mesh->pumi_Nel_total_x1){
+    covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 + pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
+  }
+  else{
+    printf("\tInvalid node number for covolume\n");
+    exit(0);
+  }
+  return covolume;
+}
+
 double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int *inode){
     int inp_x1, inp_x2;
     inp_x1 = inode[0];
@@ -552,7 +572,75 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node, int dir){
     }
 }
 
+double pumi_return_gradingratio_periodic(pumi_mesh_t *pumi_mesh, int node, int dir){
+    pumi_submesh_t *submeshes;
+    int Nel_total, nsubmeshes;
+    double min_elem_size;
+    double max_elem_size;
+    if (dir == pumi_x1){
+        submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1;
+        Nel_total = pumi_mesh->pumi_Nel_total_x1;
+        nsubmeshes = pumi_mesh->nsubmeshes_x1;
+    }
+    else{
+        printf("Periodic Mesh not implemented in 2D yet -- TERMINATING\n");
+        exit(0);
+        submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2;
+        Nel_total = pumi_mesh->pumi_Nel_total_x2;
+        nsubmeshes = pumi_mesh->nsubmeshes_x2;
+    }
 
+    if (node == 0 || node == pumi_mesh->pumi_Nel_total_x1){
+        min_elem_size = pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1);
+        max_elem_size = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1);
+        return max_elem_size/min_elem_size;
+    }
+    else{
+        int isubmesh;
+        for (isubmesh=0; isubmesh<nsubmeshes; isubmesh++){
+            int submesh_min_node = (submeshes + isubmesh)->Nel_cumulative;
+            int submesh_max_node = submesh_min_node + (submeshes + isubmesh)->submesh_Nel;
+            if (node > submesh_min_node && node < submesh_max_node){
+                if ((submeshes + isubmesh)->pumi_flag & rightBL){
+                    return (1.0/(submeshes + isubmesh)->r);
+                }
+                else{
+                    return (submeshes + isubmesh)->r;
+                }
+            }
+            else if (node == (submeshes + isubmesh)->Nel_cumulative){
+                // On min of the node
+                if ((submeshes + isubmesh-1)->pumi_flag & rightBL){
+                    min_elem_size = (submeshes + isubmesh-1)->t0;
+                }
+                if ((submeshes + isubmesh-1)->pumi_flag & uniform){
+                    min_elem_size = (submeshes + isubmesh-1)->t0;
+                }
+                if ((submeshes + isubmesh-1)->pumi_flag & leftBL){
+                    double t0 = (submeshes + isubmesh-1)->t0;
+                    double r = (submeshes + isubmesh-1)->r;
+                    double Nel = (submeshes + isubmesh-1)->submesh_Nel;
+                    min_elem_size = t0*pow(r,Nel-1);
+                }
+
+                // On max of the node
+                if ((submeshes + isubmesh)->pumi_flag & leftBL){
+                    max_elem_size = (submeshes + isubmesh)->t0;
+                }
+                if ((submeshes + isubmesh)->pumi_flag & uniform){
+                    max_elem_size = (submeshes + isubmesh)->t0;
+                }
+                if ((submeshes + isubmesh)->pumi_flag & rightBL){
+                    double t0 = (submeshes + isubmesh)->t0;
+                    double r = (submeshes + isubmesh)->r;
+                    double Nel = (submeshes + isubmesh)->submesh_Nel;
+                    max_elem_size = t0*pow(r,Nel-1);
+                }
+                return max_elem_size/min_elem_size;
+            }
+        }
+    }
+}
 
 double pumi_return_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset, int dir){
     pumi_submesh_t *submeshes;

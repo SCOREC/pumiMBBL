@@ -36,10 +36,16 @@ typedef enum pumi_use_bspline{
   pumi_bspline_ON = 1, //!< initiate routines to allow bspline based charge distribution
 } pumi_use_bspline_t;
 
+typedef enum pumi_periodic_mesh{
+  pumi_periodic_mesh_OFF = 0, //!< regular mesh (no periodicity)
+  pumi_periodic_mesh_ON = 1, //!< periodicity present in mesh
+} pumi_periodic_mesh_t;
+
 typedef struct pumi_initiate_mesh_options{
     pumi_cache_BL_elemsize_t BL_cache_flag;
     pumi_cache_nodeoffset_t nodeoffset_cache_flag;
     pumi_use_bspline_t bspline_flag;
+    pumi_periodic_mesh_t periodic_mesh_flag;
 } pumi_initiate_mesh_options_t;
 
 /*!

@@ -48,6 +48,11 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     pumi_mesh->BL_elem_coords_cache_flag = 1;
     pumi_mesh->nodeoffset_cache_flag = 0;
     pumi_mesh->bspline_flag = 0;
+    pumi_mesh->periodic_mesh_flag = 0;
+
+    if (pumi_initiate_options.periodic_mesh_flag == pumi_periodic_mesh_ON){
+        pumi_mesh->periodic_mesh_flag = 1;
+    }
 
     if (pumi_mesh->ndim == 1){
       pumi_mesh->nsubmeshes_x1 = pumi_inputs->nsubmeshes;
@@ -292,6 +297,12 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   pumi_print_node_coordinates(pumi_mesh);
 
   printf("MESH OPTIONS USED:\n");
+  if (pumi_mesh->periodic_mesh_flag){
+      printf("\tMESH PERIODICITY   -- Periodicity is present in mesh\n");
+  }
+  else{
+      printf("\tMESH PERIODICITY   -- No periodicity present in mesh\n");
+  }
   if (pumi_mesh->BL_elem_coords_cache_flag){
       printf("\tBL CACHING OPTION  -- BL element sizes and node coordinates to be stored in arrays\n");
   }
@@ -366,7 +377,12 @@ void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->submesh_Nel;
   }
   pumi_mesh->pumi_Nel_total_x1 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
-  pumi_mesh->pumi_Nnp_total_x1 = pumi_mesh->pumi_Nel_total_x1+1;
+  if (pumi_mesh->periodic_mesh_flag){
+      pumi_mesh->pumi_Nnp_total_x1 = pumi_mesh->pumi_Nel_total_x1;
+  }
+  else{
+      pumi_mesh->pumi_Nnp_total_x1 = pumi_mesh->pumi_Nel_total_x1+1;
+  }
 }
 
 /*!

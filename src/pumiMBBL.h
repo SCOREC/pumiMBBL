@@ -95,6 +95,7 @@ typedef struct pumi_mesh{
   int **global_nodeoffset;
   pumi_2D_blocktype_for_nodeoffset_t **blocktype;
   int bspline_flag;
+  int periodic_mesh_flag;
   pumi_bspline_t pumi_bspl;
   int P_spline;
 } pumi_mesh_t;
