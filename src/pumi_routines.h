@@ -168,6 +168,8 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 
 void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID, int dir);
 void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID, int dir);
+void pumi_reset_id_for_x1min_exit(pumi_mesh_t* pumi_mesh, int *isubmesh, int *icell);
+void pumi_reset_id_for_x1max_exit(pumi_mesh_t* pumi_mesh, int *isubmesh, int *icell);
 int pumi_global_cell_ID(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell);
 
 // B-spline APIs

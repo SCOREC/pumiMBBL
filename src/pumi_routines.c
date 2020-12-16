@@ -1073,6 +1073,16 @@ void pumi_calc_weights_in_topBL_cached(pumi_mesh_t *pumi_mesh, int isubmesh, int
     *weight = (coord - *(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->BL_coords + local_cell))/(*(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->BL_elemsize + local_cell));
 }
 
+void pumi_reset_id_for_x1min_exit(pumi_mesh_t* pumi_mesh, int *isubmesh, int *icell){
+    *isubmesh = pumi_mesh->nsubmeshes_x1-1;
+    *icell = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + *isubmesh)->submesh_Nel-1;
+}
+
+void pumi_reset_id_for_x1max_exit(pumi_mesh_t* pumi_mesh, int *isubmesh, int *icell){
+    *isubmesh = 0;
+    *icell = 0;
+}
+
 /*
 * \brief subroutine that returns global cell number from submesh ID and local cell ID
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
