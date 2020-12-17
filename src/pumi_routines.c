@@ -2675,6 +2675,27 @@ void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double
     return;
 }
 
+void pumi_compute_Qspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, double xi, int iel, double Q_macro_particle){
+    int i,j;
+    double one_minus_xi = 1.0-xi;
+    double xi_term = 1.0;
+    double one_minus_xi_term = pow(one_minus_xi,pumi_mesh->P_spline);
+    for (i=0; i<pumi_mesh->P_spline+1; i++){
+        pumi_mesh->pumi_bspl.bernstein_vector[i] = pumi_mesh->pumi_bspl.nCk4spline[i]*xi_term*one_minus_xi_term;
+        xi_term *= xi;
+        one_minus_xi_term /= one_minus_xi;
+    }
+    double spl_contribution[100];
+    for (i=0; i<pumi_mesh->P_spline+1; i++){
+        spl_contribution[i] = 0.0;
+        for (j=0; j<pumi_mesh->P_spline+1; j++){
+            spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
+        }
+        pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%pumi_mesh->pumi_Nel_total_x1] += Q_macro_particle*spl_contribution[i];
+    }
+    return;
+}
+
 void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir){
     int nel = pumi_mesh->pumi_Nel_total_x1;
     int nq = floor((pumi_mesh->P_spline+1.0)/2.0)+1;
@@ -2885,6 +2906,109 @@ void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double*
         charge_density[i] = b[i]/Arowsum;
     }
 
+    for (i=0; i<nel+1; i++){
+        free(A[i]);
+    }
+    free(A);
+    free(b);
+    free(N1);
+    free(N2);
+}
+
+void pumi_compute_bspline_nodal_density_periodic(pumi_mesh_t* pumi_mesh, int dir, double* charge_density){
+    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nq = floor((pumi_mesh->P_spline+1.0)/2.0)+1;
+
+    double *N1 = (double*) malloc(nq * sizeof(double));
+    double *N2 = (double*) malloc(nq * sizeof(double));
+    double dN1 = -0.5;
+    double dN2 = 0.5;
+    int iq, iel;
+    for (iq=0; iq<nq; iq++){
+        N1[iq] = 0.5*(1.0-gauss_pts[nq-1][iq]);
+        N2[iq] = 0.5*(1.0+gauss_pts[nq-1][iq]);
+    }
+    double node1, node2;
+    double xl[2];
+    double dxdxi, xi, WdetJ, xglobal;
+    node1 = pumi_global_x1_min(pumi_mesh);
+    int i,j,ishl,jshl;
+    double **A;
+    A = (double**) malloc((nel+1)*sizeof(double*));
+    for (i=0; i<nel+1; i++){
+        A[i] = (double*) malloc((nel+1)*sizeof(double));
+    }
+    double *b = (double*) malloc((nel+1)*sizeof(double));
+    double Ni_q, Q_q, cov_q;
+    for (i=0; i<nel+1; i++){
+        b[i] = 0.0;
+        for (j=0; j<nel+1; j++){
+            A[i][j] = 0.0;
+        }
+    }
+
+    for (iel=0; iel<nel; iel++){
+        double Ae[2][2] = { {0.0, 0.0}, {0.0, 0.0}};
+        double be[2] = {0.0, 0.0};
+        node2 = node1 + pumi_return_elemsize(pumi_mesh, iel, pumi_elem_input_offset, dir);
+        xl[0] = node1;
+        xl[1] = node2;
+        node1 = node2;
+        int ien[2] = {iel, iel+1};
+
+        for (iq=0; iq<nq; iq++){
+            double Nq[2] = {N1[iq], N2[iq]};
+            double dNq[2] = {dN1, dN2};
+            dxdxi = dNq[0]*xl[0]+dNq[1]*xl[1];
+            xglobal = Nq[0]*xl[0]+Nq[1]*xl[1];
+            WdetJ = gauss_wts[nq-1][iq]*dxdxi;
+            xi = (xglobal-xl[0])/(xl[1]-xl[0]);
+
+            int i,j;
+            double one_minus_xi = 1.0-xi;
+            double xi_term = 1.0;
+            double one_minus_xi_term = pow(one_minus_xi,pumi_mesh->P_spline);
+            for (i=0; i<pumi_mesh->P_spline+1; i++){
+                pumi_mesh->pumi_bspl.bernstein_vector[i] = pumi_mesh->pumi_bspl.nCk4spline[i]*xi_term*one_minus_xi_term;
+                xi_term *= xi;
+                one_minus_xi_term /= one_minus_xi;
+            }
+            cov_q=0.0;
+            Q_q=0.0;
+            for (i=0; i<pumi_mesh->P_spline+1; i++){
+                Ni_q = 0.0;
+                for (j=0; j<pumi_mesh->P_spline+1; j++){
+                    Ni_q += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
+                }
+                cov_q += Ni_q*pumi_mesh->pumi_bspl.cov_coeffs[(iel+i)%nel];
+                Q_q += Ni_q*pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%iel];
+            }
+
+            for (ishl=0; ishl<2; ishl++){
+                be[ishl] += Nq[ishl]*WdetJ*Q_q/cov_q;
+                for (jshl=0; jshl<2; jshl++){
+                    Ae[ishl][jshl] += Nq[ishl]*Nq[jshl]*WdetJ;
+                }
+            }
+        }
+
+        for (ishl=0; ishl<2; ishl++){
+            b[ien[ishl]] += be[ishl];
+            for (jshl=0; jshl<2; jshl++){
+                A[ien[ishl]][ien[jshl]] += Ae[ishl][jshl];
+            }
+        }
+
+    }
+
+    for (i=0; i<nel+1; i++){
+        double Arowsum=0.0;
+        for (j=0; j<nel+1; j++){
+            Arowsum += A[i][j];
+        }
+        charge_density[i%nel] = b[i]/Arowsum;
+    }
+    charge_density[0] /= 2.0;
     for (i=0; i<nel+1; i++){
         free(A[i]);
     }
