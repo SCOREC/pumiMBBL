@@ -236,6 +236,7 @@ int main(int argc, char *argv[])
 
     x1_min = pumi_global_x1_min(pumi_mesh);
     double x1_max = pumi_global_x1_max(pumi_mesh);
+    double x1_L = x1_max-x1_min;
     if (pumi_mesh->bspline_flag){
         int iparticle, icell, kcell, node_left, node_right;
         double Q_macro_particle = 1.0;
@@ -270,8 +271,67 @@ int main(int argc, char *argv[])
             cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
             field2[i] /= cov;
         }
-        write2file(field1,pumi_mesh->pumi_Nnp_total_x1,1);
-        write2file(field2,pumi_mesh->pumi_Nnp_total_x1,2);
+        write2file(field1,pumi_mesh->pumi_Nnp_total_x1,0);
+        write2file(field2,pumi_mesh->pumi_Nnp_total_x1,11);
+        int time_step;
+        for (time_step=0; time_step<10; time_step++){
+            for (inp=0; inp<Nnp; inp++){
+                field1[inp] = 0.0;
+                field2[inp] = 0.0;
+            }
+            pumi_reset_Qspl_coeffs(pumi_mesh);
+            for(iparticle=0; iparticle<num_particles; iparticle++){
+                coords[iparticle] -= 1.0;
+                // coords[iparticle] = iparticle*delx_particle;
+                double q0 = coords[iparticle];
+
+                if (q0<x1_min){
+                    q0 += x1_L;
+                    coords[iparticle] = q0;
+                    pumi_reset_id_for_x1min_exit(pumi_mesh, &isubmesh, &icell);
+                    pumi_update_submesh_and_update_cell(pumi_mesh, q0, isubmesh, icell, &isubmesh, &icell, pumi_x1);
+                    part_isubmesh[iparticle] = isubmesh;
+                    part_icell[iparticle] = icell;
+                    pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+                    Wgh1 = 1.0 - Wgh2;
+                    pumi_compute_Qspl_coeffs_periodic(pumi_mesh, Wgh2, kcell, Q_macro_particle);
+                }
+                else if (q0>x1_max){
+                    q0 -= x1_L;
+                    coords[iparticle] = q0;
+                    pumi_reset_id_for_x1max_exit(pumi_mesh, &isubmesh, &icell);
+                    pumi_update_submesh_and_update_cell(pumi_mesh, q0, isubmesh, icell, &isubmesh, &icell, pumi_x1);
+                    part_isubmesh[iparticle] = isubmesh;
+                    part_icell[iparticle] = icell;
+                    pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+                    Wgh1 = 1.0 - Wgh2;
+                    pumi_compute_Qspl_coeffs_periodic(pumi_mesh, Wgh2, kcell, Q_macro_particle);
+                }
+                else{
+                    pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
+                    part_isubmesh[iparticle] = isubmesh;
+                    part_icell[iparticle] = icell;
+                    pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+                    Wgh1 = 1.0 - Wgh2;
+                    pumi_compute_Qspl_coeffs_periodic(pumi_mesh, Wgh2, kcell, Q_macro_particle);
+                }
+
+                node_left = kcell;
+                node_right = (kcell+1)%Nel;
+                field2[node_left] += Q_macro_particle*Wgh1;
+                field2[node_right] += Q_macro_particle*Wgh2;
+            }
+            pumi_compute_bspline_nodal_density_periodic(pumi_mesh, pumi_x1, field1);
+            int inode[1];
+            double cov;
+            for (i=0; i<Nnp; i++){
+                inode[0] = i;
+                cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
+                field2[i] /= cov;
+            }
+            write2file(field1,pumi_mesh->pumi_Nnp_total_x1,time_step+1);
+            write2file(field2,pumi_mesh->pumi_Nnp_total_x1,time_step+12);
+        }
     }
     else{
         int iparticle, icell, kcell, node_left, node_right;
