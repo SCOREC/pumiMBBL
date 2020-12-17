@@ -1601,34 +1601,39 @@ int nchoosek(int n, int k){
 
 void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
     int nel = pumi_mesh->pumi_Nel_total_x1;
-
     int p = pumi_mesh->P_spline;
-    pumi_mesh->pumi_bspl.N_spline = nel+p;
-    pumi_mesh->pumi_bspl.bernstein_vector = (double*) malloc((p+1)*sizeof(double));
-    pumi_mesh->pumi_bspl.nCk4spline = (int*) malloc((p+1)*sizeof(int));
-    pumi_mesh->pumi_bspl.cov_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
-    pumi_mesh->pumi_bspl.Q_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
-    pumi_mesh->pumi_bspl.E_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
-    pumi_mesh->pumi_bspl.iel_bezex_map = (int*) malloc(nel * sizeof(int));
-    int i;
-    for (i=0; i<p+1; i++){
-        pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
+    if (pumi_mesh->periodic_mesh_flag){
+        pumi_mesh->pumi_bspl.N_spline = nel;
+        pumi_mesh->pumi_bspl.bernstein_vector = (double*) malloc((p+1)*sizeof(double));
+        pumi_mesh->pumi_bspl.nCk4spline = (int*) malloc((p+1)*sizeof(int));
+        pumi_mesh->pumi_bspl.cov_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+        pumi_mesh->pumi_bspl.Q_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+        pumi_mesh->pumi_bspl.E_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+        pumi_mesh->pumi_bspl.iel_bezex_map = (int*) malloc(nel * sizeof(int));
+        int i;
+        for (i=0; i<p+1; i++){
+            pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
+        }
+        pumi_bezier_extractor_t *pumi_bez_ex_full = pumi_bezier_extraction_periodic(pumi_mesh, dir);
+        pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_unique_bezier_extractor_matrices(pumi_mesh, dir, pumi_bez_ex_full);
+        pumi_compute_covspl_coeffs(pumi_mesh, dir);
     }
-    pumi_bezier_extractor_t *pumi_bez_ex_full = pumi_bezier_extraction(pumi_mesh, dir);
-    pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_unique_bezier_extractor_matrices(pumi_mesh, dir, pumi_bez_ex_full);
-    // int knot_nel = pumi_mesh->pumi_Nel_total_x1;
-    // for (i=0; i<knot_nel; i++){
-    //     int j,k;
-    //     printf("knot_iel=%d\n",i+1);
-    //     for (j=0; j<p+1; j++){
-    //         for (k=0; k<p+1; k++){
-    //             printf("%1.8f ",pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[i]].C[j][k] );
-    //         }
-    //         printf("\n");
-    //     }
-    // }
-    // exit(0);
-    pumi_compute_covspl_coeffs(pumi_mesh, dir);
+    else{
+        pumi_mesh->pumi_bspl.N_spline = nel+p;
+        pumi_mesh->pumi_bspl.bernstein_vector = (double*) malloc((p+1)*sizeof(double));
+        pumi_mesh->pumi_bspl.nCk4spline = (int*) malloc((p+1)*sizeof(int));
+        pumi_mesh->pumi_bspl.cov_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+        pumi_mesh->pumi_bspl.Q_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+        pumi_mesh->pumi_bspl.E_coeffs = (double*) malloc(pumi_mesh->pumi_bspl.N_spline * sizeof(double));
+        pumi_mesh->pumi_bspl.iel_bezex_map = (int*) malloc(nel * sizeof(int));
+        int i;
+        for (i=0; i<p+1; i++){
+            pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
+        }
+        pumi_bezier_extractor_t *pumi_bez_ex_full = pumi_bezier_extraction(pumi_mesh, dir);
+        pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_unique_bezier_extractor_matrices(pumi_mesh, dir, pumi_bez_ex_full);
+        pumi_compute_covspl_coeffs(pumi_mesh, dir);
+    }
 }
 
 void pumi_finalize_bsplines(pumi_mesh_t* pumi_mesh){
@@ -1796,6 +1801,154 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
 
     return bez_ex;
 }
+
+pumi_bezier_extractor_t* pumi_bezier_extraction_periodic(pumi_mesh_t *pumi_mesh, int dir){
+    int i,j,k,l;
+
+    double node1, node2, xleft, xright;
+    pumi_calc_node_coords(pumi_mesh, 0, 0, &node1, &node2);
+    xleft = node1;
+    pumi_calc_node_coords(pumi_mesh, pumi_mesh->nsubmeshes_x1-1, (pumi_submesh_total_elements_1D(pumi_mesh, pumi_mesh->nsubmeshes_x1-1)-1), &node1, &node2);
+    xright = node2;
+
+    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int p = pumi_mesh->P_spline;
+    int knot_length = nel+1+4*p;
+
+    double *knot_tmp;
+    knot_tmp = (double*) malloc(knot_length*sizeof(double));
+
+    double knot_size = pumi_return_elemsize(pumi_mesh, nel-1, pumi_elem_input_offset, dir);
+    knot_tmp[2*p-1] = xleft - knot_size;//1
+    int c=0;
+    for (i=2*p-2; i>=p; i--){
+        c++;
+        knot_size = pumi_return_elemsize(pumi_mesh, nel-1-c, pumi_elem_input_offset, dir);
+        knot_tmp[i] = knot_tmp[i+1] - knot_size;//p-1
+    }
+    for (i=p-1; i>=0; i--){
+        knot_tmp[i] = knot_tmp[i+1];//p
+    }
+    i=2*p;
+    knot_tmp[i] = xleft;//1
+    for (i=2*p+1; i<2*p+nel; i++){
+        int iel = i-(2*p+1);
+        double elemsize = pumi_return_elemsize(pumi_mesh, iel, pumi_elem_input_offset, dir);
+        knot_tmp[i] = knot_tmp[i-1]+elemsize;//nel-1
+    }
+    i=2*p+nel;
+    knot_tmp[i] = xright;//1
+    knot_size = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, dir);
+    c = 0;
+    for (i=2*p+nel+1; i<=3*p+nel; i++){
+        knot_tmp[i] = knot_tmp[i-1]+knot_size;//p
+        c++;
+        knot_size = pumi_return_elemsize(pumi_mesh, c, pumi_elem_input_offset, dir);
+    }
+    for (i=3*p+nel+1; i<4*p+nel+1; i++){
+        knot_tmp[i] = knot_tmp[i-1];// repeat last p knots
+    }
+
+    int knot_nel = nel+2*p;
+    pumi_bezier_extractor_t *bez_ex_tmp, *bez_ex;
+    bez_ex_tmp = (pumi_bezier_extractor_t*) malloc(knot_nel*sizeof(pumi_bezier_extractor_t));
+    bez_ex = (pumi_bezier_extractor_t*) malloc(nel*sizeof(pumi_bezier_extractor_t));
+    for (i=0; i<knot_nel; i++){
+        bez_ex_tmp[i].C = (double**) malloc((p+1)*sizeof(double*));
+        for (j=0; j<p+1; j++){
+            bez_ex_tmp[i].C[j] = (double*) malloc((p+1)*sizeof(double));
+        }
+    }
+    for (i=0; i<nel; i++){
+        bez_ex[i].C = (double**) malloc((p+1)*sizeof(double*));
+        for (j=0; j<p+1; j++){
+            bez_ex[i].C[j] = (double*) malloc((p+1)*sizeof(double));
+        }
+    }
+
+    for (i=0; i<knot_nel; i++){
+        for (j=0; j<p+1; j++){
+            for (k=0; k<p+1; k++){
+                if (j==k){
+                    bez_ex_tmp[i].C[j][k]=1.0;
+                }
+                else{
+                    bez_ex_tmp[i].C[j][k]=0.0;
+                }
+            }
+        }
+    }
+
+    int m = nel+1+4*p;
+    int a = p+1;
+    int b = a+1;
+    int nb = 1;
+    int mult, r, save, s;
+    double numer, alpha;
+    double *alphas = (double*) malloc((p+1)*sizeof(double));
+    while (b < m) {
+        i = b;
+
+        while ( b<m && knot_tmp[b]==knot_tmp[b-1] ){
+            b++;
+        }
+        mult = b-i+1;
+
+        if (mult < p){
+            numer = knot_tmp[b-1]-knot_tmp[a-1];
+
+            for (j=p; j>mult; j--){
+                alphas[j-mult-1] = numer/(knot_tmp[a+j-1]-knot_tmp[a-1]);
+            }
+            r = p-mult;
+
+            for (j=1; j<=r; j++){
+                save = r-j+1;
+                s = mult+j;
+                for (k=p+1; k>s; k--){
+                    alpha = alphas[k-s-1];
+                    for (l=0; l<p+1; l++){
+                        bez_ex_tmp[nb-1].C[l][k-1] = alpha*bez_ex_tmp[nb-1].C[l][k-1] + (1.0-alpha)*bez_ex_tmp[nb-1].C[l][k-2];
+                    }
+                }
+
+                if (b < m){
+                    for (l=0; l<j+1; l++){
+                        bez_ex_tmp[nb].C[save-1+l][save-1] = bez_ex_tmp[nb-1].C[p-j+l][p];
+                    }
+                }
+            }
+            nb++;
+
+            if (b < m){
+                a=b;
+                b++;
+            }
+
+        }
+    }
+    free(alphas);
+    free(knot_tmp);
+
+    for (i=0; i<nel; i++){
+        for (j=0; j<p+1; j++){
+            for (k=0; k<p+1; k++){
+                bez_ex[i].C[j][k] = bez_ex_tmp[i+p].C[j][k];
+            }
+        }
+    }
+
+    for (i=0; i<knot_nel; i++){
+        for (j=0; j<p+1; j++){
+            free(bez_ex_tmp[i].C[j]);
+        }
+        free(bez_ex_tmp[i].C);
+    }
+    free(bez_ex_tmp);
+
+    return bez_ex;
+}
+
 
 pumi_bezier_extractor_t* pumi_unique_bezier_extractor_matrices(pumi_mesh_t* pumi_mesh, int dir, pumi_bezier_extractor_t *pumi_bez_ex_full){
     int i,j,k;

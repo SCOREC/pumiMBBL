@@ -119,6 +119,7 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh);
 void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh);
 int nchoosek(int n, int k);
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir);
+pumi_bezier_extractor_t* pumi_bezier_extraction_periodic(pumi_mesh_t *pumi_mesh, int dir);
 void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir);
 pumi_bezier_extractor_t* pumi_unique_bezier_extractor_matrices(pumi_mesh_t* pumi_mesh, int dir, pumi_bezier_extractor_t *pumi_bez_ex_full);
 void pumi_finalize_bsplines(pumi_mesh_t* pumi_mesh);
