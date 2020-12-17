@@ -1616,7 +1616,7 @@ void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
         }
         pumi_bezier_extractor_t *pumi_bez_ex_full = pumi_bezier_extraction_periodic(pumi_mesh, dir);
         pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_unique_bezier_extractor_matrices(pumi_mesh, dir, pumi_bez_ex_full);
-        pumi_compute_covspl_coeffs(pumi_mesh, dir);
+        pumi_compute_covspl_coeffs_periodic(pumi_mesh, dir);
     }
     else{
         pumi_mesh->pumi_bspl.N_spline = nel+p;
