@@ -2948,6 +2948,7 @@ void pumi_compute_bspline_nodal_density_periodic(pumi_mesh_t* pumi_mesh, int dir
     }
 
     for (iel=0; iel<nel; iel++){
+        charge_density[iel] = 0.0;
         double Ae[2][2] = { {0.0, 0.0}, {0.0, 0.0}};
         double be[2] = {0.0, 0.0};
         node2 = node1 + pumi_return_elemsize(pumi_mesh, iel, pumi_elem_input_offset, dir);
@@ -2981,7 +2982,7 @@ void pumi_compute_bspline_nodal_density_periodic(pumi_mesh_t* pumi_mesh, int dir
                     Ni_q += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
                 }
                 cov_q += Ni_q*pumi_mesh->pumi_bspl.cov_coeffs[(iel+i)%nel];
-                Q_q += Ni_q*pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%iel];
+                Q_q += Ni_q*pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%nel];
             }
 
             for (ishl=0; ishl<2; ishl++){
@@ -3006,7 +3007,7 @@ void pumi_compute_bspline_nodal_density_periodic(pumi_mesh_t* pumi_mesh, int dir
         for (j=0; j<nel+1; j++){
             Arowsum += A[i][j];
         }
-        charge_density[i%nel] = b[i]/Arowsum;
+        charge_density[i%nel] += b[i]/Arowsum;
     }
     charge_density[0] /= 2.0;
     for (i=0; i<nel+1; i++){

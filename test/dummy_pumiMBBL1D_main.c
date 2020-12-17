@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     pumi_initiate_mesh_options_t pumi_initiate_options;
     pumi_initiate_options.BL_cache_flag = pumi_cache_BL_elemsize_ON;
     //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
-    pumi_initiate_options.bspline_flag = pumi_bspline_OFF;
+    pumi_initiate_options.bspline_flag = pumi_bspline_ON;
     pumi_initiate_options.periodic_mesh_flag = pumi_periodic_mesh_ON;
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
@@ -236,42 +236,76 @@ int main(int argc, char *argv[])
 
     x1_min = pumi_global_x1_min(pumi_mesh);
     double x1_max = pumi_global_x1_max(pumi_mesh);
+    if (pumi_mesh->bspline_flag){
+        int iparticle, icell, kcell, node_left, node_right;
+        double Q_macro_particle = 1.0;
+        double Wgh1, Wgh2;
+        int ispline;
+        pumi_reset_Qspl_coeffs(pumi_mesh);
+        // double delx_particle = (x1_max-0.0001)/(num_particles-1);
+        for(iparticle=0; iparticle<num_particles; iparticle++){
+            coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
+            // coords[iparticle] = iparticle*delx_particle;
+            double q0 = coords[iparticle];
 
-    //printf("x1_min = %2.8f  x1_max = %2.8f\n", x1_min, x1_max);
-    //printf("x2_min = %2.8f  x2_max = %2.8f\n", x2_min, x2_max);
-    // particle initiate
-    // srand48(time(NULL));
-    int iparticle, icell, kcell, node_left, node_right;
-    double Q_macro_particle = 1.0;
-    double Wgh1, Wgh2;
-    // double *qhat_spline = (double*) malloc(pumi_mesh->N_spline * sizeof(double));
-    int ispline;
+            pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
+            part_isubmesh[iparticle] = isubmesh;
+            part_icell[iparticle] = icell;
 
-    for(iparticle=0; iparticle<num_particles; iparticle++){
-        coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
-        // coords[iparticle] = iparticle*delx_particle;
-        double q0 = coords[iparticle];
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+            Wgh1 = 1.0 - Wgh2;
 
-        pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
-        part_isubmesh[iparticle] = isubmesh;
-        part_icell[iparticle] = icell;
+            pumi_compute_Qspl_coeffs_periodic(pumi_mesh, Wgh2, kcell, Q_macro_particle);
 
-        pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
-        Wgh1 = 1.0 - Wgh2;
-        node_left = kcell;
-        node_right = (kcell+1)%Nel;
-        field2[node_left] += Q_macro_particle*Wgh1;
-        field2[node_right] += Q_macro_particle*Wgh2;
+            node_left = kcell;
+            node_right = (kcell+1)%Nel;
+            field2[node_left] += Q_macro_particle*Wgh1;
+            field2[node_right] += Q_macro_particle*Wgh2;
+        }
+        pumi_compute_bspline_nodal_density_periodic(pumi_mesh, pumi_x1, field1);
+        int inode[1];
+        double cov;
+        for (i=0; i<Nnp; i++){
+            inode[0] = i;
+            cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
+            field2[i] /= cov;
+        }
+        write2file(field1,pumi_mesh->pumi_Nnp_total_x1,1);
+        write2file(field2,pumi_mesh->pumi_Nnp_total_x1,2);
     }
+    else{
+        int iparticle, icell, kcell, node_left, node_right;
+        double Q_macro_particle = 1.0;
+        double Wgh1, Wgh2;
+        // double *qhat_spline = (double*) malloc(pumi_mesh->N_spline * sizeof(double));
+        int ispline;
 
-    int inode[1];
-    double cov, gr;
-    for (i=0; i<Nnp; i++){
-        inode[0] = i;
-        cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
-        gr = pumi_return_gradingratio_periodic(pumi_mesh, inode[0], pumi_x1);
-        field2[i] /= cov;
-        printf("Density[%3d] = %3.4f\tgr[%3d] = %3.4f\n",i,field2[i],i,gr );
+        for(iparticle=0; iparticle<num_particles; iparticle++){
+            coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
+            // coords[iparticle] = iparticle*delx_particle;
+            double q0 = coords[iparticle];
+
+            pumi_locate_submesh_and_cell(pumi_mesh, q0, &isubmesh, &icell, pumi_x1);
+            part_isubmesh[iparticle] = isubmesh;
+            part_icell[iparticle] = icell;
+
+            pumi_calc_weights(pumi_mesh, isubmesh, icell, q0, &kcell, &Wgh2, pumi_x1);
+            Wgh1 = 1.0 - Wgh2;
+            node_left = kcell;
+            node_right = (kcell+1)%Nel;
+            field2[node_left] += Q_macro_particle*Wgh1;
+            field2[node_right] += Q_macro_particle*Wgh2;
+        }
+
+        int inode[1];
+        double cov, gr;
+        for (i=0; i<Nnp; i++){
+            inode[0] = i;
+            cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
+            gr = pumi_return_gradingratio_periodic(pumi_mesh, inode[0], pumi_x1);
+            field2[i] /= cov;
+            printf("Density[%3d] = %3.4f\tgr[%3d] = %3.4f\n",i,field2[i],i,gr );
+        }
     }
 
     free(field1);
