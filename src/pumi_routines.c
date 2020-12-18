@@ -659,10 +659,20 @@ double pumi_return_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset, int d
     elem = index+offset;
 
     if (elem < 0){
-        elem = 0;
+        if (pumi_mesh->periodic_mesh_flag){
+            elem = Nel_total-1;
+        }
+        else{
+            elem = 0;
+        }
     }
     if (elem >= Nel_total){
-        elem = Nel_total-1;
+        if (pumi_mesh->periodic_mesh_flag){
+            elem = 0;
+        }
+        else{
+            elem = Nel_total-1;
+        }
     }
 
     for (isubmesh=0; isubmesh<nsubmeshes; isubmesh++){
