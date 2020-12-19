@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
         pumi_reset_Qspl_coeffs(pumi_mesh);
         // double delx_particle = (x1_max-0.0001)/(num_particles-1);
         for(iparticle=0; iparticle<num_particles; iparticle++){
-            coords[iparticle] = (1.0*x1_min + 0.0*x1_max) + 1.0*(x1_max-x1_min)*drand48();
+            coords[iparticle] = (0.8*x1_min + 0.2*x1_max) + 0.6*(x1_max-x1_min)*drand48();
             // coords[iparticle] = iparticle*delx_particle;
             double q0 = coords[iparticle];
 
@@ -281,12 +281,13 @@ int main(int argc, char *argv[])
             }
             pumi_reset_Qspl_coeffs(pumi_mesh);
             for(iparticle=0; iparticle<num_particles; iparticle++){
-                coords[iparticle] -= 1.0;
+                coords[iparticle] -= 25.0;
                 // coords[iparticle] = iparticle*delx_particle;
                 double q0 = coords[iparticle];
 
                 if (q0<x1_min){
-                    q0 += x1_L;
+                    // q0 += x1_L;
+                    q0 = x1_max-fmod(x1_min-q0,x1_L);
                     coords[iparticle] = q0;
                     pumi_reset_id_for_x1min_exit(pumi_mesh, &isubmesh, &icell);
                     pumi_update_submesh_and_update_cell(pumi_mesh, q0, isubmesh, icell, &isubmesh, &icell, pumi_x1);
@@ -297,7 +298,8 @@ int main(int argc, char *argv[])
                     pumi_compute_Qspl_coeffs_periodic(pumi_mesh, Wgh2, kcell, Q_macro_particle);
                 }
                 else if (q0>x1_max){
-                    q0 -= x1_L;
+                    // q0 -= x1_L;
+                    q0 = x1_min+fmod(q0-x1_max,x1_L);
                     coords[iparticle] = q0;
                     pumi_reset_id_for_x1max_exit(pumi_mesh, &isubmesh, &icell);
                     pumi_update_submesh_and_update_cell(pumi_mesh, q0, isubmesh, icell, &isubmesh, &icell, pumi_x1);
