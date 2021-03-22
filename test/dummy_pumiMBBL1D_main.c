@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     pumi_initiate_options.BL_cache_flag = pumi_cache_BL_elemsize_ON;
     //pumi_initiate_options.nodeoffset_cache_flag = nodeoffset_caching_flag;
     pumi_initiate_options.bspline_flag = pumi_bspline_ON;
-    pumi_initiate_options.periodic_mesh_flag = pumi_periodic_mesh_ON;
+    pumi_initiate_options.periodic_mesh_flag = pumi_periodic_mesh_OFF;
 
     // the pumi_input object NEEDS TO BE POPULATED before initializing pumi_mesh
     pumi_mesh_t *pumi_mesh = pumi_initiate(initiate_from_commandline_inputs, pumi_inputs, pumi_initiate_options);
@@ -212,6 +212,14 @@ int main(int argc, char *argv[])
     int p = pumi_mesh->P_spline;
     int i,j,k;
 
+    int inode[1];
+    int inp;
+    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+        inode[0] = inp;
+        printf("inp=%2d cov=%2.4f\n",inp,pumi_return_covolume(pumi_mesh,inode) );
+    }
+
+    /*
     int num_particles;
     printf("\nEnter number of particles in domain : ");
     scanf("%d", &num_particles); //user supplied
@@ -268,7 +276,7 @@ int main(int argc, char *argv[])
         double cov;
         for (i=0; i<Nnp; i++){
             inode[0] = i;
-            cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
+            cov = pumi_return_covolume(pumi_mesh, inode);
             field2[i] /= cov;
         }
         write2file(field1,pumi_mesh->pumi_Nnp_total_x1,0);
@@ -328,7 +336,7 @@ int main(int argc, char *argv[])
             double cov;
             for (i=0; i<Nnp; i++){
                 inode[0] = i;
-                cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
+                cov = pumi_return_covolume(pumi_mesh, inode);
                 field2[i] /= cov;
             }
             write2file(field1,pumi_mesh->pumi_Nnp_total_x1,time_step+1);
@@ -363,7 +371,7 @@ int main(int argc, char *argv[])
         double cov, gr;
         for (i=0; i<Nnp; i++){
             inode[0] = i;
-            cov = pumi_return_covolume_periodic_1D(pumi_mesh, inode);
+            cov = pumi_return_covolume(pumi_mesh, inode);
             gr = pumi_return_gradingratio_periodic(pumi_mesh, inode[0], pumi_x1);
             field2[i] /= cov;
             printf("Density[%3d] = %3.4f\tgr[%3d] = %3.4f\n",i,field2[i],i,gr );
@@ -374,7 +382,7 @@ int main(int argc, char *argv[])
     free(field2);
     free(coords);
     free(part_isubmesh);
-    free(part_icell);
+    free(part_icell);*/
 
     pumi_finalize(pumi_mesh);
 

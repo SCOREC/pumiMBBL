@@ -435,14 +435,24 @@ int main(int argc, char *argv[])
     // for (jnp=1; jnp<=pumi_mesh->pumi_Nel_total_x2-1; jnp++){
     //     printf("gr_y=%2.3f\n",pumi_return_gradingratio(pumi_mesh, jnp, pumi_x2));
     // }
-
+    bool is_active_node;
+    int nodeID;
+    for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
+        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+            int inode[2] = {inp,jnp};
+            pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
+            if (is_active_node){
+                printf("inp=%2d jnp=%2d cov=%2.4f\n",inp,jnp,pumi_return_covolume(pumi_mesh, inode));
+            }
+        }
+    }
     /*
     if (!(pumi_is_fullmesh(pumi_mesh))){
         printf("Particle locate/update not implemented for mesh with inactive blocks -- Terminating...\n");
         exit(0);
     }
 
-    int num_particles = 10000000;
+    int num_particles = 100000;
     printf("\nEnter number of particles in domain : ");
     scanf("%d", &num_particles); //user supplied
 
@@ -462,7 +472,7 @@ int main(int argc, char *argv[])
     double *field;
     int Nnp_2D = pumi_total_nodes(pumi_mesh);
     field = (double *) malloc(Nnp_2D * sizeof(double));
-    int inp, jnp;
+    // int inp, jnp;
     for (inp=0; inp<Nnp_2D; inp++){
         field[inp] = 0.0;
     }
@@ -519,7 +529,7 @@ int main(int argc, char *argv[])
             int inode[2] = {inp,jnp};
             pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
             if (is_active_node){
-                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
+                field[nodeID] /= pumi_return_covolume(pumi_mesh, inode);
             }
         }
     }
@@ -610,7 +620,7 @@ int main(int argc, char *argv[])
                 int inode[2] = {inp,jnp};
                 pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
                 if (is_active_node){
-                    field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
+                    field[nodeID] /= pumi_return_covolume(pumi_mesh, inode);
                 }
             }
         }
@@ -669,7 +679,7 @@ int main(int argc, char *argv[])
             }
             //field[nodeID] /= x1_cov*x2_cov;
             int inode[2] = {inp,jnp};
-            field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
+            field[nodeID] /= pumi_return_covolume(pumi_mesh, inode);
             nodeID++;
         }
     }
@@ -733,7 +743,7 @@ int main(int argc, char *argv[])
                 }
                 //field[nodeID] /= x1_cov*x2_cov;
                 int inode[2] = {inp,jnp};
-                field[nodeID] /= pumi_return_covolume_2D(pumi_mesh, inode);
+                field[nodeID] /= pumi_return_covolume(pumi_mesh, inode);
                 nodeID++;
             }
         }

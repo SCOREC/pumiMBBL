@@ -216,6 +216,16 @@ double pumi_global_x2_max(pumi_mesh_t *pumi_mesh)
 }
 
 /*
+* \brief Call appropriate subroutine (based on the dimension of the problem) and returns covolume for given node
+* \param *pumi_mesh pointer object to struct pumi_mesh
+* \param array of node numbers -- size 1 array for 1D and size 2 for 2D
+*/
+double pumi_return_covolume(pumi_mesh_t* pumi_mesh, int* inode){
+    return (pumi_covolume_fnptr[pumi_mesh->ndim-1](pumi_mesh, inode));
+}
+
+
+/*
 * \brief Computes and returns the covolume for a given node in the mesh
 * \param[in] *pumi_mesh pointer object to struct pumi_mesh
 * \param[in] node number
@@ -1343,6 +1353,16 @@ void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh
     }
 }
 */
+void pumi_initialize_covolume_functions(pumi_mesh_t *pumi_mesh){
+    if (pumi_mesh->periodic_mesh_flag){
+        pumi_covolume_fnptr[0] = &pumi_return_covolume_periodic_1D;
+    }
+    else{
+        pumi_covolume_fnptr[0] = &pumi_return_covolume_1D;
+    }
+    pumi_covolume_fnptr[1] = &pumi_return_covolume_2D;
+}
+
 void pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh_t *pumi_mesh){
     pumi_locatesubmesh_fnptr[0] = &pumi_locate_submesh_x1;
     pumi_locatesubmesh_fnptr[1] = &pumi_locate_submesh_x2;

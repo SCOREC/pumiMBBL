@@ -279,7 +279,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   if (pumi_mesh->BL_elem_coords_cache_flag){
       pumi_BL_elemsize_ON(pumi_mesh);
   }
-
+  pumi_initialize_covolume_functions(pumi_mesh);
   pumi_initialize_locatecell_and_calcweights_functions(pumi_mesh);
 
   if (pumi_mesh->bspline_flag){
