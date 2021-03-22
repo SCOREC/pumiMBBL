@@ -1448,7 +1448,7 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           if (pumi_tmp_submesh->pumi_flag & leftBL){
             FILE *lBL_fptr;
             char lBL_coord_file[30];
-            sprintf(lBL_coord_file,"submesh_X1_%d_coords.txt",isubmesh+1);
+            sprintf(lBL_coord_file,"submesh_X1_%d_coords.dat",isubmesh+1);
             lBL_fptr = fopen(lBL_coord_file,"w");
             printf("\tLeft BL segment:\n");
             inode = pumi_tmp_submesh->Nel_cumulative + 1;// N_cumulative[isubmesh]+1;
@@ -1471,7 +1471,7 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           if (pumi_tmp_submesh->pumi_flag & uniform){
             FILE *uni_fptr;
             char uni_coord_file[30];
-            sprintf(uni_coord_file,"submesh_X1_%d_coords.txt",isubmesh+1);
+            sprintf(uni_coord_file,"submesh_X1_%d_coords.dat",isubmesh+1);
             uni_fptr = fopen(uni_coord_file,"w");
             printf("\tUniform segment:\n");
             inode = pumi_tmp_submesh->Nel_cumulative + 1;
@@ -1493,7 +1493,7 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           if (pumi_tmp_submesh->pumi_flag & rightBL){
             FILE *rBL_fptr;
             char rBL_coord_file[30];
-            sprintf(rBL_coord_file,"submesh_X1_%d_coords.txt",isubmesh+1);
+            sprintf(rBL_coord_file,"submesh_X1_%d_coords.dat",isubmesh+1);
             rBL_fptr = fopen(rBL_coord_file,"w");
             printf("\tRight BL segment:\n");
             inode = pumi_tmp_submesh->Nel_cumulative + 1;
@@ -1522,7 +1522,7 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           if (pumi_tmp_submesh->pumi_flag & bottomBL){
             FILE *bBL_fptr;
             char bBL_coord_file[30];
-            sprintf(bBL_coord_file,"submesh_X2_%d_coords.txt",isubmesh+1);
+            sprintf(bBL_coord_file,"submesh_X2_%d_coords.dat",isubmesh+1);
             bBL_fptr = fopen(bBL_coord_file,"w");
             printf("\tBottom BL segment:\n");
             inode = pumi_tmp_submesh->Nel_cumulative + 1;// N_cumulative[isubmesh]+1;
@@ -1545,7 +1545,7 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           if (pumi_tmp_submesh->pumi_flag & uniform){
             FILE *uni_fptr;
             char uni_coord_file[30];
-            sprintf(uni_coord_file,"submesh_X2_%d_coords.txt",isubmesh+1);
+            sprintf(uni_coord_file,"submesh_X2_%d_coords.dat",isubmesh+1);
             uni_fptr = fopen(uni_coord_file,"w");
             printf("\tUniform segment:\n");
             inode = pumi_tmp_submesh->Nel_cumulative + 1;
@@ -1567,7 +1567,7 @@ void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh){
           if (pumi_tmp_submesh->pumi_flag & topBL){
             FILE *tBL_fptr;
             char tBL_coord_file[30];
-            sprintf(tBL_coord_file,"submesh_X2_%d_coords.txt",isubmesh+1);
+            sprintf(tBL_coord_file,"submesh_X2_%d_coords.dat",isubmesh+1);
             tBL_fptr = fopen(tBL_coord_file,"w");
             printf("\tTop BL segment:\n");
             inode = pumi_tmp_submesh->Nel_cumulative + 1;
