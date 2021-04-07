@@ -236,19 +236,19 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             printf("PUMI submesh type for nodeoffset calculations :\n\n");
             for (jsubmesh=pumi_mesh->nsubmeshes_x2-1; jsubmesh>=0; jsubmesh--){
                 for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-                    if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_A){
+                    if (pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] == type_A){
                         printf("TYPE_A   ");
                     }
-                    if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_B){
+                    if (pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] == type_B){
                         printf("TYPE_B   ");
                     }
-                    if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_C){
+                    if (pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] == type_C){
                         printf("TYPE_C   ");
                     }
-                    if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_D){
+                    if (pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] == type_D){
                         printf("TYPE_D   ");
                     }
-                    if (pumi_mesh->blocktype[isubmesh][jsubmesh] == type_O){
+                    if (pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] == type_O){
                         printf("------   ");
                     }
                 }
@@ -443,23 +443,23 @@ void pumi_setsubmesh_x2(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
 void pumi_free_offset_variables(pumi_mesh_t *pumi_mesh){
     int isubmesh;
     for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
-        free(pumi_mesh->elemoffset_start[isubmesh]) ;
-        free(pumi_mesh->nodeoffset_start[isubmesh]);
-        free(pumi_mesh->nodeoffset_skip_top[isubmesh]);
-        free(pumi_mesh->nodeoffset_skip_mid[isubmesh]);
-        free(pumi_mesh->nodeoffset_skip_bottom[isubmesh]);
+        free(pumi_mesh->pumi_offsets.elemoffset_start[isubmesh]) ;
+        free(pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh]);
+        free(pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh]);
+        free(pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh]);
+        free(pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh]);
         if(pumi_mesh->nodeoffset_cache_flag){
-            free(pumi_mesh->global_nodeoffset[isubmesh]);
+            free(pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh]);
         }
     }
-    free(pumi_mesh->elemoffset_start);
-    free(pumi_mesh->elemoffset_skip);
-    free(pumi_mesh->nodeoffset_start);
-    free(pumi_mesh->nodeoffset_skip_top);
-    free(pumi_mesh->nodeoffset_skip_mid);
-    free(pumi_mesh->nodeoffset_skip_bottom);
+    free(pumi_mesh->pumi_offsets.elemoffset_start);
+    free(pumi_mesh->pumi_offsets.elemoffset_skip);
+    free(pumi_mesh->pumi_offsets.nodeoffset_start);
+    free(pumi_mesh->pumi_offsets.nodeoffset_skip_top);
+    free(pumi_mesh->pumi_offsets.nodeoffset_skip_mid);
+    free(pumi_mesh->pumi_offsets.nodeoffset_skip_bottom);
     if(pumi_mesh->nodeoffset_cache_flag){
-        free(pumi_mesh->global_nodeoffset);
+        free(pumi_mesh->pumi_offsets.global_nodeoffset);
     }
 }
 
@@ -468,10 +468,10 @@ void pumi_setsubmesh_elemoffsets(pumi_mesh_t *pumi_mesh){
     int elemstart_init;
     int elemstart=0;
     int elemskip;
-    pumi_mesh->elemoffset_start = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
-    pumi_mesh->elemoffset_skip = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+    pumi_mesh->pumi_offsets.elemoffset_start = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+    pumi_mesh->pumi_offsets.elemoffset_skip = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
     for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
-        pumi_mesh->elemoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+        pumi_mesh->pumi_offsets.elemoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
     }
 
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
@@ -480,15 +480,15 @@ void pumi_setsubmesh_elemoffsets(pumi_mesh_t *pumi_mesh){
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             if(pumi_mesh->isactive[isubmesh][jsubmesh]){
             //if(pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh)){
-                pumi_mesh->elemoffset_start[isubmesh][jsubmesh] = elemstart;
+                pumi_mesh->pumi_offsets.elemoffset_start[isubmesh][jsubmesh] = elemstart;
             }
             else{
                 elemstart +=  ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
-                pumi_mesh->elemoffset_start[isubmesh][jsubmesh] = -1;
+                pumi_mesh->pumi_offsets.elemoffset_start[isubmesh][jsubmesh] = -1;
             }
         }
         elemskip = elemstart-elemstart_init;
-        pumi_mesh->elemoffset_skip[jsubmesh] = elemskip;
+        pumi_mesh->pumi_offsets.elemoffset_skip[jsubmesh] = elemskip;
         elemstart = elemstart_init + elemskip*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel;
     }
     pumi_mesh->pumi_Nel_total_2D = pumi_mesh->pumi_Nel_total_x1*pumi_mesh->pumi_Nel_total_x2 - elemstart;
@@ -497,20 +497,20 @@ void pumi_setsubmesh_elemoffsets(pumi_mesh_t *pumi_mesh){
 void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
     int isubmesh, jsubmesh;
 
-    pumi_mesh->nodeoffset_start = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
-    pumi_mesh->nodeoffset_skip_top = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
-    pumi_mesh->nodeoffset_skip_mid = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
-    pumi_mesh->nodeoffset_skip_bottom = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
-    pumi_mesh->global_nodeoffset = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
-    pumi_mesh->blocktype = (pumi_2D_blocktype_for_nodeoffset_t**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_2D_blocktype_for_nodeoffset_t *));
+    pumi_mesh->pumi_offsets.nodeoffset_start = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+    pumi_mesh->pumi_offsets.nodeoffset_skip_top = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+    pumi_mesh->pumi_offsets.nodeoffset_skip_mid = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+    pumi_mesh->pumi_offsets.nodeoffset_skip_bottom = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+    pumi_mesh->pumi_offsets.global_nodeoffset = (int**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(int *));
+    pumi_mesh->pumi_offsets.blocktype = (pumi_2D_blocktype_for_nodeoffset_t**) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_2D_blocktype_for_nodeoffset_t *));
 
     for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
-        pumi_mesh->nodeoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
-        pumi_mesh->global_nodeoffset[isubmesh] = (int*) malloc((pumi_mesh->pumi_Nel_total_x2+1) * sizeof(int));
-        pumi_mesh->nodeoffset_skip_top[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
-        pumi_mesh->nodeoffset_skip_mid[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
-        pumi_mesh->nodeoffset_skip_bottom[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
-        pumi_mesh->blocktype[isubmesh] = (pumi_2D_blocktype_for_nodeoffset_t*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_2D_blocktype_for_nodeoffset_t));
+        pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+        pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh] = (int*) malloc((pumi_mesh->pumi_Nel_total_x2+1) * sizeof(int));
+        pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+        pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+        pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
+        pumi_mesh->pumi_offsets.blocktype[isubmesh] = (pumi_2D_blocktype_for_nodeoffset_t*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_2D_blocktype_for_nodeoffset_t));
     }
 
     // Node offset Calculations
@@ -524,10 +524,10 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             if(pumi_mesh->isactive[isubmesh][jsubmesh]){
             //if(pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh)){
-                pumi_mesh->global_nodeoffset[isubmesh][Jnp] = nodestart;
+                pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = nodestart;
             }
             else{
-                pumi_mesh->global_nodeoffset[isubmesh][Jnp] = -1;
+                pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = -1;
                 if (isubmesh==0){
                     if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
                     //if(pumi_check_isactive(pumi_mesh,isubmesh+1,jsubmesh)){
@@ -561,10 +561,10 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
             int Jnp = jnp + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
             if(pumi_mesh->isactive[isubmesh][jsubmesh]){
             //if(pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh)){
-                pumi_mesh->global_nodeoffset[isubmesh][Jnp] = nodestart;
+                pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = nodestart;
             }
             else{
-                pumi_mesh->global_nodeoffset[isubmesh][Jnp] = -1;
+                pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = -1;
                 if (isubmesh==0){
                     if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
                     //if(pumi_check_isactive(pumi_mesh,isubmesh+1,jsubmesh)){
@@ -600,16 +600,16 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
             if (pumi_mesh->isactive[isubmesh][jsubmesh] || pumi_mesh->isactive[isubmesh][jsubmesh-1]){
             //if (pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh)){
                 nodestart += 0;
-                pumi_mesh->global_nodeoffset[isubmesh][Jnp] = nodestart;
+                pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = nodestart;
             }
             //else if(){
             //else if(pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh-1)){
             //    nodestart += 0;
-            //    pumi_mesh->global_nodeoffset[isubmesh][Jnp] = nodestart;
+            //    pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = nodestart;
             //}
             // if both given submesh and submesh below are inactive
             else{
-                pumi_mesh->global_nodeoffset[isubmesh][Jnp] = -1;
+                pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = -1;
                 if (isubmesh==0){
                     if(pumi_mesh->isactive[isubmesh+1][jsubmesh] || pumi_mesh->isactive[isubmesh+1][jsubmesh-1]){
                     //if(pumi_check_isactive(pumi_mesh,isubmesh+1,jsubmesh)){
@@ -640,10 +640,10 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
             for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
                 if(pumi_mesh->isactive[isubmesh][jsubmesh]){
                 //if(pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh)){
-                    pumi_mesh->global_nodeoffset[isubmesh][Jnp] = nodestart;
+                    pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = nodestart;
                 }
                 else{
-                    pumi_mesh->global_nodeoffset[isubmesh][Jnp] = -1;
+                    pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = -1;
                     if (isubmesh==0){
                         if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
                         //if(pumi_check_isactive(pumi_mesh,isubmesh+1,jsubmesh)){
@@ -676,10 +676,10 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
             for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
                 if(pumi_mesh->isactive[isubmesh][jsubmesh]){
                 //if(pumi_check_isactive(pumi_mesh,isubmesh,jsubmesh)){
-                    pumi_mesh->global_nodeoffset[isubmesh][Jnp] = nodestart;
+                    pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = nodestart;
                 }
                 else{
-                    pumi_mesh->global_nodeoffset[isubmesh][Jnp] = -1;
+                    pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp] = -1;
                     if (isubmesh==0){
                         if(pumi_mesh->isactive[isubmesh+1][jsubmesh]){
                         //if(pumi_check_isactive(pumi_mesh,isubmesh+1,jsubmesh)){
@@ -712,31 +712,31 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
         int Jnp = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
             if (pumi_mesh->isactive[isubmesh][jsubmesh]){
-                pumi_mesh->nodeoffset_start[isubmesh][jsubmesh] = pumi_mesh->global_nodeoffset[isubmesh][Jnp];
-                pumi_mesh->nodeoffset_skip_bottom[isubmesh][jsubmesh] = pumi_mesh->global_nodeoffset[isubmesh][Jnp+1]-pumi_mesh->global_nodeoffset[isubmesh][Jnp];
-                pumi_mesh->nodeoffset_skip_top[isubmesh][jsubmesh] = pumi_mesh->global_nodeoffset[isubmesh][Jnp+((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel]
-                                                                    - pumi_mesh->global_nodeoffset[isubmesh][Jnp+((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel-1];
-                pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh] = pumi_mesh->global_nodeoffset[isubmesh][Jnp+2]-pumi_mesh->global_nodeoffset[isubmesh][Jnp+1];
+                pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh][jsubmesh] = pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp];
+                pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh][jsubmesh] = pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp+1]-pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp];
+                pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh][jsubmesh] = pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp+((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel]
+                                                                    - pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp+((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel-1];
+                pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh] = pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp+2]-pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh][Jnp+1];
 
-                if (pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->nodeoffset_skip_bottom[isubmesh][jsubmesh] && pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->nodeoffset_skip_top[isubmesh][jsubmesh]){
-                    pumi_mesh->blocktype[isubmesh][jsubmesh] = type_A;
+                if (pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh][jsubmesh] && pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh][jsubmesh]){
+                    pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] = type_A;
                 }
-                else if(pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh]!=pumi_mesh->nodeoffset_skip_bottom[isubmesh][jsubmesh] && pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->nodeoffset_skip_top[isubmesh][jsubmesh]){
-                    pumi_mesh->blocktype[isubmesh][jsubmesh] = type_B;
+                else if(pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh]!=pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh][jsubmesh] && pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh][jsubmesh]){
+                    pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] = type_B;
                 }
-                else if(pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->nodeoffset_skip_bottom[isubmesh][jsubmesh] && pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh]!=pumi_mesh->nodeoffset_skip_top[isubmesh][jsubmesh]){
-                    pumi_mesh->blocktype[isubmesh][jsubmesh] = type_C;
+                else if(pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh]==pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh][jsubmesh] && pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh]!=pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh][jsubmesh]){
+                    pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] = type_C;
                 }
                 else{
-                    pumi_mesh->blocktype[isubmesh][jsubmesh] = type_D;
+                    pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] = type_D;
                 }
             }
             else{
-                pumi_mesh->nodeoffset_start[isubmesh][jsubmesh] = -1;
-                pumi_mesh->nodeoffset_skip_top[isubmesh][jsubmesh] = -1;
-                pumi_mesh->nodeoffset_skip_mid[isubmesh][jsubmesh] = -1;
-                pumi_mesh->nodeoffset_skip_bottom[isubmesh][jsubmesh] = -1;
-                pumi_mesh->blocktype[isubmesh][jsubmesh] = type_O;
+                pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh][jsubmesh] = -1;
+                pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh][jsubmesh] = -1;
+                pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh][jsubmesh] = -1;
+                pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh][jsubmesh] = -1;
+                pumi_mesh->pumi_offsets.blocktype[isubmesh][jsubmesh] = type_O;
             }
         }
     }
@@ -744,9 +744,9 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
     if (!(pumi_mesh->nodeoffset_cache_flag)){
         //printf("\tNode Offsets to be calculated on-the-fly \n\n");
         for(isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
-            free(pumi_mesh->global_nodeoffset[isubmesh]);
+            free(pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh]);
         }
-        free(pumi_mesh->global_nodeoffset);
+        free(pumi_mesh->pumi_offsets.global_nodeoffset);
     }
     else{
         //printf("\tNode Offsets to be stored in an array \n\n");

@@ -68,6 +68,17 @@ typedef struct pumi_submesh{
   pumi_meshflag_t pumi_flag; //!< flag for types of mesh segments(i.e. uniform mesh segment, right BL segment or left BL segment) available in the submesh block
 } pumi_submesh_t;
 
+typedef struct pumi_inactive_offset{
+    int **nodeoffset_start;
+    int **nodeoffset_skip_top;
+    int **nodeoffset_skip_mid;
+    int **nodeoffset_skip_bottom;
+    int **elemoffset_start;
+    int *elemoffset_skip;
+    int **global_nodeoffset;
+    pumi_2D_blocktype_for_nodeoffset_t **blocktype;
+} pumi_inactive_offset_t;
+
 /*!
 * \brief Contains parameters that defines the mesh
 */
@@ -86,14 +97,7 @@ typedef struct pumi_mesh{
   int BL_elem_coords_cache_flag;// !< BL elem size and coords precompute flag -- 0=>BL elemsize and node coords array not precomputed, 1=>BL elemsize and node coords array precomputed
   bool **isactive;
   int nodeoffset_cache_flag;
-  int **nodeoffset_start;
-  int **nodeoffset_skip_top;
-  int **nodeoffset_skip_mid;
-  int **nodeoffset_skip_bottom;
-  int **elemoffset_start;
-  int *elemoffset_skip;
-  int **global_nodeoffset;
-  pumi_2D_blocktype_for_nodeoffset_t **blocktype;
+  pumi_inactive_offset_t pumi_offsets;
   int bspline_flag;
   int periodic_mesh_flag;
   pumi_bspline_t pumi_bspl;
