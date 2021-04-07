@@ -63,10 +63,6 @@ double pumi_calc_elem_size_in_topBL_analytic(pumi_mesh_t *pumi_mesh, int isubmes
 
 double pumi_calc_elem_size(pumi_mesh_t *pumi_mesh, int isubmesh, int local_cell, int dir);
 
-int pumi_dummy_elem_node_ID(double coord_x1, double coord_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
-int pumi_dummy_elem_node_ID_v2(int kcell_x1, int kcell_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3);
-
-
 typedef int (*pumi_locatesubmesh_ptr)(pumi_mesh_t*, double);
 pumi_locatesubmesh_ptr pumi_locatesubmesh_fnptr[MAX_DIM];
 typedef int (*pumi_locatecell_ptr)(pumi_mesh_t*, int, double);

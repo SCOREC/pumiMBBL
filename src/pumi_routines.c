@@ -1659,22 +1659,6 @@ int pumi_calc_elementID_and_nodeID_on_fullmesh(pumi_mesh_t* pumi_mesh, int isubm
     return elemID;
 }
 
-int pumi_dummy_elem_node_ID(double coord_x1, double coord_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3){
-    int kcell_x1 = floor(coord_x1/dx1);
-    int kcell_x2 = floor(coord_x2/dx2);
-    int kcell = kcell_x2*Nel_total_x1+kcell_x1;
-    *node1 = kcell + kcell_x2;
-    *node3 = *node1 + Nel_total_x1 + 1;
-    return kcell;
-}
-
-int pumi_dummy_elem_node_ID_v2(int kcell_x1, int kcell_x2, double dx1, double dx2, int Nel_total_x1, int *node1, int *node3){
-    int kcell = kcell_x2*Nel_total_x1+kcell_x1;
-    *node1 = kcell + kcell_x2;
-    *node3 = *node1 + Nel_total_x1 + 1;
-    return kcell;
-}
-
 bool pumi_is_fullmesh(pumi_mesh_t *pumi_mesh){
     bool is_fullmesh = true;
     int isubmesh, jsubmesh;
