@@ -56,14 +56,14 @@ int main(int argc, char *argv[])
       printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
       printf("\t \"typeflag_i_x1\" \t Active mesh type segment in i-th submesh along the x1-direction \n" );
       printf("\t \"p1_i_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
-      printf("\t \"Nel_i_x1\" \t\t Number of elements in i-th submesh along the x1-direction \n");
-      printf("\t \"p2min_i_x1\"  \t\t For leftBL/rightBL, Number of minimum size cells in a Debye Length for i-th submesh along the x1-direction \n");
+      printf("\t \"p2max_i_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
+      printf("\t \"p2min_i_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
       printf("\t N_x2     \t\t Total Number of submeshes along the x2-direction \n");
       printf("\t \"typeflag_i_x2\" \t Active mesh type segment in i-th submesh along the x2-direction \n" );
       printf("\t \"p1_i_x2\"  \t\t Number of Debye Lengths in i-th submesh along the x2-direction \n");
-      printf("\t \"Nel_i_x2\" \t\t Number of elements in i-th submesh along the x2-direction \n");
-      printf("\t \"p2min_i_x2\"  \t\t For bottomBL/topBL, Number of minimum size cells in a Debye Length for i-th submesh along the x2-direction \n");
+      printf("\t \"p2max_i_x2\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x2-direction \n");
+      printf("\t \"p2min_i_x2\"  \t\t For bottomBL/topBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x2-direction \n");
       printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
       printf("\t block_isactive \t Activity info of each submesh-block (N_x1*N_x2 inputs required)\n" );
       printf("\t \t  \t\t 0 is inactive \n\n");
@@ -71,9 +71,9 @@ int main(int argc, char *argv[])
       printf("\t \t  \t\t Input will be ignored if bspline flag is turned off in main function\n\n");
       printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
       printf("  E.g.#1\n\n");
-      printf("    ./install/bin/pumiMBBL2D_Demo 4 \"leftBL,uniform,uniform,rightBL\" \"20,30,30,20\" \"10,10,10,10\" \"1.0,0,0,1.0\" 3 \"bottomBL,uniform,topBL\" \"10,30,10\" \"5,10,5\" \"1.0,0,1.0\" \"1,0,0,1,1,1,1,1,1,0,0,1\" 2\n\n");
+      printf("    ./install/bin/pumiMBBL2D_Demo 4 \"leftBL,uniform,uniform,rightBL\" \"20,30,30,20\" \"3,3,3,3\" \"1.0,0,0,1.0\" 3 \"bottomBL,uniform,topBL\" \"10,30,10\" \"2,2,2\" \"1.0,0,1.0\" \"1,0,0,1,1,1,1,1,1,0,0,1\" 2\n\n");
       printf("  E.g.#2\n\n");
-      printf("    ./install/bin/pumiMBBL2D_Demo 3 \"leftBL,uniform,rightBL\" \"30,90,30\" \"15,25,15\" \"1.0,0.0,1.0\" 2 \"topBL,bottomBL\" \"50,50\" \"25,25\" \"1.0,1.0\" \"1,1,1,1,1,1\" 2\n\n");
+      printf("    ./install/bin/pumiMBBL2D_Demo 3 \"leftBL,uniform,rightBL\" \"30,90,30\" \"3,5,3\" \"1.0,0.0,1.0\" 2 \"topBL,bottomBL\" \"50,50\" \"4,4\" \"1.0,1.0\" \"1,1,1,1,1,1\" 2\n\n");
       exit(0);
     }
 
@@ -121,14 +121,14 @@ int main(int argc, char *argv[])
     }
 
     //reading submesh max elemsize
-    char all_Nel_submesh_x1[MAX_SUBMESHES*4];
-    char each_Nel_submesh_x1[MAX_SUBMESHES][4];
-    strcpy(all_Nel_submesh_x1, argv[4]);
+    char all_p2max_submesh_x1[MAX_SUBMESHES*4];
+    char each_p2max_submesh_x1[MAX_SUBMESHES][4];
+    strcpy(all_p2max_submesh_x1, argv[4]);
 
-    tok = strtok(all_Nel_submesh_x1, ",");
+    tok = strtok(all_p2max_submesh_x1, ",");
     isubmesh=0;
     while (tok != NULL){
-      strcpy (each_Nel_submesh_x1[isubmesh], tok);
+      strcpy (each_p2max_submesh_x1[isubmesh], tok);
       tok = strtok(NULL, ",");
       isubmesh++;
     }
@@ -193,14 +193,14 @@ int main(int argc, char *argv[])
     }
 
     //reading submesh max elemsize
-    char all_Nel_submesh_x2[MAX_SUBMESHES*4];
-    char each_Nel_submesh_x2[MAX_SUBMESHES][4];
-    strcpy(all_Nel_submesh_x2, argv[9]);
+    char all_p2max_submesh_x2[MAX_SUBMESHES*4];
+    char each_p2max_submesh_x2[MAX_SUBMESHES][4];
+    strcpy(all_p2max_submesh_x2, argv[9]);
 
-    tok = strtok(all_Nel_submesh_x2, ",");
+    tok = strtok(all_p2max_submesh_x2, ",");
     isubmesh=0;
     while (tok != NULL){
-      strcpy (each_Nel_submesh_x2[isubmesh], tok);
+      strcpy (each_p2max_submesh_x2[isubmesh], tok);
       tok = strtok(NULL, ",");
       isubmesh++;
     }
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
         strcpy(pumi_inputs->type_flag[isubmesh], each_submesh_flag_x1[isubmesh]);
         *(pumi_inputs->p1_i_x1 + isubmesh) = atoi( each_p1_submesh_x1[isubmesh]);
         NumberDebyeLengthsInDomain_x1 += *(pumi_inputs->p1_i_x1 + isubmesh);
-        *(pumi_inputs->Nel_i_x1 + isubmesh) = atoi( each_Nel_submesh_x1[isubmesh]);
+        *(pumi_inputs->p2max_i_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
         *(pumi_inputs->p2min_i_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
 
         // calculating all pumi_inputs to initiate the mesh
@@ -286,25 +286,29 @@ int main(int argc, char *argv[])
         int right_Nel = 0;
 
         double uniform_L = 0.0;
+        double uniform_dx;
         int uniform_Nel = 0;
 
         if (typeflag & leftBL){// set values if leftBL flag is active
           left_T = *(pumi_inputs->p1_i_x1 + isubmesh)*lambda_D;
-          left_t0 = lambda_D/(*(pumi_inputs->p2min_i_x1 + isubmesh));
-          left_Nel = *(pumi_inputs->Nel_i_x1 + isubmesh);
+          left_t0 = lambda_D*(*(pumi_inputs->p2min_i_x1 + isubmesh));
+          left_r = (*(pumi_inputs->p1_i_x1 + isubmesh)-*(pumi_inputs->p2min_i_x1 + isubmesh))/(*(pumi_inputs->p1_i_x1 + isubmesh)-*(pumi_inputs->p2max_i_x1 + isubmesh));
+          left_Nel = 1 + floor(log((*(pumi_inputs->p2max_i_x1 + isubmesh))/(*(pumi_inputs->p2min_i_x1 + isubmesh)))/log(left_r));
           left_r = pumi_compute_grading_ratio_new(left_T, left_t0, left_Nel);
         }
 
         if (typeflag & rightBL){// set values if leftBL flag is active
             right_T = *(pumi_inputs->p1_i_x1 + isubmesh)*lambda_D;
-            right_t0 = lambda_D/(*(pumi_inputs->p2min_i_x1 + isubmesh));
-            right_Nel = *(pumi_inputs->Nel_i_x1 + isubmesh);
+            right_t0 = lambda_D*(*(pumi_inputs->p2min_i_x1 + isubmesh));
+            right_r = (*(pumi_inputs->p1_i_x1 + isubmesh)-*(pumi_inputs->p2min_i_x1 + isubmesh))/(*(pumi_inputs->p1_i_x1 + isubmesh)-*(pumi_inputs->p2max_i_x1 + isubmesh));
+            right_Nel = 1 + floor(log((*(pumi_inputs->p2max_i_x1 + isubmesh))/(*(pumi_inputs->p2min_i_x1 + isubmesh)))/log(right_r));
             right_r = pumi_compute_grading_ratio_new(right_T, right_t0, right_Nel);
         }
 
         if (typeflag & uniform){
           uniform_L = *(pumi_inputs->p1_i_x1 + isubmesh)*lambda_D;
-          uniform_Nel = *(pumi_inputs->Nel_i_x1 + isubmesh);
+          uniform_dx = lambda_D*(*(pumi_inputs->p2max_i_x1 + isubmesh));
+          uniform_Nel = floor(uniform_L/uniform_dx);
         }
 
         // all pumi_inputs are calculated
@@ -325,7 +329,7 @@ int main(int argc, char *argv[])
         strcpy(pumi_inputs->type_flag[isubmesh], each_submesh_flag_x2[jsubmesh]);
         *(pumi_inputs->p1_i_x2 + isubmesh) = atoi( each_p1_submesh_x2[jsubmesh]);
         NumberDebyeLengthsInDomain_x2 += *(pumi_inputs->p1_i_x2 + isubmesh);
-        *(pumi_inputs->Nel_i_x2 + isubmesh) = atoi( each_Nel_submesh_x2[jsubmesh]);
+        *(pumi_inputs->p2max_i_x2 + isubmesh) = atof( each_p2max_submesh_x2[jsubmesh]);
         *(pumi_inputs->p2min_i_x2 + isubmesh) = atof( each_p2min_submesh_x2[jsubmesh]);
 
         // calculating all pumi_inputs to initiate the mesh
@@ -355,25 +359,29 @@ int main(int argc, char *argv[])
         int top_Nel = 0;
 
         double uniform_L = 0.0;
+        double uniform_dx;
         int uniform_Nel = 0;
 
         if (typeflag & bottomBL){// set values if leftBL flag is active
           bottom_T = *(pumi_inputs->p1_i_x2 + isubmesh)*lambda_D;
-          bottom_t0 = lambda_D/(*(pumi_inputs->p2min_i_x2 + isubmesh));
-          bottom_Nel = *(pumi_inputs->Nel_i_x2 + isubmesh);
+          bottom_t0 = lambda_D*(*(pumi_inputs->p2min_i_x2 + isubmesh));
+          bottom_r = (*(pumi_inputs->p1_i_x2 + isubmesh)-*(pumi_inputs->p2min_i_x2 + isubmesh))/(*(pumi_inputs->p1_i_x2 + isubmesh)-*(pumi_inputs->p2max_i_x2 + isubmesh));
+          bottom_Nel = 1 + floor(log((*(pumi_inputs->p2max_i_x2 + isubmesh))/(*(pumi_inputs->p2min_i_x2 + isubmesh)))/log(bottom_r));
           bottom_r = pumi_compute_grading_ratio_new(bottom_T, bottom_t0, bottom_Nel);
         }
 
         if (typeflag & topBL){// set values if leftBL flag is active
             top_T = *(pumi_inputs->p1_i_x2 + isubmesh)*lambda_D;
-            top_t0 = lambda_D/(*(pumi_inputs->p2min_i_x2 + isubmesh));
-            top_Nel = *(pumi_inputs->Nel_i_x2 + isubmesh);
+            top_t0 = lambda_D*(*(pumi_inputs->p2min_i_x2 + isubmesh));
+            top_r = (*(pumi_inputs->p1_i_x2 + isubmesh)-*(pumi_inputs->p2min_i_x2 + isubmesh))/(*(pumi_inputs->p1_i_x2 + isubmesh)-*(pumi_inputs->p2max_i_x2 + isubmesh));
+            top_Nel = 1 + floor(log((*(pumi_inputs->p2max_i_x2 + isubmesh))/(*(pumi_inputs->p2min_i_x2 + isubmesh)))/log(top_r));
             top_r = pumi_compute_grading_ratio_new(top_T, top_t0, top_Nel);
         }
 
         if (typeflag & uniform){
           uniform_L = *(pumi_inputs->p1_i_x2 + isubmesh)*lambda_D;
-          uniform_Nel = *(pumi_inputs->Nel_i_x2 + isubmesh);
+          uniform_dx = lambda_D*(*(pumi_inputs->p2max_i_x2 + isubmesh));
+          uniform_Nel = floor(uniform_L/uniform_dx);
         }
 
         // all pumi_inputs are calculated

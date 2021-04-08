@@ -116,7 +116,7 @@ void pumi_verify_params_1D(pumi_mesh_t *pumi_mesh);
 void pumi_verify_params_2D(pumi_mesh_t *pumi_mesh);
 void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh, double lambda_D);
 void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh, double lambda_D);
-void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh);
+void pumi_print_node_coordinates_2D(pumi_mesh_t *pumi_mesh, double lambda_D);
 int nchoosek(int n, int k);
 pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir);
 pumi_bezier_extractor_t* pumi_bezier_extraction_periodic(pumi_mesh_t *pumi_mesh, int dir);
