@@ -294,7 +294,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
   }
 
   pumi_verify_params(pumi_mesh);
-  pumi_print_node_coordinates(pumi_mesh);
+  double lambda_D = (*(pumi_inputs->x_right + 0)-*(pumi_inputs->x_left + 0))/(*(pumi_inputs->p1_i + 0));
+  pumi_print_node_coordinates(pumi_mesh,lambda_D);
 
   printf("MESH OPTIONS USED:\n");
   if (pumi_mesh->periodic_mesh_flag){
@@ -1340,9 +1341,9 @@ void pumi_verify_params_2D(pumi_mesh_t *pumi_mesh){
 * \brief Prints the coordinates of the nodes (for diagnostics purposes)
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
-void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
+void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh, double lambda_D){
     if (pumi_mesh->ndim == 1){
-        pumi_print_node_coordinates_1D(pumi_mesh);
+        pumi_print_node_coordinates_1D(pumi_mesh,lambda_D);
     }
     else{
         pumi_print_node_coordinates_2D(pumi_mesh);
@@ -1353,7 +1354,7 @@ void pumi_print_node_coordinates(pumi_mesh_t *pumi_mesh){
 * \brief Prints the coordinates of the nodes of 1D mesh (for diagnostics purposes)
 * \param *pumi_mesh pointer object to struct pumi_initiate
 */
-void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
+void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh, double lambda_D){
   int isubmesh;
   int inode = 0;
   double coord, elem_size;
@@ -1370,13 +1371,14 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
       inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative+1;
       coord = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min;
       elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
-      printf("\t\tNode %6d: %2.8e\n", inode, coord );
+      printf("\t\tNode-ID\t\tCoordinates\tDebye-Lengths\n");
+      printf("\t\tNode %6d: %2.8e \t%2.2f\n", inode, coord, coord/lambda_D );
       fprintf(lBL_fptr, "%.16e\n", coord );
       int i;
       for (i=0; i<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; i++ ){
         inode++;
         coord += elem_size;
-        printf("\t\tNode %6d: %2.8e\n", inode, coord );
+        printf("\t\tNode %6d: %2.8e \t%2.2f\n", inode, coord, coord/lambda_D );
         fprintf(lBL_fptr, "%.16e\n", coord );
         elem_size = elem_size*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r;
       }
@@ -1393,13 +1395,14 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
       inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative+1;
       coord = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min;
       double dx_uniform = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
-      printf("\t\tNode %6d: %2.8e\n", inode, coord );
+      printf("\t\tNode-ID\t\tCoordinates\tDebye-Lengths\n");
+      printf("\t\tNode %6d: %2.8e \t%2.2f\n", inode, coord, coord/lambda_D );
       fprintf(uni_fptr, "%.16e\n", coord );
       int i;
       for (i=0; i<((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel; i++ ){
         inode++;
         coord += dx_uniform;
-        printf("\t\tNode %6d: %2.8e\n", inode, coord );
+        printf("\t\tNode %6d: %2.8e \t%2.2f\n", inode, coord, coord/lambda_D );
         fprintf(uni_fptr, "%.16e\n", coord );
       }
       printf("\tUniform segemnt coordinates written to the file \"%s\"\n\n",uni_coord_file );
@@ -1415,13 +1418,14 @@ void pumi_print_node_coordinates_1D(pumi_mesh_t *pumi_mesh){
       inode = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative+1;
       coord = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min;
       elem_size = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0*pow(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r,((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel-1);
-      printf("\t\tNode %6d: %2.8e\n", inode, coord );
+      printf("\t\tNode-ID\t\tCoordinates\tDebye-Lengths\n");
+      printf("\t\tNode %6d: %2.8e \t%2.2f\n", inode, coord, coord/lambda_D );
       fprintf(rBL_fptr, "%.16e\n", coord );
       int i;
       for (i=((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel-1; i>=0; i-- ){
         inode++;
         coord += elem_size;
-        printf("\t\tNode %6d: %2.8e\n", inode, coord );
+        printf("\t\tNode %6d: %2.8e \t%2.2f\n", inode, coord, coord/lambda_D );
         fprintf(rBL_fptr, "%.16e\n", coord );
         elem_size = elem_size/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r;
       }
