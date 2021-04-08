@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 
     int inode[1];
     int inp;
-    for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+    for (inp=0; inp<pumi_mesh->Nnp_total_x1; inp++){
         inode[0] = inp;
         printf("inp=%2d cov=%2.4f\n",inp,pumi_return_covolume(pumi_mesh,inode) );
     }
@@ -282,8 +282,8 @@ int main(int argc, char *argv[])
             cov = pumi_return_covolume(pumi_mesh, inode);
             field2[i] /= cov;
         }
-        write2file(field1,pumi_mesh->pumi_Nnp_total_x1,0);
-        write2file(field2,pumi_mesh->pumi_Nnp_total_x1,11);
+        write2file(field1,pumi_mesh->Nnp_total_x1,0);
+        write2file(field2,pumi_mesh->Nnp_total_x1,11);
         int time_step;
         for (time_step=0; time_step<10; time_step++){
             for (inp=0; inp<Nnp; inp++){
@@ -342,8 +342,8 @@ int main(int argc, char *argv[])
                 cov = pumi_return_covolume(pumi_mesh, inode);
                 field2[i] /= cov;
             }
-            write2file(field1,pumi_mesh->pumi_Nnp_total_x1,time_step+1);
-            write2file(field2,pumi_mesh->pumi_Nnp_total_x1,time_step+12);
+            write2file(field1,pumi_mesh->Nnp_total_x1,time_step+1);
+            write2file(field2,pumi_mesh->Nnp_total_x1,time_step+12);
         }
     }
     else{

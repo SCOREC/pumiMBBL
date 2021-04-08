@@ -115,7 +115,7 @@ int pumi_total_elements(pumi_mesh_t *pumi_mesh)
 */
 int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
 {
-  int Nel_total = pumi_mesh->pumi_Nel_total_x1;
+  int Nel_total = pumi_mesh->Nel_total_x1;
   return Nel_total;
 }
 
@@ -125,7 +125,7 @@ int pumi_total_elements_1D(pumi_mesh_t *pumi_mesh)
 */
 int pumi_total_elements_2D(pumi_mesh_t *pumi_mesh)
 {
-  int Nel_total = pumi_mesh->pumi_Nel_total_2D;
+  int Nel_total = pumi_mesh->Nel_total_2D;
   return Nel_total;
 }
 
@@ -151,7 +151,7 @@ int pumi_total_nodes(pumi_mesh_t *pumi_mesh)
 */
 int pumi_total_nodes_1D(pumi_mesh_t *pumi_mesh)
 {
-  int Nnp_total = pumi_mesh->pumi_Nnp_total_x1;
+  int Nnp_total = pumi_mesh->Nnp_total_x1;
   return Nnp_total;
 }
 
@@ -161,7 +161,7 @@ int pumi_total_nodes_1D(pumi_mesh_t *pumi_mesh)
 */
 int pumi_total_nodes_2D(pumi_mesh_t *pumi_mesh)
 {
-  int Nnp_total = pumi_mesh->pumi_Nnp_total_2D;
+  int Nnp_total = pumi_mesh->Nnp_total_2D;
   return Nnp_total;
 }
 
@@ -235,10 +235,10 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int *inode){
   if (inode[0] == 0){
     covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
   }
-  else if (inode[0] == pumi_mesh->pumi_Nel_total_x1){
+  else if (inode[0] == pumi_mesh->Nel_total_x1){
     covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0;
   }
-  else if (inode[0] > 0 && inode[0] < pumi_mesh->pumi_Nel_total_x1){
+  else if (inode[0] > 0 && inode[0] < pumi_mesh->Nel_total_x1){
     covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 + pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
   }
   else{
@@ -252,13 +252,13 @@ double pumi_return_covolume_periodic_1D(pumi_mesh_t* pumi_mesh, int *inode){
   double covolume;
   if (inode[0] == 0){
     covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
-               pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
+               pumi_return_elemsize(pumi_mesh, pumi_mesh->Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
   }
-  else if (inode[0] == pumi_mesh->pumi_Nel_total_x1){
+  else if (inode[0] == pumi_mesh->Nel_total_x1){
     covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
-               pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
+               pumi_return_elemsize(pumi_mesh, pumi_mesh->Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
   }
-  else if (inode[0] > 0 && inode[0] < pumi_mesh->pumi_Nel_total_x1){
+  else if (inode[0] > 0 && inode[0] < pumi_mesh->Nel_total_x1){
     covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 + pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
   }
   else{
@@ -277,11 +277,11 @@ double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int *inode){
       dx1_left = 0.0;
       dx1_right = pumi_return_elemsize(pumi_mesh, inp_x1, pumi_elem_on_right_offset, pumi_x1);
     }
-    else if (inp_x1 == pumi_mesh->pumi_Nel_total_x1){
+    else if (inp_x1 == pumi_mesh->Nel_total_x1){
       dx1_left = pumi_return_elemsize(pumi_mesh, inp_x1, pumi_elem_on_left_offset, pumi_x1);
       dx1_right = 0.0;
     }
-    else if (inp_x1 > 0 && inp_x1 < pumi_mesh->pumi_Nel_total_x1){
+    else if (inp_x1 > 0 && inp_x1 < pumi_mesh->Nel_total_x1){
       dx1_left = pumi_return_elemsize(pumi_mesh, inp_x1, pumi_elem_on_left_offset, pumi_x1);
       dx1_right = pumi_return_elemsize(pumi_mesh, inp_x1, pumi_elem_on_right_offset, pumi_x1);
     }
@@ -294,11 +294,11 @@ double pumi_return_covolume_2D(pumi_mesh_t* pumi_mesh, int *inode){
       dx2_bottom = 0.0;
       dx2_top = pumi_return_elemsize(pumi_mesh, inp_x2, pumi_elem_on_top_offset, pumi_x2);
     }
-    else if (inp_x2 == pumi_mesh->pumi_Nel_total_x2){
+    else if (inp_x2 == pumi_mesh->Nel_total_x2){
       dx2_bottom = pumi_return_elemsize(pumi_mesh, inp_x2, pumi_elem_on_bottom_offset, pumi_x2);
       dx2_top = 0.0;
     }
-    else if (inp_x2 > 0 && inp_x2 < pumi_mesh->pumi_Nel_total_x2){
+    else if (inp_x2 > 0 && inp_x2 < pumi_mesh->Nel_total_x2){
       dx2_bottom = pumi_return_elemsize(pumi_mesh, inp_x2, pumi_elem_on_bottom_offset, pumi_x2);
       dx2_top = pumi_return_elemsize(pumi_mesh, inp_x2, pumi_elem_on_top_offset, pumi_x2);
     }
@@ -519,12 +519,12 @@ double pumi_return_gradingratio(pumi_mesh_t *pumi_mesh, int node, int dir){
     int Nel_total, nsubmeshes;
     if (dir == pumi_x1){
         submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1;
-        Nel_total = pumi_mesh->pumi_Nel_total_x1;
+        Nel_total = pumi_mesh->Nel_total_x1;
         nsubmeshes = pumi_mesh->nsubmeshes_x1;
     }
     else{
         submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2;
-        Nel_total = pumi_mesh->pumi_Nel_total_x2;
+        Nel_total = pumi_mesh->Nel_total_x2;
         nsubmeshes = pumi_mesh->nsubmeshes_x2;
     }
 
@@ -589,19 +589,19 @@ double pumi_return_gradingratio_periodic(pumi_mesh_t *pumi_mesh, int node, int d
     double max_elem_size;
     if (dir == pumi_x1){
         submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1;
-        Nel_total = pumi_mesh->pumi_Nel_total_x1;
+        Nel_total = pumi_mesh->Nel_total_x1;
         nsubmeshes = pumi_mesh->nsubmeshes_x1;
     }
     else{
         printf("Periodic Mesh not implemented in 2D yet -- TERMINATING\n");
         exit(0);
         submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2;
-        Nel_total = pumi_mesh->pumi_Nel_total_x2;
+        Nel_total = pumi_mesh->Nel_total_x2;
         nsubmeshes = pumi_mesh->nsubmeshes_x2;
     }
 
-    if (node == 0 || node == pumi_mesh->pumi_Nel_total_x1){
-        min_elem_size = pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1);
+    if (node == 0 || node == pumi_mesh->Nel_total_x1){
+        min_elem_size = pumi_return_elemsize(pumi_mesh, pumi_mesh->Nel_total_x1, pumi_elem_input_offset, pumi_x1);
         max_elem_size = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1);
         return max_elem_size/min_elem_size;
     }
@@ -657,12 +657,12 @@ double pumi_return_elemsize(pumi_mesh_t *pumi_mesh, int index, int offset, int d
     int Nel_total, nsubmeshes, elem, isubmesh;
     if (dir == pumi_x1){
         submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1;
-        Nel_total = pumi_mesh->pumi_Nel_total_x1;
+        Nel_total = pumi_mesh->Nel_total_x1;
         nsubmeshes = pumi_mesh->nsubmeshes_x1;
     }
     else{
         submeshes = (pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2;
-        Nel_total = pumi_mesh->pumi_Nel_total_x2;
+        Nel_total = pumi_mesh->Nel_total_x2;
         nsubmeshes = pumi_mesh->nsubmeshes_x2;
     }
 
@@ -1534,9 +1534,9 @@ int pumi_calc_elementID_and_nodeID_typeA(pumi_mesh_t* pumi_mesh, int isubmesh_x1
     nodeoffset1 = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh_x1][isubmesh_x2];
     nodeoffset3 = nodeoffset1 + pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh_x1][isubmesh_x2];
     elemoffset = pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2];
-    elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2;
+    elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2;
     *node1 = elemID + kcell_x2 - nodeoffset1;
-    *node3 = elemID + kcell_x2 + pumi_mesh->pumi_Nnp_total_x1 - nodeoffset3;
+    *node3 = elemID + kcell_x2 + pumi_mesh->Nnp_total_x1 - nodeoffset3;
     return (elemID-elemoffset);
 }
 
@@ -1546,16 +1546,16 @@ int pumi_calc_elementID_and_nodeID_typeB(pumi_mesh_t* pumi_mesh, int isubmesh_x1
     index = (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1-icell_x2)/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1);
     pumi_typeB_nodeoffset_fnptr[index](pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x2, &nodeoffset1, &nodeoffset3);
     elemoffset = pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2];
-    elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2;
+    elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2;
     *node1 = elemID + kcell_x2 - nodeoffset1;
-    *node3 = elemID + kcell_x2 + pumi_mesh->pumi_Nnp_total_x1 - nodeoffset3;
+    *node3 = elemID + kcell_x2 + pumi_mesh->Nnp_total_x1 - nodeoffset3;
     //if (icell_x2 <= 1){
     //    nodeoffset = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh_x1][isubmesh_x2];
     //}
     //else{
     //    nodeoffset = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh_x1][isubmesh_x2] + (icell_x2-1)*pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh_x1][isubmesh_x2];
     //}
-    //elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2 - (pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2]);
+    //elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2 - (pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2]);
     return (elemID-elemoffset);
 }
 
@@ -1575,16 +1575,16 @@ int pumi_calc_elementID_and_nodeID_typeC(pumi_mesh_t* pumi_mesh, int isubmesh_x1
     index = icell_x2/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel_minus_1);
     pumi_typeC_nodeoffset_fnptr[index](pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x2, &nodeoffset1, &nodeoffset3);
     elemoffset = pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2];
-    elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2;
+    elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2;
     *node1 = elemID + kcell_x2 - nodeoffset1;
-    *node3 = elemID + kcell_x2 + pumi_mesh->pumi_Nnp_total_x1 - nodeoffset3;
+    *node3 = elemID + kcell_x2 + pumi_mesh->Nnp_total_x1 - nodeoffset3;
     //if (icell_x2 == ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel){
     //    nodeoffset = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + (icell_x2-1)*pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh_x1][isubmesh_x2] + pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh_x1][isubmesh_x2];
     //}
     //else{
     //    nodeoffset = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh_x1][isubmesh_x2];
     //}
-    //elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2 - (pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2]);
+    //elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2 - (pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2]);
     return (elemID-elemoffset);
 }
 
@@ -1605,9 +1605,9 @@ int pumi_calc_elementID_and_nodeID_typeD(pumi_mesh_t* pumi_mesh, int isubmesh_x1
     (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1-icell_x2)/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->submesh_Nel-1);
     pumi_typeD_nodeoffset_fnptr[index](pumi_mesh, isubmesh_x1, isubmesh_x2, icell_x2, &nodeoffset1, &nodeoffset3);
     elemoffset = pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2];
-    elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2;
+    elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2;
     *node1 = elemID + kcell_x2 - nodeoffset1;
-    *node3 = elemID + kcell_x2 + pumi_mesh->pumi_Nnp_total_x1 - nodeoffset3;
+    *node3 = elemID + kcell_x2 + pumi_mesh->Nnp_total_x1 - nodeoffset3;
     //if (icell_x2 <= 1){
     //    nodeoffset = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh_x1][isubmesh_x2];
     //}
@@ -1617,7 +1617,7 @@ int pumi_calc_elementID_and_nodeID_typeD(pumi_mesh_t* pumi_mesh, int isubmesh_x1
     //else{
     //    nodeoffset = pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh_x1][isubmesh_x2] + pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh_x1][isubmesh_x2] + (icell_x2-1)*pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh_x1][isubmesh_x2];
     //}
-    //elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2 - (pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2]);
+    //elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2 - (pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2]);
     return (elemID-elemoffset);
 }
 
@@ -1646,16 +1646,16 @@ int pumi_calc_elementID_and_nodeID_with_global_offset(pumi_mesh_t* pumi_mesh, in
     nodeoffset3 = pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh_x1][kcell_x2+1];
     icell_x2 = kcell_x2 - ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh_x2)->Nel_cumulative;
     elemoffset = pumi_mesh->pumi_offsets.elemoffset_start[isubmesh_x1][isubmesh_x2] + icell_x2*pumi_mesh->pumi_offsets.elemoffset_skip[isubmesh_x2];
-    elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2;
+    elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2;
     *node1 = elemID + kcell_x2 - nodeoffset1;
-    *node3 = elemID + kcell_x2 + pumi_mesh->pumi_Nnp_total_x1 - nodeoffset3;
+    *node3 = elemID + kcell_x2 + pumi_mesh->Nnp_total_x1 - nodeoffset3;
     return (elemID-elemoffset);
 }
 
 int pumi_calc_elementID_and_nodeID_on_fullmesh(pumi_mesh_t* pumi_mesh, int isubmesh_x1, int isubmesh_x2, int kcell_x1, int kcell_x2, int *node1, int *node3){
-    int elemID = kcell_x1 + pumi_mesh->pumi_Nel_total_x1*kcell_x2;
+    int elemID = kcell_x1 + pumi_mesh->Nel_total_x1*kcell_x2;
     *node1 = elemID + kcell_x2;
-    *node3 = *node1 + pumi_mesh->pumi_Nnp_total_x1;
+    *node3 = *node1 + pumi_mesh->Nnp_total_x1;
     return elemID;
 }
 
@@ -1674,8 +1674,8 @@ bool pumi_is_fullmesh(pumi_mesh_t *pumi_mesh){
 
 bool pumi_is_node_active(pumi_mesh_t *pumi_mesh, int node){
     int node_x1, node_x2;
-    node_x2 = node/pumi_mesh->pumi_Nel_total_x1;
-    node_x1 = node - node_x2*pumi_mesh->pumi_Nel_total_x1;
+    node_x2 = node/pumi_mesh->Nel_total_x1;
+    node_x1 = node - node_x2*pumi_mesh->Nel_total_x1;
     int isubmesh, jsubmesh, local_x1_node, local_x2_node;
     bool left_edge, right_edge, bottom_edge, top_edge;
 
@@ -2441,7 +2441,7 @@ void pumi_node_ID(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2, bool *is_act
 
 bool pumi_is_node_on_bdry(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2){
     if (pumi_is_fullmesh(pumi_mesh)){
-        if (node_x1==0 || node_x1==pumi_mesh->pumi_Nel_total_x1 || node_x2==0 || node_x2==pumi_mesh->pumi_Nel_total_x2){
+        if (node_x1==0 || node_x1==pumi_mesh->Nel_total_x1 || node_x2==0 || node_x2==pumi_mesh->Nel_total_x2){
             return true;
         }
         else{
@@ -2449,7 +2449,7 @@ bool pumi_is_node_on_bdry(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2){
         }
     }
     else{
-        if (node_x1==0 || node_x1==pumi_mesh->pumi_Nel_total_x1 || node_x2==0 || node_x2==pumi_mesh->pumi_Nel_total_x2){
+        if (node_x1==0 || node_x1==pumi_mesh->Nel_total_x1 || node_x2==0 || node_x2==pumi_mesh->Nel_total_x2){
             return true;
         }
         else{
@@ -2678,11 +2678,11 @@ void pumi_compute_Qspl_coeffs(pumi_mesh_t* pumi_mesh, double xi, int iel, double
         }
         return;
     }
-    if (iel >= pumi_mesh->pumi_Nel_total_x1-pumi_mesh->P_spline-1){
+    if (iel >= pumi_mesh->Nel_total_x1-pumi_mesh->P_spline-1){
         *right_bdry_flux = true;
-        int iel_new = pumi_mesh->pumi_Nel_total_x1-1-iel;
+        int iel_new = pumi_mesh->Nel_total_x1-1-iel;
         for (i=iel_new; i<pumi_mesh->P_spline+1; i++){
-            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[pumi_mesh->pumi_Nel_total_x1-1]].C[i-iel_new][pumi_mesh->P_spline]*spl_contribution[i];
+            *bdry_flux_val += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[pumi_mesh->Nel_total_x1-1]].C[i-iel_new][pumi_mesh->P_spline]*spl_contribution[i];
         }
         return;
     }
@@ -2705,13 +2705,13 @@ void pumi_compute_Qspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, double xi, int ie
         for (j=0; j<pumi_mesh->P_spline+1; j++){
             spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
         }
-        pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%pumi_mesh->pumi_Nel_total_x1] += Q_macro_particle*spl_contribution[i];
+        pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%pumi_mesh->Nel_total_x1] += Q_macro_particle*spl_contribution[i];
     }
     return;
 }
 
 void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir){
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int nq = floor((pumi_mesh->P_spline+1.0)/2.0)+1;
 
     double *N1 = (double*) malloc(nq * sizeof(double));
@@ -2769,7 +2769,7 @@ void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir){
 }
 
 void pumi_compute_covspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, int dir){
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int nq = floor((pumi_mesh->P_spline+1.0)/2.0)+1;
 
     double *N1 = (double*) malloc(nq * sizeof(double));
@@ -2827,7 +2827,7 @@ void pumi_compute_covspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, int dir){
 }
 
 void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double* charge_density){
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int nq = floor((pumi_mesh->P_spline+1.0)/2.0)+1;
 
     double *N1 = (double*) malloc(nq * sizeof(double));
@@ -2930,7 +2930,7 @@ void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double*
 }
 
 void pumi_compute_bspline_nodal_density_periodic(pumi_mesh_t* pumi_mesh, int dir, double* charge_density){
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int nq = floor((pumi_mesh->P_spline+1.0)/2.0)+1;
 
     double *N1 = (double*) malloc(nq * sizeof(double));
@@ -3041,7 +3041,7 @@ void pumi_reset_Espl_coeffs(pumi_mesh_t* pumi_mesh){
 }
 
 void pumi_compute_Espl_coeffs(pumi_mesh_t *pumi_mesh, double *E_dir, int dir){
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int nq = floor((2*pumi_mesh->P_spline+1.0)/2.0)+1;
     int Nspline = pumi_mesh->pumi_bspl.N_spline;
     double *N1 = (double*) malloc(nq * sizeof(double));

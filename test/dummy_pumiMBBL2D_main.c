@@ -419,8 +419,8 @@ int main(int argc, char *argv[])
 
     int inp, jnp;
 
-    for (jnp=pumi_mesh->pumi_Nel_total_x2; jnp>=0; jnp--){
-        for (inp=0; inp<=pumi_mesh->pumi_Nel_total_x1; inp++){
+    for (jnp=pumi_mesh->Nel_total_x2; jnp>=0; jnp--){
+        for (inp=0; inp<=pumi_mesh->Nel_total_x1; inp++){
             int node2D;
             bool isactive;
             pumi_node_ID(pumi_mesh, inp, jnp, &isactive, &node2D);
@@ -514,8 +514,8 @@ int main(int argc, char *argv[])
         field[node3+1] += Wgh2_x1*Wgh2_x2;
     }
 
-    for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
-        for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+    for (jnp=0; jnp<pumi_mesh->Nnp_total_x2; jnp++){
+        for (inp=0; inp<pumi_mesh->Nnp_total_x1; inp++){
             int inode[2] = {inp,jnp};
             pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
             if (is_active_node){
@@ -583,8 +583,8 @@ int main(int argc, char *argv[])
         time_pumi_loop_var = clock() - time_pumi_loop_var;
         time_pumi_loop += time_pumi_loop_var;
 
-        for (jnp=0; jnp<pumi_mesh->pumi_Nnp_total_x2; jnp++){
-            for (inp=0; inp<pumi_mesh->pumi_Nnp_total_x1; inp++){
+        for (jnp=0; jnp<pumi_mesh->Nnp_total_x2; jnp++){
+            for (inp=0; inp<pumi_mesh->Nnp_total_x1; inp++){
                 int inode[2] = {inp,jnp};
                 pumi_node_ID(pumi_mesh, inp, jnp, &is_active_node, &nodeID);
                 if (is_active_node){
@@ -596,8 +596,8 @@ int main(int argc, char *argv[])
     }
     time_pumi = clock() - time_pumi;
 
-    int Nel_x1 = pumi_mesh->pumi_Nel_total_x1;
-    int Nel_x2 = pumi_mesh->pumi_Nel_total_x2;
+    int Nel_x1 = pumi_mesh->Nel_total_x1;
+    int Nel_x2 = pumi_mesh->Nel_total_x2;
     double dx1 = (x1_max - x1_min)/(double) Nel_x1;
     double dx2 = (x2_max - x2_min)/(double) Nel_x2;
     for (inp=0; inp<Nnp_2D; inp++){

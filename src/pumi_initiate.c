@@ -56,7 +56,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
 
     if (pumi_mesh->ndim == 1){
       pumi_mesh->nsubmeshes_x1 = pumi_inputs->nsubmeshes;
-      pumi_mesh->pumi_Nel_total_x1 = 0;
+      pumi_mesh->Nel_total_x1 = 0;
       pumi_mesh->pumi_submeshes_x1 = (void*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_submesh_t));
       int isubmesh;
       for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
@@ -66,7 +66,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
         pumi_setsubmesh_x1(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
       }
       printf("PUMI mesh parameter info :\n\n");
-      printf("\tTotal elements in mesh = %d\n\n", pumi_mesh->pumi_Nel_total_x1);
+      printf("\tTotal elements in mesh = %d\n\n", pumi_mesh->Nel_total_x1);
 
       for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
         printf("\tSUBMESH %d parameters:\n", isubmesh+1 );
@@ -100,8 +100,8 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
     else{
         pumi_mesh->nsubmeshes_x1 = pumi_inputs->nsubmeshes_x1;
         pumi_mesh->nsubmeshes_x2 = pumi_inputs->nsubmeshes_x2;
-        pumi_mesh->pumi_Nel_total_x1 = 0;
-        pumi_mesh->pumi_Nel_total_x2 = 0;
+        pumi_mesh->Nel_total_x1 = 0;
+        pumi_mesh->Nel_total_x2 = 0;
         pumi_mesh->pumi_submeshes_x1 = (void*) malloc(pumi_mesh->nsubmeshes_x1 * sizeof(pumi_submesh_t));
         pumi_mesh->pumi_submeshes_x2 = (void*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(pumi_submesh_t));
 
@@ -115,7 +115,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           pumi_setsubmesh_x1(pumi_mesh, isubmesh, *(pumi_inputs->x_left + isubmesh), *(pumi_inputs->x_right + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel_x1 + isubmesh), *(pumi_inputs->left_T + isubmesh), *(pumi_inputs->left_r + isubmesh), *(pumi_inputs->left_Nel + isubmesh), *(pumi_inputs->right_T + isubmesh), *(pumi_inputs->right_r + isubmesh), *(pumi_inputs->right_Nel + isubmesh));
         }
         printf("PUMI mesh parameter info [X1-Direction] :\n\n");
-        printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh->pumi_Nel_total_x1);
+        printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh->Nel_total_x1);
 
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
           printf("\tSUBMESH X1_%d parameters:\n", isubmesh+1 );
@@ -151,7 +151,7 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
           pumi_setsubmesh_x2(pumi_mesh, jsubmesh, *(pumi_inputs->y_bottom + isubmesh), *(pumi_inputs->y_top + isubmesh), submesh_flag, *(pumi_inputs->uniform_Nel_x2 + isubmesh), *(pumi_inputs->bottom_T + isubmesh), *(pumi_inputs->bottom_r + isubmesh), *(pumi_inputs->bottom_Nel + isubmesh), *(pumi_inputs->top_T + isubmesh), *(pumi_inputs->top_r + isubmesh), *(pumi_inputs->top_Nel + isubmesh));
         }
         printf("PUMI mesh parameter info [X2-Direction] :\n\n");
-        printf("\tTotal elements along X2-direction = %d\n\n", pumi_mesh->pumi_Nel_total_x2);
+        printf("\tTotal elements along X2-direction = %d\n\n", pumi_mesh->Nel_total_x2);
 
         for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x2; isubmesh++){
           printf("\tSUBMESH X2_%d parameters:\n", isubmesh+1 );
@@ -223,13 +223,13 @@ pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_i
             pumi_setsubmesh_nodeoffsets(pumi_mesh);
         }
         else{
-            pumi_mesh->pumi_Nel_total_2D = pumi_mesh->pumi_Nel_total_x1*pumi_mesh->pumi_Nel_total_x2;
-            pumi_mesh->pumi_Nnp_total_2D = pumi_mesh->pumi_Nnp_total_x1*pumi_mesh->pumi_Nnp_total_x2;
+            pumi_mesh->Nel_total_2D = pumi_mesh->Nel_total_x1*pumi_mesh->Nel_total_x2;
+            pumi_mesh->Nnp_total_2D = pumi_mesh->Nnp_total_x1*pumi_mesh->Nnp_total_x2;
         }
 
         printf("PUMI 2D mesh info :\n\n");
-        printf("\tTotal ACTIVE elements in 2D mesh = %3d\n", pumi_mesh->pumi_Nel_total_2D);
-        printf("\tTotal ACTIVE nodes in 2D mesh    = %3d\n\n\n", pumi_mesh->pumi_Nnp_total_2D);
+        printf("\tTotal ACTIVE elements in 2D mesh = %3d\n", pumi_mesh->Nel_total_2D);
+        printf("\tTotal ACTIVE nodes in 2D mesh    = %3d\n\n\n", pumi_mesh->Nnp_total_2D);
 
         pumi_initialize_nodeID_functions(pumi_mesh);
         if(!(pumi_is_fullmesh(pumi_mesh)) && !(pumi_initiate_options.nodeoffset_cache_flag)){
@@ -383,12 +383,12 @@ void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
   else{
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (isubmesh-1))->submesh_Nel;
   }
-  pumi_mesh->pumi_Nel_total_x1 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
+  pumi_mesh->Nel_total_x1 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel;
   if (pumi_mesh->periodic_mesh_flag){
-      pumi_mesh->pumi_Nnp_total_x1 = pumi_mesh->pumi_Nel_total_x1;
+      pumi_mesh->Nnp_total_x1 = pumi_mesh->Nel_total_x1;
   }
   else{
-      pumi_mesh->pumi_Nnp_total_x1 = pumi_mesh->pumi_Nel_total_x1+1;
+      pumi_mesh->Nnp_total_x1 = pumi_mesh->Nel_total_x1+1;
   }
 }
 
@@ -442,8 +442,8 @@ void pumi_setsubmesh_x2(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, doubl
   else{
     ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->Nel_cumulative = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->Nel_cumulative + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + (isubmesh-1))->submesh_Nel;
   }
-  pumi_mesh->pumi_Nel_total_x2 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel;
-  pumi_mesh->pumi_Nnp_total_x2 = pumi_mesh->pumi_Nel_total_x2+1;
+  pumi_mesh->Nel_total_x2 += ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + isubmesh)->submesh_Nel;
+  pumi_mesh->Nnp_total_x2 = pumi_mesh->Nel_total_x2+1;
 }
 
 
@@ -498,7 +498,7 @@ void pumi_setsubmesh_elemoffsets(pumi_mesh_t *pumi_mesh){
         pumi_mesh->pumi_offsets.elemoffset_skip[jsubmesh] = elemskip;
         elemstart = elemstart_init + elemskip*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->submesh_Nel;
     }
-    pumi_mesh->pumi_Nel_total_2D = pumi_mesh->pumi_Nel_total_x1*pumi_mesh->pumi_Nel_total_x2 - elemstart;
+    pumi_mesh->Nel_total_2D = pumi_mesh->Nel_total_x1*pumi_mesh->Nel_total_x2 - elemstart;
 }
 
 void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
@@ -513,7 +513,7 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
 
     for (isubmesh=0; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++ ){
         pumi_mesh->pumi_offsets.nodeoffset_start[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
-        pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh] = (int*) malloc((pumi_mesh->pumi_Nel_total_x2+1) * sizeof(int));
+        pumi_mesh->pumi_offsets.global_nodeoffset[isubmesh] = (int*) malloc((pumi_mesh->Nel_total_x2+1) * sizeof(int));
         pumi_mesh->pumi_offsets.nodeoffset_skip_top[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
         pumi_mesh->pumi_offsets.nodeoffset_skip_mid[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
         pumi_mesh->pumi_offsets.nodeoffset_skip_bottom[isubmesh] = (int*) malloc(pumi_mesh->nsubmeshes_x2 * sizeof(int));
@@ -713,7 +713,7 @@ void pumi_setsubmesh_nodeoffsets(pumi_mesh_t *pumi_mesh){
         }
     }
 
-    pumi_mesh->pumi_Nnp_total_2D = pumi_mesh->pumi_Nnp_total_x1*pumi_mesh->pumi_Nnp_total_x2 - nodestart;
+    pumi_mesh->Nnp_total_2D = pumi_mesh->Nnp_total_x1*pumi_mesh->Nnp_total_x2 - nodestart;
 
     for (jsubmesh=0; jsubmesh<pumi_mesh->nsubmeshes_x2; jsubmesh++){
         int Jnp = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x2 + jsubmesh)->Nel_cumulative;
@@ -1616,7 +1616,7 @@ int nchoosek(int n, int k){
 }
 
 void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int p = pumi_mesh->P_spline;
     if (pumi_mesh->periodic_mesh_flag){
         pumi_mesh->pumi_bspl.N_spline = nel;
@@ -1683,7 +1683,7 @@ pumi_bezier_extractor_t* pumi_bezier_extraction(pumi_mesh_t *pumi_mesh, int dir)
     r_right = 1.0/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + (pumi_mesh->nsubmeshes_x1-1))->r);
     xright = node2;
 
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int p = pumi_mesh->P_spline;
     int knot_length = nel+1+4*p;
     // pumi_mesh->N_spline = knot_length-p-1;
@@ -1827,7 +1827,7 @@ pumi_bezier_extractor_t* pumi_bezier_extraction_periodic(pumi_mesh_t *pumi_mesh,
     pumi_calc_node_coords(pumi_mesh, pumi_mesh->nsubmeshes_x1-1, (pumi_submesh_total_elements_1D(pumi_mesh, pumi_mesh->nsubmeshes_x1-1)-1), &node1, &node2);
     xright = node2;
 
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int p = pumi_mesh->P_spline;
     int knot_length = nel+1+4*p;
 
@@ -1969,7 +1969,7 @@ pumi_bezier_extractor_t* pumi_bezier_extraction_periodic(pumi_mesh_t *pumi_mesh,
 pumi_bezier_extractor_t* pumi_unique_bezier_extractor_matrices(pumi_mesh_t* pumi_mesh, int dir, pumi_bezier_extractor_t *pumi_bez_ex_full){
     int i,j,k;
     double tol = 1e-7;
-    int nel = pumi_mesh->pumi_Nel_total_x1;
+    int nel = pumi_mesh->Nel_total_x1;
     int p = pumi_mesh->P_spline;
     int num_unique_matrices=1;
     int ref_id = 0;
