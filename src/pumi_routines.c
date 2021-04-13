@@ -250,21 +250,24 @@ double pumi_return_covolume_1D(pumi_mesh_t* pumi_mesh, int *inode){
 
 double pumi_return_covolume_periodic_1D(pumi_mesh_t* pumi_mesh, int *inode){
   double covolume;
-  if (inode[0] == 0){
-    covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
-               pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
-  }
-  else if (inode[0] == pumi_mesh->pumi_Nel_total_x1){
-    covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
-               pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1, pumi_elem_input_offset, pumi_x1)/2.0;
-  }
-  else if (inode[0] > 0 && inode[0] < pumi_mesh->pumi_Nel_total_x1){
-    covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 + pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
-  }
-  else{
-    printf("\tInvalid node number for covolume\n");
-    exit(0);
-  }
+  covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 +
+             pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
+  // if (inode[0] == 0){
+  //   covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
+  //              pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1-1, pumi_elem_input_offset, pumi_x1)/2.0;
+  // }
+  // else if (inode[0] == pumi_mesh->pumi_Nnp_total_x1-1){
+  //   covolume = pumi_return_elemsize(pumi_mesh, 0, pumi_elem_input_offset, pumi_x1)/2.0 +
+  //              pumi_return_elemsize(pumi_mesh, pumi_mesh->pumi_Nel_total_x1-1, pumi_elem_input_offset, pumi_x1)/2.0;
+  // }
+  // else if (inode[0] > 0 && inode[0] < pumi_mesh->pumi_Nnp_total_x1-1){
+  //   covolume = pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_left_offset, pumi_x1)/2.0 +
+  //              pumi_return_elemsize(pumi_mesh, inode[0], pumi_elem_on_right_offset, pumi_x1)/2.0;
+  // }
+  // else{
+  //   printf("\tInvalid node number for covolume\n");
+  //   exit(0);
+  // }
   return covolume;
 }
 
