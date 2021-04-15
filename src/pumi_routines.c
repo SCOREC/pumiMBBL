@@ -2876,3 +2876,11 @@ bool pumi_use_splines(pumi_mesh_t *pumi_mesh){
         return false;
     }
 }
+
+int pumi_spline_order(pumi_mesh_t *pumi_mesh){
+    return (pumi_mesh->P_spline);
+}
+
+int pumi_num_spline(pumi_mesh_t *pumi_mesh){
+    return (pumi_mesh->pumi_bspl.N_spline);
+}

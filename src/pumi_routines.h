@@ -178,4 +178,6 @@ void pumi_free_Espl_matrices(pumi_mesh_t* pumi_mesh, double **LHS_mat, double *R
 double pumi_compute_Espl_value(pumi_mesh_t* pumi_mesh, double xi, int iel);
 void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double* charge_density);
 bool pumi_use_splines(pumi_mesh_t *pumi_mesh);
+int pumi_spline_order(pumi_mesh_t *pumi_mesh);
+int pumi_num_spline(pumi_mesh_t *pumi_mesh);
 #endif /* pumi_routines_h */
