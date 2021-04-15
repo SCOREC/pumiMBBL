@@ -1598,6 +1598,8 @@ void pumi_initiate_bsplines(pumi_mesh_t *pumi_mesh, int dir){
     for (i=0; i<p+1; i++){
         pumi_mesh->pumi_bspl.nCk4spline[i] = nchoosek(p,i);
     }
+    pumi_reset_Espl_coeffs(pumi_mesh);
+    pumi_reset_Qspl_coeffs(pumi_mesh);
     pumi_bezier_extractor_t *pumi_bez_ex_full = pumi_bezier_extraction(pumi_mesh, dir);
     pumi_mesh->pumi_bspl.pumi_bez_ex_x1 = pumi_unique_bezier_extractor_matrices(pumi_mesh, dir, pumi_bez_ex_full);
     // int knot_nel = pumi_mesh->pumi_Nel_total_x1;
