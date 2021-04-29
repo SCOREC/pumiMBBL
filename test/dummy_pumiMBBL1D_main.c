@@ -146,58 +146,7 @@ int main(int argc, char *argv[])
             *(pumi_inputs->x_right + isubmesh) = *(pumi_inputs->x_left + isubmesh) + lambda_D* *(pumi_inputs->p1_i + isubmesh);
         }
 
-        char tmp_typeflag_string[SUBMESH_FLAGSTRING_LENGTH];
-        strcpy(tmp_typeflag_string, pumi_inputs->type_flag[isubmesh]);
-        unsigned int typeflag = pumi_getsubmeshflag(tmp_typeflag_string);
-
-        double subdomain_L = *(pumi_inputs->x_right + isubmesh) - *(pumi_inputs->x_left + isubmesh);
-
-        // Initialize submesh parameters to be 0
-
-        double left_r = 0.0;
-        double left_T = 0.0;
-        double left_t0 = 0.0;
-        int left_Nel = 0;
-
-        double right_r = 0.0;
-        double right_T = 0.0;
-        double right_t0 = 0.0;
-        int right_Nel = 0;
-
-        double uniform_L = 0.0;
-        double uniform_dx = 0.0;
-        int uniform_Nel = 0;
-
-        if (typeflag & leftBL){// set values if leftBL flag is active
-          left_T = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
-          left_t0 = lambda_D*(*(pumi_inputs->p2min_i + isubmesh));
-          left_r = (*(pumi_inputs->p1_i + isubmesh)-*(pumi_inputs->p2min_i + isubmesh))/(*(pumi_inputs->p1_i + isubmesh)-*(pumi_inputs->p2max_i + isubmesh));
-          left_Nel = 1 + floor(log((*(pumi_inputs->p2max_i + isubmesh))/(*(pumi_inputs->p2min_i + isubmesh)))/log(left_r));
-          left_r = pumi_compute_grading_ratio_new(left_T, left_t0, left_Nel);
-        }
-
-        if (typeflag & rightBL){// set values if leftBL flag is active
-            right_T = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
-            right_t0 = lambda_D*(*(pumi_inputs->p2min_i + isubmesh));
-            right_r = (*(pumi_inputs->p1_i + isubmesh)-*(pumi_inputs->p2min_i + isubmesh))/(*(pumi_inputs->p1_i + isubmesh)-*(pumi_inputs->p2max_i + isubmesh));
-            right_Nel = 1+floor(log((*(pumi_inputs->p2max_i + isubmesh))/(*(pumi_inputs->p2min_i + isubmesh)))/log(right_r));
-            right_r = pumi_compute_grading_ratio_new(right_T, right_t0, right_Nel);
-        }
-
-        if (typeflag & uniform){
-          uniform_L = *(pumi_inputs->p1_i + isubmesh)*lambda_D;
-          uniform_dx = lambda_D*(*(pumi_inputs->p2max_i + isubmesh));
-          uniform_Nel = floor(uniform_L/uniform_dx);
-        }
-
-        // all pumi_inputs are calculated
-        *(pumi_inputs->uniform_Nel + isubmesh) = uniform_Nel;
-        *(pumi_inputs->left_T + isubmesh)      = left_T;
-        *(pumi_inputs->left_r + isubmesh)      = left_r;
-        *(pumi_inputs->left_Nel + isubmesh)    = left_Nel;
-        *(pumi_inputs->right_T + isubmesh)     = right_T;
-        *(pumi_inputs->right_r + isubmesh)     = right_r;
-        *(pumi_inputs->right_Nel + isubmesh)   = right_Nel;
+        pumi_inputs_x1_param_calc(pumi_inputs, isubmesh, lambda_D);
     }
 
 

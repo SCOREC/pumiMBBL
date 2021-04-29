@@ -99,6 +99,8 @@ typedef struct pumi_initiate_input{
 pumi_mesh_t* pumi_initiate(pumi_initiate_flag_t pumi_input_initiate_flag, pumi_initiate_input_t *pumi_inputs, pumi_initiate_mesh_options_t pumi_initiate_options);
 pumi_initiate_input_t* pumi_inputs_allocate(int nsubmeshes);
 void pumi_inputs_deallocate(pumi_initiate_input_t *pumi_inputs);
+void pumi_inputs_x1_param_calc(pumi_initiate_input_t *pumi_inputs, int isubmesh, double lambda_D);
+void pumi_inputs_x2_param_calc(pumi_initiate_input_t *pumi_inputs, int isubmesh, double lambda_D);
 void pumi_getmeshparameters_from_terminal(int *dimension, int *submesh_num, double ***submesh_params, unsigned int **submesh_flag);
 void pumi_freemeshparameters_from_terminal(int nsubmeshes, double **submesh_params, unsigned int *submesh_flag);
 void pumi_setsubmesh_x1(pumi_mesh_t *pumi_mesh, int isubmesh, double xmin, double xmax, unsigned int submeshflag,
