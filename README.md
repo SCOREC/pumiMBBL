@@ -21,12 +21,17 @@ The following assumes that a valid C and C++ compiler, and `cmake`, are in your 
 are installed.
 
 `kk` is the path where kokkos is installed
-# export kk=/path/to/kokkos/install
+Set path as `export kk=/path/to/kokkos/install`
+
+Load necessary modules:
+```
+module load gcc/7.3.0-bt47fwr mpich/3.3-diz4f6i cmake/3.20.0 cuda/10.2
+```
 
 ```
 cd build-GPU
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$kk
-cmake ../pumiMBBL -DCMAKE_CXX_COMPILER=/lore/vittav/Kokkos/kokkos/bin/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PWD/install
+cmake ../pumiMBBL -DCMAKE_CXX_COMPILER=path/to/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PWD/install
 make -j 8
 make install
 ```
