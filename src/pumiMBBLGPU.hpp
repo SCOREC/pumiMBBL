@@ -464,9 +464,9 @@ public:
 
     Kokkos::View<bool**> isactive; //!< 2D bool-array defining the activity of blocks
 
-    Kokkos::View<double**> nodeoffset;
-    Kokkos::View<double**> elemoffset_start;
-    Kokkos::View<double*> elemoffset_skip;
+    Kokkos::View<int**> nodeoffset;
+    Kokkos::View<int**> elemoffset_start;
+    Kokkos::View<int*> elemoffset_skip;
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
@@ -512,9 +512,9 @@ public:
          int numsubmesh_x2,
          int Nel_total_x2,
          Kokkos::View<bool**> submesh_activity,
-         Kokkos::View<double**> elem_offset_start,
-         Kokkos::View<double*> elem_offset_skip,
-         Kokkos::View<double**> node_offset,
+         Kokkos::View<int**> elem_offset_start,
+         Kokkos::View<int*> elem_offset_skip,
+         Kokkos::View<int**> node_offset,
          int Nel_tot,
          int Nnp_tot):
          ndim(2),
@@ -1378,14 +1378,15 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         }
     }
 
-    Kokkos::View<double**> elemoffset_start("elemoffset_start", nsubmesh_x1, nsubmesh_x2);
-    Kokkos::View<double**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
-    Kokkos::View<double*> elemoffset_skip("elemoffset_skip", nsubmesh_x2);
-    Kokkos::View<double*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
-    Kokkos::View<double**> nodeoffset("nodeoffset", nsubmesh_x1, Nel_tot_x2+1);
-    Kokkos::View<double**>::HostMirror h_nodeoffset = Kokkos::create_mirror_view(nodeoffset);
+    Kokkos::View<int**> elemoffset_start("elemoffset_start", nsubmesh_x1, nsubmesh_x2);
+    Kokkos::View<int*> elemoffset_skip("elemoffset_skip", nsubmesh_x2);
+    Kokkos::View<int**> nodeoffset("nodeoffset", nsubmesh_x1, Nel_tot_x2+1);
+
 
     if (!is_fullmesh){
+        Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
+        Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
+        Kokkos::View<int**>::HostMirror h_nodeoffset = Kokkos::create_mirror_view(nodeoffset);
 
         // elemoffsets
         int elemstart_init, elemskip;
@@ -1581,12 +1582,12 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         Nnp_total_2D -= nodestart;
         // printf("Full Mesh = %d\n", (Nel_tot_x1+1)*(Nel_tot_x2+1));
         // printf("Actual Mesh = %d\n", Nnp_total_2D);
-
+        Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
+        Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
+        Kokkos::deep_copy(nodeoffset, h_nodeoffset);
     }
 
-    Kokkos::deep_copy(h_elemoffset_skip, elemoffset_skip);
-    Kokkos::deep_copy(h_elemoffset_start, elemoffset_start);
-    Kokkos::deep_copy(h_nodeoffset, nodeoffset);
+
 
     Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
@@ -1849,11 +1850,40 @@ void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_g
   * \param[out] global node ID of the node in left-top coner
   */
   KOKKOS_INLINE_FUNCTION
-  void calc_global_cellID_and_nodeID(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node){
+  void calc_global_cellID_and_nodeID_fullmesh(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node){
       *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.mesh(0).Nel_tot_x1;
       *bottomleft_node = *global_cell_2D + kcell_x2;
       *topleft_node = *bottomleft_node + pumi_obj.mesh(0).Nel_tot_x1 + 1;
   }
+
+/**
+* @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
+* with no-inactive blocks (mesh with inactive blocks will need separate implementations)
+* \param[in] global cell ID in x1-direction
+* \param[in] global cell ID in x2-direction
+* \param[out] global cell ID in 2D
+* \param[out] global node ID of the node in left-bottom corner
+* \param[out] global node ID of the node in left-top coner
+*/
+KOKKOS_INLINE_FUNCTION
+void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
+                                    int *global_cell_2D, int *bottomleft_node, int *topleft_node){
+    int nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2);
+    int nodeoffset_top = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2+1);
+    int icell_x2 = kcell_x2 - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
+    int elemoffset = pumi_obj.mesh(0).elemoffset_start(isubmesh,jsubmesh) + icell_x2*pumi_obj.mesh(0).elemoffset_skip(jsubmesh);
+    *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.mesh(0).Nel_tot_x1 - elemoffset;
+    *bottomleft_node = *global_cell_2D + kcell_x2 - nodeoffset_bottom;
+    *topleft_node = *bottomleft_node + pumi_obj.mesh(0).Nel_tot_x1 + 1 - nodeoffset_top;
+}
+
+
+KOKKOS_INLINE_FUNCTION
+int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int Inp, int Jnp){
+    int nodeID = Jnp*(pumi_obj.mesh(0).Nel_tot_x1+1) + Inp;
+    int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
+    return nodeID-nodeoffset;
+}
 
 ///////Field-related data structures and routines //////////////////////////////////////////////
 

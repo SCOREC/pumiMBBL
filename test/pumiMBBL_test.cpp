@@ -85,11 +85,11 @@ int main( int argc, char* argv[] )
     double L_x2 = x2_max-x2_min;
 
     double h_q1 = (0.9*x1_min + 0.1*x1_max) + 0.25*rand_val_x1*L_x1;
-    double h_q2 = (0.1*x1_min + 0.9*x1_max) - 0.25*rand_val_x2*L_x2;
+    double h_q2 = (0.1*x2_min + 0.9*x2_max) - 0.25*rand_val_x2*L_x2;
     double h_q1_new = h_q1 + rand_val_x1*L_x1*0.25;
     double h_q2_new = h_q2 - rand_val_x2*L_x2*0.25;
 
-    Kokkos::parallel_for("1D-mesh-test", 1, KOKKOS_LAMBDA (const int) {
+    Kokkos::parallel_for("full-mesh-particle-ops-test", 1, KOKKOS_LAMBDA (const int) {
         int isub, jsub, icell, jcell, kcell_x1, kcell_x2, lb_node, lt_node, global_cell;
         double Wgh2;
         double q1 = h_q1;
@@ -110,7 +110,7 @@ int main( int argc, char* argv[] )
         printf("x2-W2=%2.4f\n\n",Wgh2 );
 
 
-        pumi::calc_global_cellID_and_nodeID(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
+        pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
         printf("2D-global-cell=%d\n",global_cell);
         printf("leftbottom-node=%d    lefttop-node=%d\n",lb_node, lt_node);
 
@@ -136,12 +136,56 @@ int main( int argc, char* argv[] )
         printf("new-x2-W2=%2.4f\n\n",Wgh2 );
 
 
-        pumi::calc_global_cellID_and_nodeID(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
+        pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
         printf("new-2D-global-cell=%d\n",global_cell);
         printf("new-leftbottom-node=%d    new-lefttop-node=%d\n",lb_node, lt_node);
 
     });
 
+    Kokkos::parallel_for("node-ID-test", 1, KOKKOS_LAMBDA(const int){
+
+        int nodeID, isubmesh, jsubmesh;
+
+        for (int Jnp=pumi_obj.mesh(0).Nel_tot_x2; Jnp>=0; Jnp--){
+
+            for (jsubmesh=0; isubmesh<pumi_obj.mesh(0).nsubmesh_x2; jsubmesh++){
+                int submesh_min_node = pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
+                int submesh_max_node = pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative +
+                                        pumi_obj.submesh_x2(jsubmesh)()->Nel;
+                if (Jnp >= submesh_min_node && Jnp <= submesh_max_node){
+                    break;
+                }
+            }
+
+            for (int Inp=0; Inp<=pumi_obj.mesh(0).Nel_tot_x1; Inp++ ){
+
+                for (isubmesh=0; isubmesh<pumi_obj.mesh(0).nsubmesh_x1; isubmesh++){
+                    int submesh_min_node = pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
+                    int submesh_max_node = pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative +
+                                            pumi_obj.submesh_x1(isubmesh)()->Nel;
+                    if (Inp >= submesh_min_node && Inp <= submesh_max_node){
+                        break;
+                    }
+                }
+
+                nodeID = pumi::calc_global_nodeID(pumi_obj, isubmesh, Inp, Jnp);
+
+                if (pumi_obj.mesh(0).isactive(isubmesh,jsubmesh)){
+                    printf("%4d ", nodeID);
+                }
+                else{
+                    printf("%4d ", 0);
+                }
+            }
+            printf("\n");
+        }
+        // for (int Jnp=pumi_obj.mesh(0).Nel_tot_x2; Jnp>=0; Jnp--){
+        //     for (int isubmesh=0; isubmesh<pumi_obj.mesh(0).nsubmesh_x1; isubmesh++){
+        //         printf("%3d            ", pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp));
+        //     }
+        //     printf("\n");
+        // }
+    });
   }
   Kokkos::finalize();
 
