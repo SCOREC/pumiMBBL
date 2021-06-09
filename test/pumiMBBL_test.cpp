@@ -194,14 +194,14 @@ int main( int argc, char* argv[] )
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag);
             if (in_domain){
                 if (on_bdry){
-                    printf("E");
+                    printf("%2d ",bdry_tag);
                 }
                 else{
-                    printf("X");
-                }                
+                    printf(" X ");
+                }
             }
             else{
-                printf(" ");
+                printf("   ");
             }
         }
         printf("\n");

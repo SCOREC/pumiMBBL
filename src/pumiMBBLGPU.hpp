@@ -2165,7 +2165,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = 1;
+                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
                 return;
             }
             else{
@@ -2180,7 +2180,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
                     return;
                 }
                 else{
@@ -2205,7 +2205,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
                     return;
                 }
                 else{
@@ -2219,7 +2219,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
                     return;
                 }
                 else{
@@ -2235,7 +2235,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
                     return;
                 }
                 else{
@@ -2253,7 +2253,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                         h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = 1;
+                        *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
                         return;
                     }
                 }
@@ -2273,7 +2273,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = 1;
+                *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                 return;
             }
             else{
@@ -2288,7 +2288,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2313,7 +2313,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2327,7 +2327,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2343,7 +2343,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2361,7 +2361,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = 1;
+                        *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                         return;
                     }
                 }
@@ -2381,7 +2381,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = 1;
+                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
                 return;
             }
             else{
@@ -2396,7 +2396,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
                     return;
                 }
                 else{
@@ -2421,7 +2421,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
                     return;
                 }
                 else{
@@ -2435,7 +2435,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
                     return;
                 }
                 else{
@@ -2451,7 +2451,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
                     return;
                 }
                 else{
@@ -2469,7 +2469,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = 1;
+                        *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
                         return;
                     }
                 }
@@ -2489,7 +2489,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = 1;
+                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                 return;
             }
             else{
@@ -2504,7 +2504,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2529,7 +2529,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2543,7 +2543,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2559,7 +2559,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                     return;
                 }
                 else{
@@ -2577,7 +2577,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = 1;
+                        *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
                         return;
                     }
                 }
