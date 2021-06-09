@@ -463,6 +463,7 @@ public:
     int nsubmesh_x3; //1< number of blocks in x3-direction
 
     Kokkos::View<bool**> isactive; //!< 2D bool-array defining the activity of blocks
+    bool **host_isactive;
 
     Kokkos::View<int**> nodeoffset;
     Kokkos::View<int**> elemoffset_start;
@@ -516,7 +517,8 @@ public:
          Kokkos::View<int*> elem_offset_skip,
          Kokkos::View<int**> node_offset,
          int Nel_tot,
-         int Nnp_tot):
+         int Nnp_tot,
+         bool** h_isactive):
          ndim(2),
          nsubmesh_x1(numsubmesh_x1),
          Nel_tot_x1(Nel_total_x1),
@@ -527,7 +529,8 @@ public:
          elemoffset_skip(elem_offset_skip),
          nodeoffset(node_offset),
          Nel_total(Nel_tot),
-         Nnp_total(Nnp_tot)
+         Nnp_total(Nnp_tot),
+         host_isactive(h_isactive)
          {
              nsubmesh_x3 = 0;
              Nel_tot_x3 = 0;
@@ -1361,6 +1364,16 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Nnp_total_2D = (Nel_tot_x1+1)*(Nel_tot_x2+1);
 
     Kokkos::View<bool**> submesh_activity("submesh-isactive",nsubmesh_x1,nsubmesh_x2);
+    bool** host_isactive = new bool*[nsubmesh_x1];
+    for (int i=0; i<nsubmesh_x1; i++){
+        host_isactive[i] = new bool[nsubmesh_x2];
+    }
+    for (int i=0; i<nsubmesh_x1; i++){
+        for (int j=0; j<nsubmesh_x2; j++){
+            host_isactive[i][j] = pumi_inputs->isactive[i][j];
+        }
+    }
+
     Kokkos::View<bool**>::HostMirror h_submesh_activity = Kokkos::create_mirror_view(submesh_activity);
     for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++ ){
         for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
@@ -1592,7 +1605,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
                         submesh_activity, elemoffset_start, elemoffset_skip, nodeoffset,
-                        Nel_total_2D, Nnp_total_2D);
+                        Nel_total_2D, Nnp_total_2D, host_isactive);
         print_mesh_params(pumi_mesh, submesh_x1, submesh_x2);
     });
 
@@ -2090,7 +2103,494 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     return covolume;
 }
 
+void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
+    int isubmesh, jsubmesh, inp, jnp;
+    bool left_edge, right_edge, bottom_edge, top_edge;
+
+    for (isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+        int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh].Nel + submesh_min_node;
+        left_edge =  false;
+        right_edge = false;
+        if (knode_x1 >= submesh_min_node && knode_x1 <= submesh_max_node){
+            inp = knode_x1 - submesh_min_node;
+            if (inp == 0){
+                left_edge = true;
+            }
+            if (inp == pumi_obj.host_submesh_x1[isubmesh].Nel){
+                right_edge = true;
+            }
+            break;
+        }
+    }
+
+    for (jsubmesh=0; jsubmesh<h_pumi_mesh(0).nsubmesh_x2; jsubmesh++){
+        int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
+        int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh].Nel + submesh_min_node;
+        bottom_edge =  false;
+        top_edge = false;
+        if (knode_x2 >= submesh_min_node && knode_x2 <= submesh_max_node){
+            jnp = knode_x2 - submesh_min_node;
+            if (jnp == 0){
+                bottom_edge = true;
+            }
+            if (jnp == pumi_obj.host_submesh_x2[jsubmesh].Nel){
+                top_edge = true;
+            }
+            break;
+        }
+    }
+
+    if (!left_edge && !right_edge && !bottom_edge && !top_edge){
+        *on_bdry = false;
+
+        if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+            *in_domain = true;
+            *bdry_tag = 0;
+            return;
+        }
+        else{
+            *in_domain = false;
+            *bdry_tag = -1;
+            return;
+        }
+    }
+
+    if (left_edge & !top_edge & !bottom_edge){
+
+        if (isubmesh==0){
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                *in_domain = true;
+                *on_bdry = true;
+                *bdry_tag = 1;
+                return;
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+        else{
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
+                *in_domain = true;
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] == 1){
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *on_bdry = false;
+                    *bdry_tag = 0;
+                    return;
+                }
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+
+    }
+
+    if (left_edge & top_edge){
+        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
+            if (isubmesh==0){
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+        else{
+            if (isubmesh==0){
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if (h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh+1] |
+                    h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    int sum = h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh+1] +
+                        h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    if (sum < 4){
+                        *on_bdry = true;
+                        *bdry_tag = 1;
+                        return;
+                    }
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+    }
+
+    if (top_edge & !left_edge & !right_edge){
+
+        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                *in_domain = true;
+                *on_bdry = true;
+                *bdry_tag = 1;
+                return;
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+        else{
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
+                *in_domain = true;
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] == 1){
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *on_bdry = false;
+                    *bdry_tag = 0;
+                    return;
+                }
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+
+    }
+
+    if (top_edge & right_edge){
+        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+        else{
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh+1] |
+                    h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    int sum = h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh+1] +
+                            h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    if (sum < 4){
+                        *on_bdry = true;
+                        *bdry_tag = 1;
+                        return;
+                    }
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+    }
+
+    if (right_edge & !top_edge & !bottom_edge){
+
+        if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                *in_domain = true;
+                *on_bdry = true;
+                *bdry_tag = 1;
+                return;
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+        else{
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
+                *in_domain = true;
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] == 1){
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *on_bdry = false;
+                    *bdry_tag = 0;
+                    return;
+                }
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+
+    }
+
+    if (right_edge & bottom_edge){
+        if (jsubmesh==0){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+        else{
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] |
+                    h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    int sum = h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] +
+                            h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    if (sum < 4){
+                        *on_bdry = true;
+                        *bdry_tag = 1;
+                        return;
+                    }
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+    }
+
+    if (bottom_edge & !left_edge & !right_edge){
+
+        if (jsubmesh==0){
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                *in_domain = true;
+                *on_bdry = true;
+                *bdry_tag = 1;
+                return;
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+        else{
+            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
+                *in_domain = true;
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] == 1){
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *on_bdry = false;
+                    *bdry_tag = 0;
+                    return;
+                }
+            }
+            else{
+                *in_domain = false;
+                *on_bdry = false;
+                *bdry_tag = -1;
+                return;
+            }
+        }
+
+    }
+
+    if (bottom_edge & left_edge){
+        if (jsubmesh==0){
+            if (isubmesh==0){
+                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+        else{
+            if (isubmesh==0){
+                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
+                    *in_domain = true;
+                    *on_bdry = true;
+                    *bdry_tag = 1;
+                    return;
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+            else{
+                if (h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] |
+                    h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                    *in_domain = true;
+                    int sum = h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] +
+                            h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    if (sum < 4){
+                        *on_bdry = true;
+                        *bdry_tag = 1;
+                        return;
+                    }
+                }
+                else{
+                    *in_domain = false;
+                    *on_bdry = false;
+                    *bdry_tag = -1;
+                    return;
+                }
+            }
+        }
+    }
+}
 
 double get_global_left_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x1[0].xmin;
