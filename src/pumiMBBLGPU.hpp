@@ -2103,7 +2103,7 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     return covolume;
 }
 
-void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag){
+void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
@@ -2149,12 +2149,14 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
         if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
             *in_domain = true;
-            *bdry_tag = 0;
+            *bdry_tag = -1;
+            *bdry_dim = -1;
             return;
         }
         else{
             *in_domain = false;
-            *bdry_tag = -1;
+            *bdry_tag = -999;
+            *bdry_dim = -1;
             return;
         }
     }
@@ -2165,13 +2167,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1;
+                *bdry_dim = 1;
                 return;
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2180,19 +2184,22 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1;
+                    *bdry_dim = 1;
                     return;
                 }
                 else{
                     *on_bdry = false;
-                    *bdry_tag = 0;
+                    *bdry_tag = -1;
+                    *bdry_dim = -1;
                     return;
                 }
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2200,20 +2207,20 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (left_edge & top_edge){
-        int Emax = 2*h_pumi_mesh(0).nsubmesh_x1*h_pumi_mesh(0).nsubmesh_x2 +
-                    h_pumi_mesh(0).nsubmesh_x1 + h_pumi_mesh(0).nsubmesh_x2;
         if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
             if (isubmesh==0){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2221,13 +2228,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2237,13 +2246,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2255,14 +2266,16 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                         h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                        *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                        *bdry_dim = 0;
                         return;
                     }
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2275,13 +2288,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                *bdry_dim = 1;
                 return;
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2290,19 +2305,22 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 1;
                     return;
                 }
                 else{
                     *on_bdry = false;
-                    *bdry_tag = 0;
+                    *bdry_tag = -1;
+                    *bdry_dim = -1;
                     return;
                 }
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2310,20 +2328,20 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (top_edge & right_edge){
-        int Emax = 2*h_pumi_mesh(0).nsubmesh_x1*h_pumi_mesh(0).nsubmesh_x2 +
-                    h_pumi_mesh(0).nsubmesh_x1 + h_pumi_mesh(0).nsubmesh_x2;
         if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
             if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2331,13 +2349,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2347,13 +2367,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2365,14 +2387,16 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = Emax + (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                        *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                        *bdry_dim = 0;
                         return;
                     }
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2385,13 +2409,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
+                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                *bdry_dim = 1;
                 return;
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2400,19 +2426,22 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 2;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                    *bdry_dim = 1;
                     return;
                 }
                 else{
                     *on_bdry = false;
-                    *bdry_tag = 0;
+                    *bdry_tag = -1;
+                    *bdry_dim = -1;
                     return;
                 }
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2420,20 +2449,20 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (right_edge & bottom_edge){
-        int Emax = 2*h_pumi_mesh(0).nsubmesh_x1*h_pumi_mesh(0).nsubmesh_x2 +
-                    h_pumi_mesh(0).nsubmesh_x1 + h_pumi_mesh(0).nsubmesh_x2;
         if (jsubmesh==0){
             if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2441,13 +2470,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2457,13 +2488,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2475,14 +2508,16 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 2;
+                        *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                        *bdry_dim = 0;
                         return;
                     }
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2495,13 +2530,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                *bdry_dim = 1;
                 return;
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2510,19 +2547,22 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *on_bdry = false;
-                    *bdry_tag = 0;
+                    *bdry_tag = -1;
+                    *bdry_dim = -1;
                     return;
                 }
             }
             else{
                 *in_domain = false;
                 *on_bdry = false;
-                *bdry_tag = -1;
+                *bdry_tag = -999;
+                *bdry_dim = -1;
                 return;
             }
         }
@@ -2530,20 +2570,20 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (bottom_edge & left_edge){
-        int Emax = 2*h_pumi_mesh(0).nsubmesh_x1*h_pumi_mesh(0).nsubmesh_x2 +
-                    h_pumi_mesh(0).nsubmesh_x1 + h_pumi_mesh(0).nsubmesh_x2;
         if (jsubmesh==0){
             if (isubmesh==0){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2551,13 +2591,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2567,13 +2609,15 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_dim = 0;
                     return;
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
@@ -2585,14 +2629,16 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = Emax + jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                        *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                        *bdry_dim = 0;
                         return;
                     }
                 }
                 else{
                     *in_domain = false;
                     *on_bdry = false;
-                    *bdry_tag = -1;
+                    *bdry_tag = -999;
+                    *bdry_dim = -1;
                     return;
                 }
             }
