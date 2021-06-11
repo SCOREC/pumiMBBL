@@ -142,49 +142,8 @@ int main( int argc, char* argv[] )
 
     });
 
-    printf("\n\n");
-    bool on_bdry, in_domain;
-    int bdry_tag, bdry_dim;
-    for (int Jnp=h_pumi_mesh(0).Nel_tot_x2; Jnp>=0; Jnp--){
-        for (int Inp=0; Inp<=h_pumi_mesh(0).Nel_tot_x1; Inp++){
-            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
-            if (in_domain){
-                if (on_bdry){
-                    if (bdry_dim==0){
-                        printf(" V ");
-                    }
-                    else{
-                        printf(" E ");
-                    }
-                }
-                else{
-                    printf(" X ");
-                }
-            }
-            else{
-                printf("   ");
-            }
-        }
-        printf("\n");
-    }
-    printf("\n\n");
-    for (int Jnp=h_pumi_mesh(0).Nel_tot_x2; Jnp>=0; Jnp--){
-        for (int Inp=0; Inp<=h_pumi_mesh(0).Nel_tot_x1; Inp++){
-            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
-            if (in_domain){
-                if (on_bdry){
-                    printf("%2d ",bdry_tag);
-                }
-                else{
-                    printf(" X ");
-                }
-            }
-            else{
-                printf("   ");
-            }
-        }
-        printf("\n");
-    }
+    pumi::print_mesh_skeleton(pumi_obj);
+
   }
   Kokkos::finalize();
 

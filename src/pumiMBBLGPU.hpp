@@ -2668,6 +2668,193 @@ double get_global_top_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x2[nsubmesh-1].xmax;
 }
 
+void print_mesh_skeleton(MBBL pumi_obj){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+    bool on_bdry, in_domain;
+    int bdry_tag, bdry_dim;
+    printf("\n\nPrinting the skeleton of the mesh\n");
+    printf("E --> Boundary block-edge\n");
+    printf("V --> Boundary block-vertex\n\n");
+    for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2-1; jsubmesh>=0; jsubmesh--){
+        int Jnp = pumi_obj.host_submesh_x2[jsubmesh].Nel + pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
+        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                if (bdry_tag+1){
+                    printf("%3dV",bdry_tag );
+                }
+                else{
+                    printf("----",bdry_tag );
+                }
+            }
+            else{
+                printf("    ");
+            }
+            Inp++;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                if (bdry_tag+1){
+                    printf("----%3dE----",bdry_tag );
+                }
+                else{
+                    printf("------------",bdry_tag );
+                }
+            }
+            else{
+                printf("            ");
+            }
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                if (in_domain){
+                    printf("%3dV",bdry_tag );
+                }
+                else{
+                    printf("    ");
+                }
+            }
+        }
+        printf("\n");
+        Jnp--;
+        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                printf("   |");
+            }
+            else{
+                printf("    ");
+            }
+            Inp++;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                printf("            ");
+            }
+            else{
+                printf("            ");
+            }
+
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                if (in_domain){
+                    printf("   |");
+                }
+                else{
+                    printf("    ");
+                }
+            }
+        }
+        printf("\n");
+        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                if (bdry_tag+1){
+                    printf("%3dE",bdry_tag);
+                }
+                else{
+                    printf("   |",bdry_tag);
+                }
+
+            }
+            else{
+                printf("    ");
+            }
+            Inp++;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                printf("            ");
+            }
+            else{
+                printf("            ");
+            }
+
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                if (in_domain){
+                    printf("%3dE",bdry_tag);
+                }
+                else{
+                    printf("    ");
+                }
+            }
+        }
+        printf("\n");
+        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                printf("   |");
+            }
+            else{
+                printf("    ");
+            }
+            Inp++;
+            pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                printf("            ");
+            }
+            else{
+                printf("            ");
+            }
+
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                if (in_domain){
+                    printf("   |");
+                }
+                else{
+                    printf("    ");
+                }
+            }
+        }
+
+        if (jsubmesh==0){
+            printf("\n");
+            Jnp = 0;
+            for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+                int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                if (in_domain){
+                    printf("%3dV",bdry_tag );
+                }
+                else{
+                    printf("    ");
+                }
+                Inp++;
+                pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                if (in_domain){
+                    if (bdry_tag+1){
+                        printf("----%3dE----",bdry_tag );
+                    }
+                    else{
+                        printf("------------",bdry_tag );
+                    }
+                }
+                else{
+                    printf("            ");
+                }
+                if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                    Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                    pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+                    if (in_domain){
+                        printf("%3dV",bdry_tag );
+                    }
+                    else{
+                        printf("    ");
+                    }
+                }
+            }
+        }
+        printf("\n");
+    }
+}
+
 } // namespace pumi
 
 #endif
