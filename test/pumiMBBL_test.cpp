@@ -144,6 +144,51 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
+    Kokkos::parallel_for("node-ID-test", 1, KOKKOS_LAMBDA(const int){
+
+        int nodeID, isubmesh, jsubmesh;
+
+        for (int Jnp=pumi_obj.mesh(0).Nel_tot_x2; Jnp>=0; Jnp--){
+
+            for (jsubmesh=0; isubmesh<pumi_obj.mesh(0).nsubmesh_x2; jsubmesh++){
+                int submesh_min_node = pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
+                int submesh_max_node = pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative +
+                                        pumi_obj.submesh_x2(jsubmesh)()->Nel;
+                if (Jnp >= submesh_min_node && Jnp <= submesh_max_node){
+                    break;
+                }
+            }
+
+            for (int Inp=0; Inp<=pumi_obj.mesh(0).Nel_tot_x1; Inp++ ){
+
+                for (isubmesh=0; isubmesh<pumi_obj.mesh(0).nsubmesh_x1; isubmesh++){
+                    int submesh_min_node = pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
+                    int submesh_max_node = pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative +
+                                            pumi_obj.submesh_x1(isubmesh)()->Nel;
+                    if (Inp >= submesh_min_node && Inp <= submesh_max_node){
+                        break;
+                    }
+                }
+
+                nodeID = pumi::calc_global_nodeID(pumi_obj, isubmesh, jsubmesh, Inp, Jnp);
+
+                if (pumi_obj.mesh(0).isactive(isubmesh,jsubmesh)){
+                    printf("%4d ", nodeID);
+                }
+                else{
+                    printf("%4d ", 0);
+                }
+            }
+            printf("\n");
+        }
+        // for (int Jnp=pumi_obj.mesh(0).Nel_tot_x2; Jnp>=0; Jnp--){
+        //     for (int isubmesh=0; isubmesh<pumi_obj.mesh(0).nsubmesh_x1; isubmesh++){
+        //         printf("%3d            ", pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp));
+        //     }
+        //     printf("\n");
+        // }
+    });
+
   }
   Kokkos::finalize();
 

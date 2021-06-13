@@ -466,6 +466,10 @@ public:
     bool **host_isactive;
 
     Kokkos::View<int**> nodeoffset;
+    Kokkos::View<int**> nodeoffset_start;
+    Kokkos::View<int**> nodeoffset_skip_bot;
+    Kokkos::View<int**> nodeoffset_skip_mid;
+    Kokkos::View<int**> nodeoffset_skip_top;
     Kokkos::View<int**> elemoffset_start;
     Kokkos::View<int*> elemoffset_skip;
 
@@ -516,6 +520,10 @@ public:
          Kokkos::View<int**> elem_offset_start,
          Kokkos::View<int*> elem_offset_skip,
          Kokkos::View<int**> node_offset,
+         Kokkos::View<int**> node_offset_start,
+         Kokkos::View<int**> node_offset_skip_bot,
+         Kokkos::View<int**> node_offset_skip_mid,
+         Kokkos::View<int**> node_offset_skip_top,
          int Nel_tot,
          int Nnp_tot,
          bool** h_isactive):
@@ -528,6 +536,10 @@ public:
          elemoffset_start(elem_offset_start),
          elemoffset_skip(elem_offset_skip),
          nodeoffset(node_offset),
+         nodeoffset_start(node_offset_start),
+         nodeoffset_skip_bot(node_offset_skip_bot),
+         nodeoffset_skip_mid(node_offset_skip_mid),
+         nodeoffset_skip_top(node_offset_skip_top),
          Nel_total(Nel_tot),
          Nnp_total(Nnp_tot),
          host_isactive(h_isactive)
@@ -1394,12 +1406,20 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::View<int**> elemoffset_start("elemoffset_start", nsubmesh_x1, nsubmesh_x2);
     Kokkos::View<int*> elemoffset_skip("elemoffset_skip", nsubmesh_x2);
     Kokkos::View<int**> nodeoffset("nodeoffset", nsubmesh_x1, Nel_tot_x2+1);
+    Kokkos::View<int**> nodeoffset_start("nodeoffset_start", nsubmesh_x1, nsubmesh_x2);
+    Kokkos::View<int**> nodeoffset_skip_bot("nodeoffset_skip_bot", nsubmesh_x1, nsubmesh_x2);
+    Kokkos::View<int**> nodeoffset_skip_mid("nodeoffset_skip_mid", nsubmesh_x1, nsubmesh_x2);
+    Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1, nsubmesh_x2);
 
 
     if (!is_fullmesh){
         Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
         Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
         Kokkos::View<int**>::HostMirror h_nodeoffset = Kokkos::create_mirror_view(nodeoffset);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_start = Kokkos::create_mirror_view(nodeoffset_start);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_bot = Kokkos::create_mirror_view(nodeoffset_skip_bot);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
 
         // elemoffsets
         int elemstart_init, elemskip;
@@ -1593,11 +1613,63 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         }
 
         Nnp_total_2D -= nodestart;
+
+        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
+            int Jnp = hc_submesh_x2[jsubmesh].Nel_cumulative;
+            for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+                if (h_submesh_activity(isubmesh,jsubmesh)){
+                    h_nodeoffset_start(isubmesh,jsubmesh) = h_nodeoffset(isubmesh,Jnp);
+                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = h_nodeoffset(isubmesh,Jnp+1)-h_nodeoffset(isubmesh,Jnp);
+                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = h_nodeoffset(isubmesh,Jnp+2)-h_nodeoffset(isubmesh,Jnp+1);
+                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = h_nodeoffset(isubmesh,Jnp+hc_submesh_x2[jsubmesh].Nel) -
+                                                                h_nodeoffset(isubmesh,Jnp+hc_submesh_x2[jsubmesh].Nel-1);
+                }
+                else{
+                    h_nodeoffset_start(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = -1;
+                }
+            }
+        }
         // printf("Full Mesh = %d\n", (Nel_tot_x1+1)*(Nel_tot_x2+1));
         // printf("Actual Mesh = %d\n", Nnp_total_2D);
         Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
         Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
         Kokkos::deep_copy(nodeoffset, h_nodeoffset);
+        Kokkos::deep_copy(nodeoffset_start, h_nodeoffset_start);
+        Kokkos::deep_copy(nodeoffset_skip_bot, h_nodeoffset_skip_bot);
+        Kokkos::deep_copy(nodeoffset_skip_mid, h_nodeoffset_skip_mid);
+        Kokkos::deep_copy(nodeoffset_skip_top, h_nodeoffset_skip_top);
+
+    }
+    else{
+        Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
+        Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
+        Kokkos::View<int**>::HostMirror h_nodeoffset = Kokkos::create_mirror_view(nodeoffset);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_start = Kokkos::create_mirror_view(nodeoffset_start);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_bot = Kokkos::create_mirror_view(nodeoffset_skip_bot);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
+
+        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
+            h_elemoffset_skip(jsubmesh) = 0;
+            for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+                h_elemoffset_start(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_start(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_skip_bot(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_skip_mid(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_skip_top(isubmesh,jsubmesh) = 0;
+            }
+        }
+
+        Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
+        Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
+        Kokkos::deep_copy(nodeoffset, h_nodeoffset);
+        Kokkos::deep_copy(nodeoffset_start, h_nodeoffset_start);
+        Kokkos::deep_copy(nodeoffset_skip_bot, h_nodeoffset_skip_bot);
+        Kokkos::deep_copy(nodeoffset_skip_mid, h_nodeoffset_skip_mid);
+        Kokkos::deep_copy(nodeoffset_skip_top, h_nodeoffset_skip_top);
     }
 
 
@@ -1605,6 +1677,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
                         submesh_activity, elemoffset_start, elemoffset_skip, nodeoffset,
+                        nodeoffset_start, nodeoffset_skip_bot, nodeoffset_skip_mid, nodeoffset_skip_top,
                         Nel_total_2D, Nnp_total_2D, host_isactive);
         print_mesh_params(pumi_mesh, submesh_x1, submesh_x2);
     });
@@ -1881,20 +1954,40 @@ void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_g
 KOKKOS_INLINE_FUNCTION
 void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
                                     int *global_cell_2D, int *bottomleft_node, int *topleft_node){
-    int nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2);
-    int nodeoffset_top = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2+1);
+    // int nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2);
+    // int nodeoffset_top = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2+1);
     int icell_x2 = kcell_x2 - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
     int elemoffset = pumi_obj.mesh(0).elemoffset_start(isubmesh,jsubmesh) + icell_x2*pumi_obj.mesh(0).elemoffset_skip(jsubmesh);
     *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.mesh(0).Nel_tot_x1 - elemoffset;
+    int nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).nodeoffset_skip_bot(isubmesh,jsubmesh)
+                    +(icell_x2-1)*pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh);
+    int nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh);
+    if (icell_x2==0){
+        nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh);
+        nodeoffset_top = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).nodeoffset_skip_bot(isubmesh,jsubmesh);
+    }
+    if (icell_x2==pumi_obj.submesh_x2(jsubmesh)()->Nel-1){
+        nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh(0).nodeoffset_skip_top(isubmesh,jsubmesh);
+    }
     *bottomleft_node = *global_cell_2D + kcell_x2 - nodeoffset_bottom;
     *topleft_node = *bottomleft_node + pumi_obj.mesh(0).Nel_tot_x1 + 1 - nodeoffset_top;
 }
 
 
 KOKKOS_INLINE_FUNCTION
-int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int Inp, int Jnp){
+int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int Jnp){
     int nodeID = Jnp*(pumi_obj.mesh(0).Nel_tot_x1+1) + Inp;
-    int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
+    int jnp = Jnp - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
+    // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
+    int nodeoffset;
+    nodeoffset = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).nodeoffset_skip_bot(isubmesh,jsubmesh)
+                    +(jnp-1)*pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh);
+    if (jnp==0){
+        nodeoffset = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh);
+    }
+    if (jnp==pumi_obj.submesh_x2(jsubmesh)()->Nel){
+        nodeoffset +=  pumi_obj.mesh(0).nodeoffset_skip_top(isubmesh,jsubmesh);
+    }
     return nodeID-nodeoffset;
 }
 
