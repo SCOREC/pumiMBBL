@@ -451,6 +451,62 @@ public:
 };
 
 /**
+ * @brief MaxBL submesh class derived from submesh class
+ *
+ */
+class Unassigned_Submesh : public Submesh{
+public:
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] submesh min-side coords
+    * \param[in] submesh max-side coords
+    * \param[in] submesh number of elements
+    * \param[in] submesh smallest element size
+    * \param[in] submesh grading ratio
+    * \param[in] submesh length
+    * \param[in] submesh preceding cumulative elements
+    * \param[in] submesh (r-1.0)/t0 value
+    * \param[in] submesh log(r) value
+    * \param[in] submesh BL coordinates (explicitly stored)
+    */
+    Unassigned_Submesh(double submesh_xmin,
+                  double submesh_xmax,
+                  int submesh_Nel,
+                  double submesh_t0,
+                  double submesh_r,
+                  double submesh_length,
+                  int submesh_Nel_cumulative,
+                  double r_t0_ratio,
+                  double logr,
+                  DoubleViewPtr BLcoords):
+                  Submesh(submesh_xmin,submesh_xmax,submesh_Nel,submesh_t0,submesh_r,maxBL,submesh_length,submesh_Nel_cumulative,r_t0_ratio,logr,BLcoords){};
+
+    KOKKOS_INLINE_FUNCTION
+    int locate_cell(double q){
+        return -1;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    int update_cell(double q, int icell){
+        return -1;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    double elem_size(int icell){
+        return -999.0;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
+        *Wgh2 = -999.0;
+        *global_cell = -1;
+    }
+
+};
+
+
+/**
  * @brief Mesh class
  *
  * Object of this class can access all properties of the mesh and its submesh
@@ -602,8 +658,8 @@ KOKKOS_INLINE_FUNCTION
 void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1){
     printf("\n\nPUMI mesh parameter info [X1-Direction] :\n\n");
     printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh(0).Nel_tot_x1);
-    for (int i=0; i<pumi_mesh(0).nsubmesh_x1; i++){
-        printf("\tSUBMESH %d  parameters:\n", i+1);
+    for (int i=1; i<=pumi_mesh(0).nsubmesh_x1; i++){
+        printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
         if (submesh_x1(i)()->meshtype & minBL){
             printf("leftBL\n");
@@ -648,8 +704,8 @@ KOKKOS_INLINE_FUNCTION
 void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, SubmeshDeviceViewPtr submesh_x2){
     printf("\n\nPUMI mesh parameter info [X1-Direction] :\n\n");
     printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh(0).Nel_tot_x1);
-    for (int i=0; i<pumi_mesh(0).nsubmesh_x1; i++){
-        printf("\tSUBMESH %d  parameters:\n", i+1);
+    for (int i=1; i<=pumi_mesh(0).nsubmesh_x1; i++){
+        printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
         if (submesh_x1(i)()->meshtype & minBL){
             printf("leftBL\n");
@@ -684,8 +740,8 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
 
     printf("PUMI mesh parameter info [X2-Direction] :\n\n");
     printf("\tTotal elements along X2-direction = %d\n\n", pumi_mesh(0).Nel_tot_x2);
-    for (int i=0; i<pumi_mesh(0).nsubmesh_x2; i++){
-        printf("\tSUBMESH %d  parameters:\n", i+1);
+    for (int i=1; i<=pumi_mesh(0).nsubmesh_x2; i++){
+        printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
         if (submesh_x2(i)()->meshtype & minBL){
             printf("bottomBL\n");
@@ -720,15 +776,15 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
     }
 
     printf("PUMI submesh activity info :\n\n");
-    for (int jsubmesh=pumi_mesh(0).nsubmesh_x2-1; jsubmesh>=0; jsubmesh--){
-        if (jsubmesh != pumi_mesh(0).nsubmesh_x2-1){
-            for (int isubmesh=0; isubmesh<pumi_mesh(0).nsubmesh_x1-1; isubmesh++ ){
+    for (int jsubmesh=pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
+        if (jsubmesh != pumi_mesh(0).nsubmesh_x2){
+            for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1-1; isubmesh++ ){
                 printf("_____________");
             }
             printf("__________________\n\n");
         }
-        for (int isubmesh=0; isubmesh<pumi_mesh(0).nsubmesh_x1; isubmesh++ ){
-            if (isubmesh){
+        for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1; isubmesh++ ){
+            if (isubmesh-1){
                 printf("|");
             }
             if(pumi_mesh(0).isactive(isubmesh,jsubmesh)){
@@ -763,8 +819,8 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     sprintf(mesh_coords_filename,"X1_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     int inode=0;
-    for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        printf("X1-SUBMESH %d:\n", isubmesh+1 );
+    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[30];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh+1);
@@ -815,8 +871,8 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     sprintf(mesh_coords_filename,"X1_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     int inode=0;
-    for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        printf("X1-SUBMESH %d:\n", isubmesh+1 );
+    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[30];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh+1);
@@ -851,8 +907,8 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     sprintf(mesh_coords_filename,"X2_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     inode = 0;
-    for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
-        printf("X2-SUBMESH %d:\n", isubmesh+1 );
+    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
+        printf("X2-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[30];
         sprintf(submesh_coords_filename,"X2_submesh_%d_coords.dat",isubmesh+1);
@@ -896,8 +952,8 @@ KOKKOS_INLINE_FUNCTION
 void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, Kokkos::View<bool*> mesh_verified){
     printf("\n\nNow verifying valdity of pumi mesh parameters for\n");
     int flag = 0;
-    for (int isubmesh=0; isubmesh<pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        printf("\tX1-SUBMESH %d:\n", isubmesh+1 );
+    for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        printf("\tX1-SUBMESH %d:\n", isubmesh );
         if (submesh_x1(isubmesh)()->meshtype & minBL){
             if (!(submesh_x1(isubmesh)()->Nel > 0)){
                 printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
@@ -989,8 +1045,8 @@ KOKKOS_INLINE_FUNCTION
 void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, SubmeshDeviceViewPtr submesh_x2, Kokkos::View<bool*> mesh_verified){
     printf("\n\nNow verifying valdity of pumi mesh parameters for\n");
     int flag = 0;
-    for (int isubmesh=0; isubmesh<pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        printf("\tX1-SUBMESH %d:\n", isubmesh+1 );
+    for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        printf("\tX1-SUBMESH %d:\n", isubmesh );
         if (submesh_x1(isubmesh)()->meshtype & minBL){
             if (!(submesh_x1(isubmesh)()->Nel > 0)){
                 printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
@@ -1061,8 +1117,8 @@ void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submes
     }
 
 
-    for (int isubmesh=0; isubmesh<pumi_mesh(0).nsubmesh_x2; isubmesh++){
-        printf("\tX2-SUBMESH %d:\n", isubmesh+1 );
+    for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x2; isubmesh++){
+        printf("\tX2-SUBMESH %d:\n", isubmesh );
         if (submesh_x2(isubmesh)()->meshtype & minBL){
             if (!(submesh_x2(isubmesh)()->Nel > 0)){
                 printf("\t\t bottom_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x2(isubmesh)()->Nel);
@@ -1192,17 +1248,17 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         // padding submesh to min-side
         xmax = 0.0;
         xmin = xmax - xlength;
-        Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[0] = tmp_obj_min;
-        h_submesh(0) = copyForDevice<Submesh, Submesh> (tmp_obj_min);
+        h_submesh(0) = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_min);
         // padding submesh to max-side
         xmin = total_length;
         xmax = xmin + xlength;
-        Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[nsubmesh+1] = tmp_obj_max;
-        h_submesh(nsubmesh+1) = copyForDevice<Submesh, Submesh> (tmp_obj_max);
+        h_submesh(nsubmesh+1) = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_max);
     }
-    else{
+    else if (dir == x2_dir){
         double total_length = 0.0;
         for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
             total_length += *(pumi_inputs->p1_i_x2 + isubmesh);
@@ -1213,15 +1269,15 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         // padding submesh to min-side
         xmax = 0.0;
         xmin = xmax - xlength;
-        Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[0] = tmp_obj_min;
-        h_submesh(0) = copyForDevice<Submesh, Submesh> (tmp_obj_min);
+        h_submesh(0) = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_min);
         // padding submesh to max-side
         xmin = total_length;
         xmax = xmin + xlength;
-        Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[nsubmesh+1] = tmp_obj_max;
-        h_submesh(nsubmesh+1) = copyForDevice<Submesh, Submesh> (tmp_obj_max);
+        h_submesh(nsubmesh+1) = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_max);
     }
 
 
@@ -1364,7 +1420,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
 
     Kokkos::parallel_for("1D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
-        Nel_total_x1(0) = submesh_x1(nsubmesh_x1-1)()->Nel + submesh_x1(nsubmesh_x1-1)()->Nel_cumulative;
+        Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
     });
     Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
     Nel_tot_x1 = h_Nel_total_x1(0);
@@ -1415,8 +1471,8 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::View<int*> Nel_total_x2("total-x2-elems",1);
     Kokkos::View<int*>::HostMirror h_Nel_total_x2 = Kokkos::create_mirror_view(Nel_total_x2);
     Kokkos::parallel_for("2D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
-        Nel_total_x1(0) = submesh_x1(nsubmesh_x1-1)()->Nel + submesh_x1(nsubmesh_x1-1)()->Nel_cumulative;
-        Nel_total_x2(0) = submesh_x2(nsubmesh_x2-1)()->Nel + submesh_x2(nsubmesh_x2-1)()->Nel_cumulative;
+        Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
+        Nel_total_x2(0) = submesh_x2(nsubmesh_x2)()->Nel + submesh_x2(nsubmesh_x2)()->Nel_cumulative;
     });
     Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
     Kokkos::deep_copy(h_Nel_total_x2,Nel_total_x2);
@@ -1425,41 +1481,51 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Nel_total_2D = Nel_tot_x1*Nel_tot_x2;
     Nnp_total_2D = (Nel_tot_x1+1)*(Nel_tot_x2+1);
 
-    Kokkos::View<bool**> submesh_activity("submesh-isactive",nsubmesh_x1,nsubmesh_x2);
-    bool** host_isactive = new bool*[nsubmesh_x1];
-    for (int i=0; i<nsubmesh_x1; i++){
-        host_isactive[i] = new bool[nsubmesh_x2];
+    Kokkos::View<bool**> submesh_activity("submesh-isactive",nsubmesh_x1+2,nsubmesh_x2+2);
+    bool** host_isactive = new bool*[nsubmesh_x1+2];
+    for (int i=0; i<nsubmesh_x1+2; i++){
+        host_isactive[i] = new bool[nsubmesh_x2+2];
     }
-    for (int i=0; i<nsubmesh_x1; i++){
-        for (int j=0; j<nsubmesh_x2; j++){
-            host_isactive[i][j] = pumi_inputs->isactive[i][j];
+    for (int i=0; i<nsubmesh_x1+2; i++){
+        for (int j=0; j<nsubmesh_x2+2; j++){
+            if (i==0 || i==nsubmesh_x1+1 || j==0 || j==nsubmesh_x2+1){
+                host_isactive[i][j] = false;
+            }
+            else{
+                host_isactive[i][j] = pumi_inputs->isactive[i-1][j-1];
+            }
         }
     }
 
     Kokkos::View<bool**>::HostMirror h_submesh_activity = Kokkos::create_mirror_view(submesh_activity);
-    for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++ ){
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
-            h_submesh_activity(isubmesh,jsubmesh) = pumi_inputs->isactive[isubmesh][jsubmesh];
+    for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++ ){
+        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
+            if (isubmesh==0 || isubmesh==nsubmesh_x1+1 || jsubmesh==0 || jsubmesh==nsubmesh_x2+1){
+                h_submesh_activity(isubmesh,jsubmesh) = false;
+            }
+            else{
+                h_submesh_activity(isubmesh,jsubmesh) = pumi_inputs->isactive[isubmesh-1][jsubmesh-1];
+            }
         }
     }
     Kokkos::deep_copy(submesh_activity, h_submesh_activity);
 
     bool is_fullmesh = true;
-    for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++ ){
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
+    for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++ ){
+        for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
             if (!(h_submesh_activity(isubmesh, jsubmesh))){
                 is_fullmesh = false;
             }
         }
     }
 
-    Kokkos::View<int**> elemoffset_start("elemoffset_start", nsubmesh_x1, nsubmesh_x2);
-    Kokkos::View<int*> elemoffset_skip("elemoffset_skip", nsubmesh_x2);
-    Kokkos::View<int**> nodeoffset("nodeoffset", nsubmesh_x1, Nel_tot_x2+1);
-    Kokkos::View<int**> nodeoffset_start("nodeoffset_start", nsubmesh_x1, nsubmesh_x2);
-    Kokkos::View<int**> nodeoffset_skip_bot("nodeoffset_skip_bot", nsubmesh_x1, nsubmesh_x2);
-    Kokkos::View<int**> nodeoffset_skip_mid("nodeoffset_skip_mid", nsubmesh_x1, nsubmesh_x2);
-    Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1, nsubmesh_x2);
+    Kokkos::View<int**> elemoffset_start("elemoffset_start", nsubmesh_x1+2, nsubmesh_x2+2);
+    Kokkos::View<int*> elemoffset_skip("elemoffset_skip", nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset("nodeoffset", nsubmesh_x1+2, Nel_tot_x2+1);
+    Kokkos::View<int**> nodeoffset_start("nodeoffset_start", nsubmesh_x1+2, nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset_skip_bot("nodeoffset_skip_bot", nsubmesh_x1+1, nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset_skip_mid("nodeoffset_skip_mid", nsubmesh_x1+1, nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1+1, nsubmesh_x2+2);
 
 
     if (!is_fullmesh){
@@ -1475,10 +1541,10 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         int elemstart_init, elemskip;
         int elemstart = 0;
 
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
+        for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
             elemstart_init = elemstart;
 
-            for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
                 if(h_submesh_activity(isubmesh, jsubmesh)){
                     h_elemoffset_start(isubmesh,jsubmesh) = elemstart;
                 }
@@ -1497,17 +1563,17 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
 
         // nodeoffsets
         int jnp;
-        int jsubmesh = 0;
+        int jsubmesh = 1;
         int nodestart = 0;
         for (jnp=0; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
             int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
-            for (int isubmesh=0; isubmesh<nsubmesh_x2; isubmesh++){
+            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
                 if(h_submesh_activity(isubmesh, jsubmesh)){
                     h_nodeoffset(isubmesh,Jnp) = nodestart;
                 }
                 else{
                     h_nodeoffset(isubmesh,Jnp) = -1;
-                    if (isubmesh==0){
+                    if (isubmesh==1){
                         if (h_submesh_activity(isubmesh+1,jsubmesh)){
                             nodestart += hc_submesh_x1[isubmesh].Nel;
                         }
@@ -1515,7 +1581,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                             nodestart += (hc_submesh_x1[isubmesh].Nel+1);
                         }
                     }
-                    else if (isubmesh == nsubmesh_x1-1){
+                    else if (isubmesh == nsubmesh_x1){
                         nodestart += hc_submesh_x1[isubmesh].Nel;
                     }
                     else{
@@ -1531,15 +1597,15 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         }
 
         jnp = hc_submesh_x2[jsubmesh].Nel;
-        for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
-            if (jsubmesh == nsubmesh_x2-1){
+        for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
+            if (jsubmesh == nsubmesh_x2){
                 int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
                 if (h_submesh_activity(isubmesh, jsubmesh)){
                     h_nodeoffset(isubmesh,Jnp) = nodestart;
                 }
                 else{
                     h_nodeoffset(isubmesh,Jnp) = -1;
-                    if (isubmesh==0){
+                    if (isubmesh==1){
                         if (h_submesh_activity(isubmesh+1,jsubmesh)){
                             nodestart += hc_submesh_x1[isubmesh].Nel;
                         }
@@ -1547,7 +1613,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                             nodestart += (hc_submesh_x1[isubmesh].Nel+1);
                         }
                     }
-                    else if (isubmesh==nsubmesh_x1-1){
+                    else if (isubmesh==nsubmesh_x1){
                         nodestart += hc_submesh_x1[isubmesh].Nel;
                     }
                     else{
@@ -1562,18 +1628,18 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
             }
         }
 
-        for (jsubmesh=1; jsubmesh<nsubmesh_x2; jsubmesh++){
+        for (jsubmesh=2; jsubmesh<=nsubmesh_x2; jsubmesh++){
             jnp = 0;
             int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
 
-            for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
                 if (h_submesh_activity(isubmesh,jsubmesh) || h_submesh_activity(isubmesh,jsubmesh-1)){
                     nodestart += 0;
                     h_nodeoffset(isubmesh,Jnp) = nodestart;
                 }
                 else{
                     h_nodeoffset(isubmesh,Jnp) = -1;
-                    if (isubmesh==0){
+                    if (isubmesh==1){
                         if (h_submesh_activity(isubmesh+1,jsubmesh) || h_submesh_activity(isubmesh+1,jsubmesh-1)){
                             nodestart += hc_submesh_x1[isubmesh].Nel;
                         }
@@ -1581,7 +1647,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                             nodestart += (hc_submesh_x1[isubmesh].Nel+1);
                         }
                     }
-                    else if (isubmesh==nsubmesh_x1-1){
+                    else if (isubmesh==nsubmesh_x1){
                         nodestart += (hc_submesh_x1[isubmesh].Nel);
                     }
                     else{
@@ -1598,13 +1664,13 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
             for (jnp=1; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
                 int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
 
-                for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+                for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
                     if (h_submesh_activity(isubmesh,jsubmesh)){
                         h_nodeoffset(isubmesh,Jnp) = nodestart;
                     }
                     else{
                         h_nodeoffset(isubmesh,Jnp) = -1;
-                        if (isubmesh==0){
+                        if (isubmesh==1){
                             if (h_submesh_activity(isubmesh+1,jsubmesh)){
                                 nodestart += hc_submesh_x1[isubmesh].Nel;
                             }
@@ -1612,7 +1678,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                                 nodestart += (hc_submesh_x1[isubmesh].Nel+1);
                             }
                         }
-                        else if (isubmesh == nsubmesh_x1-1){
+                        else if (isubmesh == nsubmesh_x1){
                             nodestart += hc_submesh_x1[isubmesh].Nel;
                         }
                         else{
@@ -1627,17 +1693,17 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                 }
             }
 
-            if (jsubmesh==nsubmesh_x2-1){
+            if (jsubmesh==nsubmesh_x2){
                 jnp = hc_submesh_x2[jsubmesh].Nel;
                 int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
 
-                for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+                for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
                     if (h_submesh_activity(isubmesh,jsubmesh)){
                         h_nodeoffset(isubmesh,Jnp) = nodestart;
                     }
                     else{
                         h_nodeoffset(isubmesh,Jnp) = -1;
-                        if (isubmesh==0){
+                        if (isubmesh==1){
                             if (h_submesh_activity(isubmesh+1,jsubmesh)){
                                 nodestart += hc_submesh_x1[isubmesh].Nel;
                             }
@@ -1645,7 +1711,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                                 nodestart += (hc_submesh_x1[isubmesh].Nel+1);
                             }
                         }
-                        else if (isubmesh==nsubmesh_x1-1){
+                        else if (isubmesh==nsubmesh_x1){
                             nodestart += hc_submesh_x1[isubmesh].Nel;
                         }
                         else{
@@ -1664,9 +1730,9 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
 
         Nnp_total_2D -= nodestart;
 
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
+        for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
             int Jnp = hc_submesh_x2[jsubmesh].Nel_cumulative;
-            for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
                 if (h_submesh_activity(isubmesh,jsubmesh)){
                     h_nodeoffset_start(isubmesh,jsubmesh) = h_nodeoffset(isubmesh,Jnp);
                     h_nodeoffset_skip_bot(isubmesh,jsubmesh) = h_nodeoffset(isubmesh,Jnp+1)-h_nodeoffset(isubmesh,Jnp);
@@ -1702,9 +1768,9 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
         Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
 
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
+        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
             h_elemoffset_skip(jsubmesh) = 0;
-            for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
+            for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++){
                 h_elemoffset_start(isubmesh,jsubmesh) = 0;
                 h_nodeoffset_start(isubmesh,jsubmesh) = 0;
                 h_nodeoffset_skip_bot(isubmesh,jsubmesh) = 0;
@@ -1725,35 +1791,35 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::View<bool*> is_bdry("is_bdry", 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2);
     Kokkos::View<bool*>::HostMirror h_is_bdry = Kokkos::create_mirror_view(is_bdry);
 
-    for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
-        for (int isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
-            if (jsubmesh==0){
+    for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
+        for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
+            if (jsubmesh==1){
                 if (h_submesh_activity(isubmesh,jsubmesh)){
-                    h_is_bdry(isubmesh) = true;
-                    if (isubmesh==0){
+                    h_is_bdry(isubmesh-1) = true;
+                    if (isubmesh==1){
                         h_is_bdry(nsubmesh_x1) = true;
                     }
-                    if (isubmesh==nsubmesh_x1-1){
-                        h_is_bdry(isubmesh+nsubmesh_x1+1) = true;
+                    if (isubmesh==nsubmesh_x1){
+                        h_is_bdry(isubmesh-1+nsubmesh_x1+1) = true;
                     }
                 }
                 else{
-                    h_is_bdry(isubmesh) = false;
-                    if (isubmesh==0){
+                    h_is_bdry(isubmesh-1) = false;
+                    if (isubmesh==1){
                         h_is_bdry(nsubmesh_x1) = false;
                     }
-                    if (isubmesh==nsubmesh_x1-1){
-                        h_is_bdry(isubmesh+nsubmesh_x1+1) = false;
+                    if (isubmesh==nsubmesh_x1){
+                        h_is_bdry(isubmesh-1+nsubmesh_x1+1) = false;
                     }
                 }
 
-                if (isubmesh>0){
+                if (isubmesh>1){
                     int sum = h_submesh_activity(isubmesh-1,jsubmesh)+h_submesh_activity(isubmesh,jsubmesh);
                     if (sum == 1){
-                        h_is_bdry(isubmesh+nsubmesh_x1) = true;
+                        h_is_bdry(isubmesh-1+nsubmesh_x1) = true;
                     }
                     else{
-                        h_is_bdry(isubmesh+nsubmesh_x1) = false;
+                        h_is_bdry(isubmesh-1+nsubmesh_x1) = false;
                     }
                 }
             }
@@ -1761,46 +1827,46 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
 
                 int sum = h_submesh_activity(isubmesh,jsubmesh-1)+h_submesh_activity(isubmesh,jsubmesh);
                 if (sum == 1){
-                    h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+isubmesh) = true;
+                    h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1) = true;
                 }
                 else{
-                    h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+isubmesh) = false;
+                    h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1) = false;
                 }
 
-                if (isubmesh==0){
+                if (isubmesh==1){
                     if (h_submesh_activity(isubmesh,jsubmesh)){
-                        h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+nsubmesh_x1) = true;
+                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1) = true;
                     }
                     else{
-                        h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+nsubmesh_x1) = false;
+                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1) = false;
                     }
                 }
                 else{
                     sum = h_submesh_activity(isubmesh-1,jsubmesh)+h_submesh_activity(isubmesh,jsubmesh);
                     if (sum == 1){
-                        h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh) = true;
+                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1) = true;
                     }
                     else{
-                        h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh) = false;
+                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1) = false;
                     }
                 }
 
-                if (isubmesh==nsubmesh_x1-1){
+                if (isubmesh==nsubmesh_x1){
                     if (h_submesh_activity(isubmesh,jsubmesh)){
-                        h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+isubmesh+nsubmesh_x1+1) = true;
+                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1) = true;
                     }
                     else{
-                        h_is_bdry(jsubmesh*(2*nsubmesh_x1+1)+isubmesh+nsubmesh_x1+1) = false;
+                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1) = false;
                     }
                 }
             }
 
-            if (jsubmesh == nsubmesh_x2-1){
+            if (jsubmesh == nsubmesh_x2){
                 if (h_submesh_activity(isubmesh,jsubmesh)){
-                    h_is_bdry((jsubmesh+1)*(2*nsubmesh_x1+1)+isubmesh) = true;
+                    h_is_bdry((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1) = true;
                 }
                 else{
-                    h_is_bdry((jsubmesh+1)*(2*nsubmesh_x1+1)+isubmesh) = false;
+                    h_is_bdry((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1) = false;
                 }
             }
         }
@@ -2852,7 +2918,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     int isubmesh, jsubmesh, inp, jnp;
     bool left_edge, right_edge, bottom_edge, top_edge;
 
-    for (isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
         int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh].Nel + submesh_min_node;
         left_edge =  false;
@@ -2869,7 +2935,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
         }
     }
 
-    for (jsubmesh=0; jsubmesh<h_pumi_mesh(0).nsubmesh_x2; jsubmesh++){
+    for (jsubmesh=1; jsubmesh<=h_pumi_mesh(0).nsubmesh_x2; jsubmesh++){
         int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
         int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh].Nel + submesh_min_node;
         bottom_edge =  false;
@@ -2905,11 +2971,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (left_edge & !top_edge & !bottom_edge){
 
-        if (isubmesh==0){
+        if (isubmesh==1){
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1;
+                *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1;
                 *bdry_dim = 1;
                 return;
             }
@@ -2926,7 +2992,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1;
+                    *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1;
                     *bdry_dim = 1;
                     return;
                 }
@@ -2949,12 +3015,12 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (left_edge & top_edge){
-        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
-            if (isubmesh==0){
+        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2){
+            if (isubmesh==1){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -2970,7 +3036,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -2984,11 +3050,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (isubmesh==0){
+            if (isubmesh==1){
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3008,7 +3074,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                         h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                        *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -3026,11 +3092,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (top_edge & !left_edge & !right_edge){
 
-        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
+        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2){
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                *bdry_tag = (jsubmesh)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                 *bdry_dim = 1;
                 return;
             }
@@ -3047,7 +3113,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 1;
                     return;
                 }
@@ -3070,12 +3136,12 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (top_edge & right_edge){
-        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2-1){
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3091,7 +3157,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3105,11 +3171,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3129,7 +3195,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = (jsubmesh+1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                        *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -3147,11 +3213,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (right_edge & !top_edge & !bottom_edge){
 
-        if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+        if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1 + 1;
                 *bdry_dim = 1;
                 return;
             }
@@ -3168,7 +3234,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                    *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1 + 1;
                     *bdry_dim = 1;
                     return;
                 }
@@ -3191,12 +3257,12 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (right_edge & bottom_edge){
-        if (jsubmesh==0){
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+        if (jsubmesh==1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3212,7 +3278,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3226,11 +3292,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3250,7 +3316,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh + 1;
+                        *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -3268,11 +3334,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (bottom_edge & !left_edge & !right_edge){
 
-        if (jsubmesh==0){
+        if (jsubmesh==1){
             if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                 *bdry_dim = 1;
                 return;
             }
@@ -3289,7 +3355,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 *in_domain = true;
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3312,12 +3378,12 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (bottom_edge & left_edge){
-        if (jsubmesh==0){
-            if (isubmesh==0){
+        if (jsubmesh==1){
+            if (isubmesh==1){
                 if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3333,7 +3399,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3347,11 +3413,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (isubmesh==0){
+            if (isubmesh==1){
                 if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -3371,7 +3437,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                             h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = jsubmesh*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh;
+                        *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -3418,9 +3484,9 @@ void print_mesh_skeleton(MBBL pumi_obj){
     printf("\n\nPrinting the skeleton of the mesh\n");
     printf("E --> Boundary block-edge\n");
     printf("V --> Boundary block-vertex\n\n");
-    for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2-1; jsubmesh>=0; jsubmesh--){
+    for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
         int Jnp = pumi_obj.host_submesh_x2[jsubmesh].Nel + pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
-        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -3447,7 +3513,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             else{
                 printf("            ");
             }
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -3460,7 +3526,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
         }
         printf("\n");
         Jnp--;
-        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -3478,7 +3544,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
 
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -3490,7 +3556,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
         }
         printf("\n");
-        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -3514,7 +3580,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
 
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -3526,7 +3592,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
         }
         printf("\n");
-        for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -3544,7 +3610,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
 
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -3556,10 +3622,10 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
         }
 
-        if (jsubmesh==0){
+        if (jsubmesh==1){
             printf("\n");
             Jnp = 0;
-            for (int isubmesh=0; isubmesh<h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+            for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
                 int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -3581,7 +3647,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 else{
                     printf("            ");
                 }
-                if (isubmesh==h_pumi_mesh(0).nsubmesh_x1-1){
+                if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
                     Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
                     pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                     if (in_domain){
