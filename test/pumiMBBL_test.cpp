@@ -159,7 +159,7 @@ int main( int argc, char* argv[] )
 
         printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
 
-        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
 
         if (!in_domain){
             printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
@@ -181,7 +181,7 @@ int main( int argc, char* argv[] )
 
         printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
 
-        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
 
         if (!in_domain){
             printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
@@ -204,7 +204,29 @@ int main( int argc, char* argv[] )
 
         printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
 
-        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+
+        if (!in_domain){
+            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+        }
+        else{
+            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+        }
+    });
+
+    dq1 = 0.0;
+    dq2 = -27.5;
+
+    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+        int isub, jsub, icell, jcell, bdry_hit;
+        bool in_domain;
+
+        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+
+        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+
+        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
 
         if (!in_domain){
             printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
