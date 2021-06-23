@@ -144,81 +144,81 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
-    double q1 = 15.0;
-    double q2 = 35.0;
-
-    double dq1 = 38.0;
-    double dq2 = -2.5;
-
-    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
-        int isub, jsub, icell, jcell, bdry_hit;
-        bool in_domain;
-
-        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-
-        // pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, isub, jsub, icell, jcell,
-        //                     &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
-
-        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-
-        if (!in_domain){
-            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
-        }
-        else{
-            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
-        }
-    });
-
-    dq1 = 60.0;
-    dq2 = -12.5;
-
-    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
-        int isub, jsub, icell, jcell, bdry_hit;
-        bool in_domain;
-
-        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-
-        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
-        // pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, isub, jsub, icell, jcell,
-        //                     &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-
-        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-
-        if (!in_domain){
-            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
-        }
-        else{
-            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
-        }
-    });
-
-    q2 = 25.0;
-    dq1 = 150.0;
-    dq2 = -17.5;
-
-    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
-        int isub, jsub, icell, jcell, bdry_hit;
-        bool in_domain;
-
-        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-
-        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
-        // pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, isub, jsub, icell, jcell,
-        //                     &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-
-        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-
-        if (!in_domain){
-            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
-        }
-        else{
-            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
-        }
-    });
+    // double q1 = 15.0;
+    // double q2 = 35.0;
+    //
+    // double dq1 = 38.0;
+    // double dq2 = -2.5;
+    //
+    // Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+    //     int isub, jsub, icell, jcell, bdry_hit;
+    //     bool in_domain;
+    //
+    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+    //
+    //     // pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, isub, jsub, icell, jcell,
+    //     //                     &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+    //     printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+    //
+    //     pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+    //
+    //     if (!in_domain){
+    //         printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+    //     }
+    //     else{
+    //         printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+    //     }
+    // });
+    //
+    // dq1 = 60.0;
+    // dq2 = -12.5;
+    //
+    // Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+    //     int isub, jsub, icell, jcell, bdry_hit;
+    //     bool in_domain;
+    //
+    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+    //
+    //     printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+    //     // pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, isub, jsub, icell, jcell,
+    //     //                     &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+    //
+    //     pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+    //
+    //     if (!in_domain){
+    //         printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+    //     }
+    //     else{
+    //         printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+    //     }
+    // });
+    //
+    // q2 = 25.0;
+    // dq1 = 150.0;
+    // dq2 = -17.5;
+    //
+    // Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+    //     int isub, jsub, icell, jcell, bdry_hit;
+    //     bool in_domain;
+    //
+    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+    //
+    //     printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+    //     // pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, isub, jsub, icell, jcell,
+    //     //                     &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+    //
+    //     pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+    //
+    //     if (!in_domain){
+    //         printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+    //     }
+    //     else{
+    //         printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+    //     }
+    // });
 
   }
   Kokkos::finalize();
