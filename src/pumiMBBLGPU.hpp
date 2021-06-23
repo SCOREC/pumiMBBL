@@ -823,7 +823,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[30];
-        sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh+1);
+        sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
         double icoord = h_submesh_x1[isubmesh].xmin;
         double cell_size = h_submesh_x1[isubmesh].t0;
@@ -875,7 +875,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[30];
-        sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh+1);
+        sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
         double icoord = h_submesh_x1[isubmesh].xmin;
         double cell_size = h_submesh_x1[isubmesh].t0;
@@ -911,7 +911,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         printf("X2-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[30];
-        sprintf(submesh_coords_filename,"X2_submesh_%d_coords.dat",isubmesh+1);
+        sprintf(submesh_coords_filename,"X2_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
         double icoord = h_submesh_x2[isubmesh].xmin;
         double cell_size = h_submesh_x2[isubmesh].t0;
@@ -2748,7 +2748,7 @@ double return_gradingratio(MBBL pumi_obj, int dir, int node){
         exit(0);
     }
     else{
-        for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
+        for (int isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
             int submesh_min_node =  h_submesh[isubmesh].Nel_cumulative;
             int submesh_max_node = submesh_min_node + h_submesh[isubmesh].Nel;
             if (node > submesh_min_node && node < submesh_max_node){
@@ -2815,7 +2815,7 @@ double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
         elem = 0;
     }
 
-    for (int isubmesh = 0; isubmesh < nsubmesh; isubmesh++){
+    for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
         int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
         int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
 
@@ -3455,25 +3455,25 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 }
 
 double get_global_left_coord(MBBL pumi_obj){
-    return pumi_obj.host_submesh_x1[0].xmin;
+    return pumi_obj.host_submesh_x1[1].xmin;
 }
 
 double get_global_right_coord(MBBL pumi_obj){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
     int nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
-    return pumi_obj.host_submesh_x1[nsubmesh-1].xmax;
+    return pumi_obj.host_submesh_x1[nsubmesh].xmax;
 }
 
 double get_global_bottom_coord(MBBL pumi_obj){
-    return pumi_obj.host_submesh_x2[0].xmin;
+    return pumi_obj.host_submesh_x2[1].xmin;
 }
 
 double get_global_top_coord(MBBL pumi_obj){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
     int nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
-    return pumi_obj.host_submesh_x2[nsubmesh-1].xmax;
+    return pumi_obj.host_submesh_x2[nsubmesh].xmax;
 }
 
 void print_mesh_skeleton(MBBL pumi_obj){

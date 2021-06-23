@@ -40,30 +40,30 @@ int main( int argc, char* argv[] )
 
     pumi::inputs_deallocate(pumi_inputs);
 
-    // pumi::MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(mesh);
-    // Kokkos::deep_copy(h_pumi_mesh, mesh);
-    // std::cout << "Printing x1 grading ratio\n";
-    // for (int i=1; i<h_pumi_mesh(0).Nel_tot_x1; i++){
-    //     std::cout << "x1-r[" << i <<"] = " << pumi::return_gradingratio(pumi_obj, pumi::x1_dir, i) << "\n";
-    // }
-    // std::cout << "\n\n";
-    // std::cout << "Printing x2 grading ratio\n";
-    // for (int i=1; i<h_pumi_mesh(0).Nel_tot_x2; i++){
-    //     std::cout << "x2-r[" << i <<"] = " << pumi::return_gradingratio(pumi_obj, pumi::x2_dir, i) << "\n";
-    // }
-    // std::cout << "\n\n";
-    // std::cout << "Printing x1 cell lengths\n";
-    // for (int i=0; i<h_pumi_mesh(0).Nel_tot_x1; i++){
-    //     double cs = pumi::return_elemsize(pumi_obj, pumi::x1_dir, i, pumi::elem_input_offset);
-    //     std::cout << "dx1[" << i << "] = " << cs << "\n";
-    // }
-    // std::cout << "\n\n";
-    // std::cout << "Printing x2 cell lengths\n";
-    // for (int i=0; i<h_pumi_mesh(0).Nel_tot_x2; i++){
-    //     double cs = pumi::return_elemsize(pumi_obj, pumi::x2_dir, i, pumi::elem_input_offset);
-    //     std::cout << "dx2[" << i << "] = " << cs << "\n";
-    // }
-    // std::cout << "\n\n";
+    pumi::MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(mesh);
+    Kokkos::deep_copy(h_pumi_mesh, mesh);
+    std::cout << "Printing x1 grading ratio\n";
+    for (int i=1; i<h_pumi_mesh(0).Nel_tot_x1; i++){
+        std::cout << "x1-r[" << i <<"] = " << pumi::return_gradingratio(pumi_obj, pumi::x1_dir, i) << "\n";
+    }
+    std::cout << "\n\n";
+    std::cout << "Printing x2 grading ratio\n";
+    for (int i=1; i<h_pumi_mesh(0).Nel_tot_x2; i++){
+        std::cout << "x2-r[" << i <<"] = " << pumi::return_gradingratio(pumi_obj, pumi::x2_dir, i) << "\n";
+    }
+    std::cout << "\n\n";
+    std::cout << "Printing x1 cell lengths\n";
+    for (int i=0; i<h_pumi_mesh(0).Nel_tot_x1; i++){
+        double cs = pumi::return_elemsize(pumi_obj, pumi::x1_dir, i, pumi::elem_input_offset);
+        std::cout << "dx1[" << i << "] = " << cs << "\n";
+    }
+    std::cout << "\n\n";
+    std::cout << "Printing x2 cell lengths\n";
+    for (int i=0; i<h_pumi_mesh(0).Nel_tot_x2; i++){
+        double cs = pumi::return_elemsize(pumi_obj, pumi::x2_dir, i, pumi::elem_input_offset);
+        std::cout << "dx2[" << i << "] = " << cs << "\n";
+    }
+    std::cout << "\n\n";
     // int k=0;
     // for (int i=0; i<=h_pumi_mesh(0).Nel_tot_x2; i++){
     //     for (int j=0; j<=h_pumi_mesh(0).Nel_tot_x1; j++){
