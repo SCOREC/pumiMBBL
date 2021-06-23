@@ -73,146 +73,146 @@ int main( int argc, char* argv[] )
     //     }
     // }
 
-    std::srand((unsigned)(std::time(nullptr)));
-    double rand_val_x1 = (double) rand()/RAND_MAX;
-    double rand_val_x2 = (double) rand()/RAND_MAX;
-
-    double x1_min = pumi::get_global_left_coord(pumi_obj);
-    double x1_max = pumi::get_global_right_coord(pumi_obj);
-    double L_x1 = x1_max-x1_min;
-    double x2_min = pumi::get_global_bottom_coord(pumi_obj);
-    double x2_max = pumi::get_global_top_coord(pumi_obj);
-    double L_x2 = x2_max-x2_min;
-
-    double h_q1 = (0.9*x1_min + 0.1*x1_max) + 0.25*rand_val_x1*L_x1;
-    double h_q2 = (0.1*x2_min + 0.9*x2_max) - 0.25*rand_val_x2*L_x2;
-    double h_q1_new = h_q1 + rand_val_x1*L_x1;
-    double h_q2_new = h_q2 - rand_val_x2*L_x2;
-
-    Kokkos::parallel_for("full-mesh-particle-ops-test", 1, KOKKOS_LAMBDA (const int) {
-        int isub, jsub, icell, jcell, kcell_x1, kcell_x2, lb_node, lt_node, global_cell;
-        double Wgh2;
-        double q1 = h_q1;
-        printf("q1=%2.4f\n",q1);
-        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-        printf("x1-submesh=%d\n",isub );
-        printf("x1-cell=%d\n",icell );
-        pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2);
-        printf("x1-glob-cell=%d\n",kcell_x1 );
-        printf("x1-W2=%2.4f\n\n",Wgh2 );
-        double q2 = h_q2;
-        printf("q2=%2.4f\n",q2);
-        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-        printf("x2-submesh=%d\n",jsub );
-        printf("x2-cell=%d\n",jcell );
-        pumi::calc_weights_x2(pumi_obj, q2, jsub, jcell, &kcell_x2, &Wgh2);
-        printf("x2-glob-cell=%d\n",kcell_x2 );
-        printf("x2-W2=%2.4f\n\n",Wgh2 );
-
-
-        pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
-        printf("2D-global-cell=%d\n",global_cell);
-        printf("leftbottom-node=%d    lefttop-node=%d\n",lb_node, lt_node);
-
-
-        printf("\n\nAfter push...\n\n");
-
-        q1 = h_q1_new;
-        printf("new q1=%2.4f\n",q1);
-        pumi::update_submesh_and_cell_x1(pumi_obj, q1, isub, icell, &isub, &icell);
-        printf("new-x1-submesh=%d\n", isub);
-        printf("new-x1-cell=%d\n", icell);
-        pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2);
-        printf("new-x1-glob-cell=%d\n",kcell_x1 );
-        printf("new-x1-W2=%2.4f\n\n",Wgh2 );
-
-        q2 = h_q2_new;
-        printf("new q2=%2.4f\n",q2);
-        pumi::update_submesh_and_cell_x2(pumi_obj, q2, jsub, jcell, &jsub, &jcell);
-        printf("new-x2-submesh=%d\n", jsub);
-        printf("new-x2-cell=%d\n", jcell);
-        pumi::calc_weights_x2(pumi_obj, q2, jsub, jcell, &kcell_x2, &Wgh2);
-        printf("new-x2-glob-cell=%d\n",kcell_x2 );
-        printf("new-x2-W2=%2.4f\n\n",Wgh2 );
-
-
-        pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
-        printf("new-2D-global-cell=%d\n",global_cell);
-        printf("new-leftbottom-node=%d    new-lefttop-node=%d\n",lb_node, lt_node);
-
-    });
+    // std::srand((unsigned)(std::time(nullptr)));
+    // double rand_val_x1 = (double) rand()/RAND_MAX;
+    // double rand_val_x2 = (double) rand()/RAND_MAX;
+    //
+    // double x1_min = pumi::get_global_left_coord(pumi_obj);
+    // double x1_max = pumi::get_global_right_coord(pumi_obj);
+    // double L_x1 = x1_max-x1_min;
+    // double x2_min = pumi::get_global_bottom_coord(pumi_obj);
+    // double x2_max = pumi::get_global_top_coord(pumi_obj);
+    // double L_x2 = x2_max-x2_min;
+    //
+    // double h_q1 = (0.9*x1_min + 0.1*x1_max) + 0.25*rand_val_x1*L_x1;
+    // double h_q2 = (0.1*x2_min + 0.9*x2_max) - 0.25*rand_val_x2*L_x2;
+    // double h_q1_new = h_q1 + rand_val_x1*L_x1;
+    // double h_q2_new = h_q2 - rand_val_x2*L_x2;
+    //
+    // Kokkos::parallel_for("full-mesh-particle-ops-test", 1, KOKKOS_LAMBDA (const int) {
+    //     int isub, jsub, icell, jcell, kcell_x1, kcell_x2, lb_node, lt_node, global_cell;
+    //     double Wgh2;
+    //     double q1 = h_q1;
+    //     printf("q1=%2.4f\n",q1);
+    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+    //     printf("x1-submesh=%d\n",isub );
+    //     printf("x1-cell=%d\n",icell );
+    //     pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2);
+    //     printf("x1-glob-cell=%d\n",kcell_x1 );
+    //     printf("x1-W2=%2.4f\n\n",Wgh2 );
+    //     double q2 = h_q2;
+    //     printf("q2=%2.4f\n",q2);
+    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+    //     printf("x2-submesh=%d\n",jsub );
+    //     printf("x2-cell=%d\n",jcell );
+    //     pumi::calc_weights_x2(pumi_obj, q2, jsub, jcell, &kcell_x2, &Wgh2);
+    //     printf("x2-glob-cell=%d\n",kcell_x2 );
+    //     printf("x2-W2=%2.4f\n\n",Wgh2 );
+    //
+    //
+    //     pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
+    //     printf("2D-global-cell=%d\n",global_cell);
+    //     printf("leftbottom-node=%d    lefttop-node=%d\n",lb_node, lt_node);
+    //
+    //
+    //     printf("\n\nAfter push...\n\n");
+    //
+    //     q1 = h_q1_new;
+    //     printf("new q1=%2.4f\n",q1);
+    //     pumi::update_submesh_and_cell_x1(pumi_obj, q1, isub, icell, &isub, &icell);
+    //     printf("new-x1-submesh=%d\n", isub);
+    //     printf("new-x1-cell=%d\n", icell);
+    //     pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2);
+    //     printf("new-x1-glob-cell=%d\n",kcell_x1 );
+    //     printf("new-x1-W2=%2.4f\n\n",Wgh2 );
+    //
+    //     q2 = h_q2_new;
+    //     printf("new q2=%2.4f\n",q2);
+    //     pumi::update_submesh_and_cell_x2(pumi_obj, q2, jsub, jcell, &jsub, &jcell);
+    //     printf("new-x2-submesh=%d\n", jsub);
+    //     printf("new-x2-cell=%d\n", jcell);
+    //     pumi::calc_weights_x2(pumi_obj, q2, jsub, jcell, &kcell_x2, &Wgh2);
+    //     printf("new-x2-glob-cell=%d\n",kcell_x2 );
+    //     printf("new-x2-W2=%2.4f\n\n",Wgh2 );
+    //
+    //
+    //     pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &lb_node, &lt_node);
+    //     printf("new-2D-global-cell=%d\n",global_cell);
+    //     printf("new-leftbottom-node=%d    new-lefttop-node=%d\n",lb_node, lt_node);
+    //
+    // });
 
     pumi::print_mesh_skeleton(pumi_obj);
 
-    // double q1 = 15.0;
-    // double q2 = 35.0;
-    //
-    // double dq1 = 38.0;
-    // double dq2 = -2.5;
-    //
-    // Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
-    //     int isub, jsub, icell, jcell, bdry_hit;
-    //     bool in_domain;
-    //
-    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-    //
-    //     printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
-    //
-    //     pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-    //
-    //     if (!in_domain){
-    //         printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
-    //     }
-    //     else{
-    //         printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
-    //     }
-    // });
-    //
-    // dq1 = 60.0;
-    // dq2 = -12.5;
-    //
-    // Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
-    //     int isub, jsub, icell, jcell, bdry_hit;
-    //     bool in_domain;
-    //
-    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-    //
-    //     printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
-    //
-    //     pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-    //
-    //     if (!in_domain){
-    //         printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
-    //     }
-    //     else{
-    //         printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
-    //     }
-    // });
-    //
-    // q2 = 25.0;
-    // dq1 = 150.0;
-    // dq2 = -17.5;
-    //
-    // Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
-    //     int isub, jsub, icell, jcell, bdry_hit;
-    //     bool in_domain;
-    //
-    //     pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-    //     pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
-    //
-    //     printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
-    //
-    //     pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
-    //
-    //     if (!in_domain){
-    //         printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
-    //     }
-    //     else{
-    //         printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
-    //     }
-    // });
+    double q1 = 15.0;
+    double q2 = 35.0;
+
+    double dq1 = 38.0;
+    double dq2 = -2.5;
+
+    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+        int isub, jsub, icell, jcell, bdry_hit;
+        bool in_domain;
+
+        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+
+        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+
+        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+
+        if (!in_domain){
+            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+        }
+        else{
+            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+        }
+    });
+
+    dq1 = 60.0;
+    dq2 = -12.5;
+
+    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+        int isub, jsub, icell, jcell, bdry_hit;
+        bool in_domain;
+
+        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+
+        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+
+        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+
+        if (!in_domain){
+            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+        }
+        else{
+            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+        }
+    });
+
+    q2 = 25.0;
+    dq1 = 150.0;
+    dq2 = -17.5;
+
+    Kokkos::parallel_for("inactive-mesh-particle-ops-test-1", 1, KOKKOS_LAMBDA (const int) {
+        int isub, jsub, icell, jcell, bdry_hit;
+        bool in_domain;
+
+        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+
+        printf("particle located in \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub,icell,jsub,jcell);
+
+        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+
+        if (!in_domain){
+            printf("\nparticle out of domain. bdry-hit=%d\n\n", bdry_hit);
+        }
+        else{
+            printf("\nparticle new location is \nisub=%d icell=%d\njsub=%d jcell=%d\n\n",isub, icell, jsub, jcell );
+        }
+    });
 
   }
   Kokkos::finalize();
