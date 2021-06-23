@@ -248,18 +248,18 @@ public:
             BL_coords(BLcoords){};
 
     KOKKOS_INLINE_FUNCTION
-    virtual int locate_cell(double q) { return 0; }
+    virtual int locate_cell(double q) { return -1; }
 
     KOKKOS_INLINE_FUNCTION
-    virtual int update_cell(double q, int icell) { return 0; }
+    virtual int update_cell(double q, int icell) { return -1; }
 
     KOKKOS_INLINE_FUNCTION
-    virtual double elem_size(int icell) { return 0.0; }
+    virtual double elem_size(int icell) { return -999.0; }
 
     KOKKOS_INLINE_FUNCTION
     virtual void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
-        *global_cell = 0;
-        *Wgh2 = 0.0;
+        *global_cell = -1;
+        *Wgh2 = -999.0;
     }
 
 };
@@ -1159,16 +1159,16 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
 
     if (dir == x1_dir){
         nsubmesh = pumi_inputs->nsubmesh_x1;
-        submesh = SubmeshDeviceViewPtr("x1-submesh-obj",nsubmesh);
+        submesh = SubmeshDeviceViewPtr("x1-submesh-obj",nsubmesh+2);
         h_submesh = Kokkos::create_mirror_view(submesh);
     }
     else if (dir == x2_dir){
         nsubmesh = pumi_inputs->nsubmesh_x2;
-        submesh = SubmeshDeviceViewPtr("x2-submesh-obj",nsubmesh);
+        submesh = SubmeshDeviceViewPtr("x2-submesh-obj",nsubmesh+2);
         h_submesh = Kokkos::create_mirror_view(submesh);
     }
 
-    SubmeshHostViewPtr submesh_host_copy = new Submesh[nsubmesh];
+    SubmeshHostViewPtr submesh_host_copy = new Submesh[nsubmesh+2];
 
     if (pumi_options.BL_storage_option == store_BL_coords_OFF){
         pumi_options.BL_storage_option = store_BL_coords_ON;
@@ -1179,46 +1179,92 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
     unsigned int type;
     int Nel_cumulative = 0;
 
-    for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
+
+    if (dir == x1_dir){
+        double total_length = 0.0;
+        for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
+            total_length += *(pumi_inputs->p1_i_x1 + isubmesh);
+        }
+
+        type = unassigned;
+        xlength = 1000.0*total_length;
+        DoubleViewPtr BLcoords;
+        // padding submesh to min-side
+        xmax = 0.0;
+        xmin = xmax - xlength;
+        Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        submesh_host_copy[0] = tmp_obj_min;
+        h_submesh(0) = copyForDevice<Submesh, Submesh> (tmp_obj_min);
+        // padding submesh to max-side
+        xmin = total_length;
+        xmax = xmin + xlength;
+        Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        submesh_host_copy[nsubmesh+1] = tmp_obj_max;
+        h_submesh(nsubmesh+1) = copyForDevice<Submesh, Submesh> (tmp_obj_max);
+    }
+    else{
+        double total_length = 0.0;
+        for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
+            total_length += *(pumi_inputs->p1_i_x2 + isubmesh);
+        }
+        type = unassigned;
+        xlength = 1000.0*total_length;
+        DoubleViewPtr BLcoords;
+        // padding submesh to min-side
+        xmax = 0.0;
+        xmin = xmax - xlength;
+        Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        submesh_host_copy[0] = tmp_obj_min;
+        h_submesh(0) = copyForDevice<Submesh, Submesh> (tmp_obj_min);
+        // padding submesh to max-side
+        xmin = total_length;
+        xmax = xmin + xlength;
+        Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
+        submesh_host_copy[nsubmesh+1] = tmp_obj_max;
+        h_submesh(nsubmesh+1) = copyForDevice<Submesh, Submesh> (tmp_obj_max);
+    }
+
+
+    for (int isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
         DoubleViewPtr BLcoords;
         std::string BLcoordsname;
 
         if (dir == x1_dir){
-            type = get_submesh_type(pumi_inputs->meshtype[isubmesh]);
+            type = get_submesh_type(pumi_inputs->meshtype[isubmesh-1]);
 
-            xlength = *(pumi_inputs->p1_i_x1 + isubmesh);
-            if (isubmesh==0){
+            xlength = *(pumi_inputs->p1_i_x1 + isubmesh-1);
+            if (isubmesh==1){
                 xmin = 0.0;
             }
             else{
                 xmin = xmax;
             }
             xmax = xmin + xlength;
-            t0 = *(pumi_inputs->p2min_i_x1 + isubmesh);
-            tN = *(pumi_inputs->p2max_i_x1 + isubmesh);
+            t0 = *(pumi_inputs->p2min_i_x1 + isubmesh-1);
+            tN = *(pumi_inputs->p2max_i_x1 + isubmesh-1);
 
             BLcoordsname = "x1-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
         }
         else if (dir == x2_dir){
-            type = get_submesh_type(pumi_inputs->meshtype[isubmesh+pumi_inputs->nsubmesh_x1]);
+            type = get_submesh_type(pumi_inputs->meshtype[isubmesh+pumi_inputs->nsubmesh_x1-1]);
 
-            xlength = *(pumi_inputs->p1_i_x2 + isubmesh);
-            if (isubmesh==0){
+            xlength = *(pumi_inputs->p1_i_x2 + isubmesh-1);
+            if (isubmesh==1){
                 xmin = 0.0;
             }
             else{
                 xmin = xmax;
             }
             xmax = xmin + xlength;
-            t0 = *(pumi_inputs->p2min_i_x2 + isubmesh);
-            tN = *(pumi_inputs->p2max_i_x2 + isubmesh);
+            t0 = *(pumi_inputs->p2min_i_x2 + isubmesh-1);
+            tN = *(pumi_inputs->p2max_i_x2 + isubmesh-1);
 
             BLcoordsname = "x2-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
         }
 
-        if (isubmesh > 0){
+        if (isubmesh > 1){
             Nel_cumulative += Nel;
         }
 
