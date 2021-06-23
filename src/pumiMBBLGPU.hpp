@@ -1955,7 +1955,7 @@ void locate_submesh_and_cell_x1(MBBL pumi_obj, double q, int* submeshID, int *ce
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x1.extent(0);
     int nsubmesh = pumi_obj.mesh(0).nsubmesh_x1;
-    for (isubmesh=1; isubmesh<nsubmesh; isubmesh++){
+    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
      if (q < (pumi_obj.submesh_x1(isubmesh)()->xmin)){
          *submeshID = isubmesh-1;
          submesh_located++;
@@ -1963,7 +1963,7 @@ void locate_submesh_and_cell_x1(MBBL pumi_obj, double q, int* submeshID, int *ce
      }
     }
     if (!(submesh_located)){
-     *submeshID = nsubmesh-1;
+     *submeshID = nsubmesh;
     }
     *cellID  = pumi_obj.submesh_x1(*submeshID)()->locate_cell(q);
 }
@@ -1982,7 +1982,7 @@ void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *ce
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x2.extent(0);
     int nsubmesh = pumi_obj.mesh(0).nsubmesh_x2;
-    for (isubmesh=1; isubmesh<nsubmesh; isubmesh++){
+    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
      if (q < (pumi_obj.submesh_x2(isubmesh)()->xmin)){
          *submeshID = isubmesh-1;
          submesh_located++;
@@ -1990,7 +1990,7 @@ void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *ce
      }
     }
     if (!(submesh_located)){
-     *submeshID = nsubmesh-1;
+     *submeshID = nsubmesh;
     }
     *cellID  = pumi_obj.submesh_x2(*submeshID)()->locate_cell(q);
 }
@@ -2199,289 +2199,6 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
 
 KOKKOS_INLINE_FUNCTION
 void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int isubmesh, int jsubmesh, int icell, int jcell,
-                    int *new_isubmesh, int *new_jsubmesh, int *new_icell, int *new_jcell,
-                    bool *in_domain, int *bdry_hit){
-
-    bool crossed_right = false;
-    bool crossed_left = false;
-    bool crossed_up = false;
-    bool crossed_down = false;
-
-    // int num_x1_blocks_crossed=0;
-    // int num_x2_blocks_crossed=0;
-
-    double q1_new = q1 + dq1;
-    double q2_new = q2 + dq2;
-    int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-    int Ny = pumi_obj.mesh(0).nsubmesh_x2;
-
-    *new_isubmesh = isubmesh;
-    *new_icell = icell;
-
-    if (dq1 > 0.0){
-        while(q1_new > (pumi_obj.submesh_x1(*new_isubmesh)()->xmax)){
-            *new_isubmesh += 1;
-            crossed_right = true;
-            *new_icell = 0;
-        }
-    }
-    else{
-        while(q1_new < (pumi_obj.submesh_x1(*new_isubmesh)()->xmin)){
-            *new_isubmesh -= 1;
-            crossed_left = true;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->Nel-1;
-        }
-    }
-
-    *new_jsubmesh = jsubmesh;
-    *new_jcell = jcell;
-
-    if (dq2 > 0.0){
-        while(q2_new > (pumi_obj.submesh_x2(*new_jsubmesh)()->xmax)){
-            *new_jsubmesh += 1;
-            crossed_up = true;
-            *new_jcell = 0;
-        }
-    }
-    else{
-        while(q2_new < (pumi_obj.submesh_x2(*new_jsubmesh)()->xmin)){
-            *new_jsubmesh -= 1;
-            crossed_down = true;
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->Nel-1;
-        }
-    }
-
-    int first_hit, second_hit;
-    bool is_first_bdry, is_second_bdry;
-
-    if (!crossed_right & !crossed_left & !crossed_down & !crossed_up){
-        *in_domain = true;
-        *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-        *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-        *bdry_hit = -1;
-        return;
-    }
-
-    if (crossed_right & !crossed_up & !crossed_down){
-        first_hit = jsubmesh*(2*Nx+1)+isubmesh+Nx+1;
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        if (is_first_bdry){
-            *in_domain = false;
-            *bdry_hit = first_hit;
-            return;
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-    if (crossed_left & !crossed_up & !crossed_down){
-        first_hit = jsubmesh*(2*Nx+1)+isubmesh+Nx;
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        if (is_first_bdry){
-            *in_domain = false;
-            *bdry_hit = first_hit;
-            return;
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-    if (crossed_up & !crossed_right & !crossed_left){
-        first_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh;
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        if (is_first_bdry){
-            *in_domain = false;
-            *bdry_hit = first_hit;
-            return;
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-    if (crossed_down & !crossed_right & !crossed_left){
-        first_hit = jsubmesh*(2*Nx+1)+isubmesh;
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        if (is_first_bdry){
-            *in_domain = false;
-            *bdry_hit = first_hit;
-            return;
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-    double del_x1, del_x2;
-
-    if (crossed_right & crossed_down){
-        del_x1 = (pumi_obj.submesh_x1(isubmesh)()->xmax - q1);
-        del_x2 = (q2 - pumi_obj.submesh_x2(jsubmesh)()->xmin);
-
-        if (del_x2/del_x1 > fabs(dq2/dq1)){
-            first_hit = jsubmesh*(2*Nx+1)+isubmesh+Nx+1;
-            second_hit = jsubmesh*(2*Nx+1)+isubmesh+1;
-        }
-        else{
-            first_hit = jsubmesh*(2*Nx+1)+isubmesh;
-            second_hit = (jsubmesh-1)*(2*Nx+1)+isubmesh+Nx+1;
-        }
-
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        is_second_bdry = pumi_obj.mesh(0).is_bdry(second_hit);
-
-        if (is_first_bdry || is_second_bdry){
-            *in_domain = false;
-            if (is_first_bdry){
-                *bdry_hit = first_hit;
-                return;
-            }
-            else{
-                *bdry_hit = second_hit;
-                return;
-            }
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-
-    }
-
-    if (crossed_right & crossed_up){
-        del_x1 = (pumi_obj.submesh_x1(isubmesh)()->xmax - q1);
-        del_x2 = (pumi_obj.submesh_x2(jsubmesh)()->xmax - q2);
-
-        if (del_x2/del_x1 > fabs(dq2/dq1)){
-            first_hit = jsubmesh*(2*Nx+1)+isubmesh+Nx+1;
-            second_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh+1;
-        }
-        else{
-            first_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh;
-            second_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh+Nx+1;
-        }
-
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        is_second_bdry = pumi_obj.mesh(0).is_bdry(second_hit);
-
-        if (is_first_bdry || is_second_bdry){
-            *in_domain = false;
-            if (is_first_bdry){
-                *bdry_hit = first_hit;
-                return;
-            }
-            else{
-                *bdry_hit = second_hit;
-                return;
-            }
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-    if (crossed_left & crossed_down){
-        del_x1 = (q1 - pumi_obj.submesh_x1(isubmesh)()->xmin);
-        del_x2 = (q2 - pumi_obj.submesh_x2(jsubmesh)()->xmin);
-
-        if (del_x2/del_x1 > fabs(dq2/dq1)){
-            first_hit = jsubmesh*(2*Nx+1)+isubmesh+Nx;
-            second_hit = jsubmesh*(2*Nx+1)+isubmesh-1;
-        }
-        else{
-            first_hit = jsubmesh*(2*Nx+1)+isubmesh;
-            second_hit = (jsubmesh-1)*(2*Nx+1)+isubmesh+Nx;
-        }
-
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        is_second_bdry = pumi_obj.mesh(0).is_bdry(second_hit);
-
-        if (is_first_bdry || is_second_bdry){
-            *in_domain = false;
-            if (is_first_bdry){
-                *bdry_hit = first_hit;
-                return;
-            }
-            else{
-                *bdry_hit = second_hit;
-                return;
-            }
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-    if (crossed_left & crossed_up){
-        del_x1 = (q1 - pumi_obj.submesh_x1(isubmesh)()->xmin);
-        del_x2 = (pumi_obj.submesh_x2(jsubmesh)()->xmax - q2);
-
-        if (del_x2/del_x1 > fabs(dq2/dq1)){
-            first_hit = jsubmesh*(2*Nx+1)+isubmesh+Nx;
-            second_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh-1;
-        }
-        else{
-            first_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh;
-            second_hit = (jsubmesh+1)*(2*Nx+1)+isubmesh+Nx;
-        }
-
-        is_first_bdry = pumi_obj.mesh(0).is_bdry(first_hit);
-        is_second_bdry = pumi_obj.mesh(0).is_bdry(second_hit);
-
-        if (is_first_bdry || is_second_bdry){
-            *in_domain = false;
-            if (is_first_bdry){
-                *bdry_hit = first_hit;
-                return;
-            }
-            else{
-                *bdry_hit = second_hit;
-                return;
-            }
-        }
-        else{
-            *in_domain = true;
-            *bdry_hit = -1;
-            *new_icell = pumi_obj.submesh_x1(*new_isubmesh)()->update_cell(q1_new, *new_icell);
-            *new_jcell = pumi_obj.submesh_x2(*new_jsubmesh)()->update_cell(q2_new, *new_jcell);
-            return;
-        }
-    }
-
-}
-
-KOKKOS_INLINE_FUNCTION
-void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                     int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit){
 
     double q1_new = q1+dq1;
