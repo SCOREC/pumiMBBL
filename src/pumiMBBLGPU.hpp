@@ -2433,7 +2433,6 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
     int isub = *isubmesh;
     int jsub = *jsubmesh;
-    *in_domain = true;
 
     int num_x1_crossed = 0;
     int num_x2_crossed = 0;
@@ -2466,8 +2465,15 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
 
 
     int case_id = x1_sub_move + 3*x2_sub_move;
+    // printf("case=%d    \n",case_id );
     double del1, del2;
     int i;
+
+    int isub_tmp = *isubmesh;
+    int jsub_tmp = *jsubmesh;
+
+    *isubmesh = isub;
+    *jsubmesh = jsub;
 
     switch (case_id) {
         case 0:
@@ -2475,15 +2481,17 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
             *isubmesh = isub;
             *jsubmesh = jsub;
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 1:
-            *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx+1;
+            *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp+Nx;
             i=0;
             while (i<num_x1_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2492,21 +2500,24 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    *isubmesh += 1;
-                    *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx+1;
+                    // printf("crossed_edge = %d (%d,%d)\n", *bdry_hit,*isubmesh+1,*jsubmesh);
+                    isub_tmp += 1;
+                    *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp+Nx;
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
             *bdry_hit = -1;
+            *in_domain = true;
             return;
 
         case 2:
-            *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx;
+            *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1+Nx;
             i=0;
             while (i<num_x1_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2515,21 +2526,24 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    *isubmesh -= 1;
-                    *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx;
+                    // printf("crossed_edge = %d   (%d,%d)\n", *bdry_hit,*isubmesh-1,*jsubmesh);
+                    isub_tmp -= 1;
+                    *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1+Nx;
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 3:
-            *bdry_hit = (*jsubmesh)*(2*Nx+1)+*isubmesh-1;
+            *bdry_hit = (jsub_tmp)*(2*Nx+1)+isub_tmp-1;
             i=0;
             while (i<num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2538,32 +2552,35 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    *jsubmesh += 1;
-                    *bdry_hit = (*jsubmesh)*(2*Nx+1)+*isubmesh-1;
+                    // printf("crossed_edge = %d   (%d,%d)\n", *bdry_hit,*isubmesh,*jsubmesh+1);
+                    jsub_tmp += 1;
+                    *bdry_hit = (jsub_tmp)*(2*Nx+1)+isub_tmp-1;
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 4:
-            del1 = (pumi_obj.submesh_x1(*isubmesh)()->xmax-q1);
-            del2 = (pumi_obj.submesh_x2(*jsubmesh)()->xmax-q2);
+            del1 = (pumi_obj.submesh_x1(isub_tmp)()->xmax-q1);
+            del2 = (pumi_obj.submesh_x2(jsub_tmp)()->xmax-q2);
 
             if (del2/del1 > fabs(dq2/dq1)){
-                *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx+1;
-                *isubmesh += 1;
+                *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp+Nx;
+                isub_tmp += 1;
             }
             else{
-                *bdry_hit = *jsubmesh*(2*Nx+1)+*isubmesh-1;
-                *jsubmesh += 1;
+                *bdry_hit = jsub_tmp*(2*Nx+1)+isub_tmp-1;
+                jsub_tmp += 1;
             }
 
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2572,40 +2589,44 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    del1 = (pumi_obj.submesh_x1(*isubmesh)()->xmax-q1);
-                    del2 = (pumi_obj.submesh_x2(*jsubmesh)()->xmax-q2);
+                    // printf("crossed_edge = %d   (%d,%d)\n", *bdry_hit,*isubmesh,*jsubmesh);
+                    del1 = (pumi_obj.submesh_x1(isub_tmp)()->xmax-q1);
+                    del2 = (pumi_obj.submesh_x2(jsub_tmp)()->xmax-q2);
+
                     if (del2/del1 > fabs(dq2/dq1)){
-                        *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx+1;
-                        *isubmesh += 1;
+                        *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp+Nx;
+                        isub_tmp += 1;
                     }
                     else{
-                        *bdry_hit = *jsubmesh*(2*Nx+1)+*isubmesh-1;
-                        *jsubmesh += 1;
+                        *bdry_hit = jsub_tmp*(2*Nx+1)+isub_tmp-1;
+                        jsub_tmp += 1;
                     }
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 5:
-            del1 = (q1-pumi_obj.submesh_x1(isub)()->xmin);
-            del2 = (pumi_obj.submesh_x2(jsub)()->xmax-q2);
+            del1 = (q1-pumi_obj.submesh_x1(isub_tmp)()->xmin);
+            del2 = (pumi_obj.submesh_x2(jsub_tmp)()->xmax-q2);
 
             if (del2/del1 > fabs(dq2/dq1)){
-                *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx;
-                *isubmesh -= 1;
+                *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1+Nx;
+                isub_tmp -= 1;
             }
             else{
-                *bdry_hit = *jsubmesh*(2*Nx+1)+*isubmesh-1;
-                *jsubmesh += 1;
+                *bdry_hit = (jsub_tmp)*(2*Nx+1)+isub_tmp-1;
+                jsub_tmp += 1;
             }
 
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2614,29 +2635,33 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    del1 = (q1-pumi_obj.submesh_x1(isub)()->xmin);
-                    del2 = (pumi_obj.submesh_x2(jsub)()->xmax-q2);
+                    // printf("crossed_edge = %d   (%d,%d)\n", *bdry_hit,*isubmesh,*jsubmesh);
+                    del1 = (q1-pumi_obj.submesh_x1(isub_tmp)()->xmin);
+                    del2 = (pumi_obj.submesh_x2(jsub_tmp)()->xmax-q2);
+
                     if (del2/del1 > fabs(dq2/dq1)){
-                        *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx;
-                        *isubmesh -= 1;
+                        *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1+Nx;
+                        isub_tmp -= 1;
                     }
                     else{
-                        *bdry_hit = *jsubmesh*(2*Nx+1)+*isubmesh-1;
-                        *jsubmesh += 1;
+                        *bdry_hit = (jsub_tmp)*(2*Nx+1)+isub_tmp-1;
+                        jsub_tmp += 1;
                     }
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 6:
-            *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1;
+            *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1;
             i=0;
             while (i<num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2645,31 +2670,34 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    *jsubmesh -= 1;
-                    *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1;
+                    // printf("crossed_edge = %d (%d,%d)\n", *bdry_hit,*isubmesh,*jsubmesh-1);
+                    jsub_tmp -= 1;
+                    *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1;
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 7:
-            del1 = (pumi_obj.submesh_x1(*isubmesh)()->xmax-q1);
-            del2 = (q2-pumi_obj.submesh_x2(*jsubmesh)()->xmin);
+            del1 = (pumi_obj.submesh_x1(isub_tmp)()->xmax-q1);
+            del2 = (q2-pumi_obj.submesh_x2(jsub_tmp)()->xmin);
             if (del2/del1 > fabs(dq2/dq1)){
-                *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx+1;
-                *isubmesh += 1;
+                *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp+Nx;
+                isub_tmp += 1;
             }
             else{
-                *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1;
-                *jsubmesh -= 1;
+                *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1;
+                jsub_tmp -= 1;
             }
 
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2678,40 +2706,43 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    del1 = (pumi_obj.submesh_x1(*isubmesh)()->xmax-q1);
-                    del2 = (q2-pumi_obj.submesh_x2(*jsubmesh)()->xmin);
+                    // printf("crossed_edge = %d   (%d,%d)\n", *bdry_hit,*isubmesh,*jsubmesh);
+                    del1 = (pumi_obj.submesh_x1(isub_tmp)()->xmax-q1);
+                    del2 = (q2-pumi_obj.submesh_x2(jsub_tmp)()->xmin);
                     if (del2/del1 > fabs(dq2/dq1)){
-                        *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx+1;
-                        *isubmesh += 1;
+                        *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp+Nx;
+                        isub_tmp += 1;
                     }
                     else{
-                        *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1;
-                        *jsubmesh -= 1;
+                        *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1;
+                        jsub_tmp -= 1;
                     }
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
         case 8:
-            del1 = (q1-pumi_obj.submesh_x1(*isubmesh)()->xmin);
-            del2 = (q2-pumi_obj.submesh_x2(*jsubmesh)()->xmin);
+            del1 = (q1-pumi_obj.submesh_x1(isub_tmp)()->xmin);
+            del2 = (q2-pumi_obj.submesh_x2(jsub_tmp)()->xmin);
 
             if (del2/del1 > fabs(dq2/dq1)){
-                *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx;
-                *isubmesh -= 1;
+                *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1+Nx;
+                isub_tmp -= 1;
             }
             else{
-                *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1;
-                *jsubmesh -= 1;
+                *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1;
+                jsub_tmp -= 1;
             }
 
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
                     *jsubmesh = -1;
@@ -2720,20 +2751,23 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     return;
                 }
                 else{
-                    del1 = (q1-pumi_obj.submesh_x1(*isubmesh)()->xmin);
-                    del2 = (q2-pumi_obj.submesh_x2(*jsubmesh)()->xmin);
+                    // printf("crossed_edge = %d   (%d,%d)\n", *bdry_hit,*isubmesh,*jsubmesh);
+                    del1 = (q1-pumi_obj.submesh_x1(isub_tmp)()->xmin);
+                    del2 = (q2-pumi_obj.submesh_x2(jsub_tmp)()->xmin);
+
                     if (del2/del1 > fabs(dq2/dq1)){
-                        *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1+Nx;
-                        *isubmesh -= 1;
+                        *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1+Nx;
+                        isub_tmp -= 1;
                     }
                     else{
-                        *bdry_hit = (*jsubmesh-1)*(2*Nx+1)+*isubmesh-1;
-                        *jsubmesh -= 1;
+                        *bdry_hit = (jsub_tmp-1)*(2*Nx+1)+isub_tmp-1;
+                        jsub_tmp -= 1;
                     }
                 }
             }
             *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
             *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *in_domain = true;
             *bdry_hit = -1;
             return;
 
