@@ -170,6 +170,7 @@ int main( int argc, char* argv[] )
     double x2_min = pumi::get_global_bottom_coord(pumi_obj);
     double x2_max = pumi::get_global_top_coord(pumi_obj);
     double L_x2 = x2_max-x2_min;
+    double dist_factor = 100.0
 
     Kokkos::View<double*[2]>::HostMirror h_part_coords = Kokkos::create_mirror_view(part_coords);
     Kokkos::View<bool*>::HostMirror h_part_activity = Kokkos::create_mirror_view(part_activity);
@@ -251,8 +252,8 @@ int main( int argc, char* argv[] )
                 double q2 = part_coords(ipart,1);
                 // double dq1 = -10.0 + 20.0*part_x1_disp(istep,ipart);
                 // double dq2 = -5.0 + 10.0*part_x2_disp(istep,ipart);
-                double dq1 = 2.0;
-                double dq2 = -1.0;
+                double dq1 = L_x1/dist_factor;
+                double dq2 = -L_x2/dist_factor;
 
                 isub = part_sub(ipart,0);
                 jsub = part_sub(ipart,1);
@@ -354,8 +355,8 @@ int main( int argc, char* argv[] )
                 double q2 = part_coords(ipart,1);
                 // double dq1 = -10.0 + 20.0*part_x1_disp(istep,ipart);
                 // double dq2 = -5.0 + 10.0*part_x2_disp(istep,ipart);
-                double dq1 = 2.0;
-                double dq2 = -1.0;
+                double dq1 = L_x1/dist_factor;
+                double dq2 = -L_x2/dist_factor;
 
                 isub = part_sub(ipart,0);
                 jsub = part_sub(ipart,1);
@@ -454,8 +455,8 @@ int main( int argc, char* argv[] )
                 double q2 = part_coords(ipart,1);
                 // double dq1 = -10.0 + 20.0*part_x1_disp(istep,ipart);
                 // double dq2 = -5.0 + 10.0*part_x2_disp(istep,ipart);
-                double dq1 = 2.0;
-                double dq2 = -1.0;
+                double dq1 = L_x1/dist_factor;
+                double dq2 = -L_x2/dist_factor;
 
                 isub = part_sub(ipart,0);
                 jsub = part_sub(ipart,1);
