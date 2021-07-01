@@ -169,6 +169,8 @@ void pumi_node_ID(pumi_mesh_t *pumi_mesh, int node_x1, int node_x2, bool *is_act
 
 double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh);
 
+void pumi_locate_unoptimized(pumi_mesh_t * pumi_mesh, double coords, int *submeshID, int *cellID);
+void pumi_weights_unoptimized(pumi_mesh_t * pumi_mesh, double coords, int isubmesh, int icell, double *Wgh2, int *global_cell);
 void pumi_locate_submesh_and_cell(pumi_mesh_t *pumi_mesh, double coords, int *submeshID, int *cellID, int dir);
 void pumi_update_submesh_and_update_cell(pumi_mesh_t *pumi_mesh, double coords, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID, int dir);
 void pumi_reset_id_for_x1min_exit(pumi_mesh_t* pumi_mesh, int *isubmesh, int *icell);

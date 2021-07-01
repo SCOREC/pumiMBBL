@@ -742,6 +742,63 @@ double pumi_return_smallest_elemsize(pumi_mesh_t *pumi_mesh){
   return smallest_elemsize;
 }
 
+void pumi_locate_unoptimized(pumi_mesh_t * pumi_mesh, double coords, int *submeshID, int *cellID){
+    int isubmesh;
+    int submesh_located = 0;
+    for (isubmesh=1; isubmesh<pumi_mesh->nsubmeshes_x1; isubmesh++){
+        if (coords < ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min){
+            *submeshID = isubmesh-1;
+            submesh_located++;
+            break;
+        }
+    }
+    if (!(submesh_located)){
+        *submeshID = pumi_mesh->nsubmeshes_x1-1;
+    }
+    isubmesh = *submeshID;
+
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & uniform){
+        *cellID = (coords - ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
+        return;
+    }
+
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & leftBL){
+        *cellID = log(1 + (coords-((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min)*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r_t0_ratio)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->log_r;
+        return;
+    }
+
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & rightBL){
+        int icell = log(1 + (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_max-coords)*((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r_t0_ratio)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->log_r;
+        *cellID = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel - icell - 1;
+        return;
+    }
+
+}
+
+void pumi_weights_unoptimized(pumi_mesh_t * pumi_mesh, double coords, int isubmesh, int icell, double *Wgh2, int *global_cell){
+
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & uniform){
+        *Wgh2 = (coords - (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0*icell))/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0;
+        return;
+    }
+
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & leftBL){
+        double r_power_cell = pow(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r,icell);
+        *global_cell = icell + ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative;
+        *Wgh2 = (coords - (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_min + (r_power_cell-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r_t0_ratio))/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0*r_power_cell);
+        return;
+    }
+
+    if (((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->pumi_flag & rightBL){
+        int local_cell = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->submesh_Nel - icell - 1;
+        double r_power_cell = pow(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r,local_cell);
+        *global_cell = ((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->Nel_cumulative + icell;
+        *Wgh2 = 1 - ((((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->coord_max - (r_power_cell-1.0)/((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->r_t0_ratio) - coords)/(((pumi_submesh_t*) pumi_mesh->pumi_submeshes_x1 + isubmesh)->t0*r_power_cell);
+        return;
+    }
+
+}
+
 int pumi_locate_submesh_x1(pumi_mesh_t *pumi_mesh, double coords){
     int isubmesh, submeshID;
     int submesh_located = 0;
