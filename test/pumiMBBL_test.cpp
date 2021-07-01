@@ -215,7 +215,7 @@ int main( int argc, char* argv[] )
     double x2_min = pumi::get_global_bottom_coord(pumi_obj);
     double x2_max = pumi::get_global_top_coord(pumi_obj);
     double L_x2 = x2_max-x2_min;
-    double dist_factor = 100.0
+    double dist_factor = 100.0;
 
     Kokkos::View<double*[2]>::HostMirror h_part_coords = Kokkos::create_mirror_view(part_coords);
     Kokkos::View<bool*>::HostMirror h_part_activity = Kokkos::create_mirror_view(part_activity);
