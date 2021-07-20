@@ -46,11 +46,6 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
-    Kokkos::Random_XorShift64_Pool<> rand_pool64(5374857);
-    Kokkos::Random_XorShift1024_Pool<> rand_pool1024(5374857);
-    Kokkos::DualView<uint64_t*> vals("Vals", 1);
-
-
 
     Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (int j) {
         int Nx = pumi_obj.mesh(0).nsubmesh_x1;
