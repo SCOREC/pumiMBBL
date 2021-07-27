@@ -2948,7 +2948,7 @@ double return_covolume(MBBL pumi_obj, int inode_x1){
  * \param[in] global node IDs along x2-direction
  * \return covolume for the requested node
  */
-double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
+double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
@@ -2982,6 +2982,144 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
 
     covolume = (dx1_min*dx2_min + dx1_max*dx2_min + dx1_min*dx2_max + dx1_max*dx2_max)/4.0;
     return covolume;
+}
+
+double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+
+    int isub_min, jsub_min, isub_max, jsub_max;
+    double dx1_min, dx1_max, dx2_min, dx2_max, covolume;
+
+    SubmeshHostViewPtr h_submesh;
+    int nsubmesh, Nel_total, elem;
+
+    nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
+    Nel_total = h_pumi_mesh(0).Nel_tot_x1;
+    h_submesh = pumi_obj.host_submesh_x1;
+
+    elem = inode_x1-1;
+
+    if (elem < 0){
+        dx1_min = 0.0;
+        isub_min = 0;
+    }
+    else{
+        for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
+            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+
+            if (elem >= submesh_min_elem && elem <= submesh_max_elem){
+                isub_min = isubmesh;
+                if (h_submesh[isubmesh].meshtype & uniform){
+                    dx1_min = h_submesh[isubmesh].t0;
+                }
+                if (h_submesh[isubmesh].meshtype & minBL){
+                    int local_cell = elem - submesh_min_elem;
+                    dx1_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+                if (h_submesh[isubmesh].meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
+                    dx1_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+            }
+        }
+    }
+
+    elem = inode_x1;
+    if (elem >= Nel_total){
+        dx1_max = 0.0;
+        isub_max = nsubmesh+1;
+    }
+    else{
+        for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
+            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+
+            if (elem >= submesh_min_elem && elem <= submesh_max_elem){
+                isub_max = isubmesh;
+                if (h_submesh[isubmesh].meshtype & uniform){
+                    dx1_max = h_submesh[isubmesh].t0;
+                }
+                if (h_submesh[isubmesh].meshtype & minBL){
+                    int local_cell = elem - submesh_min_elem;
+                    dx1_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+                if (h_submesh[isubmesh].meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
+                    dx1_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+            }
+        }
+    }
+
+    nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
+    Nel_total = h_pumi_mesh(0).Nel_tot_x2;
+    h_submesh = pumi_obj.host_submesh_x2;
+
+    elem = inode_x2-1;
+
+    if (elem < 0){
+        dx2_min = 0.0;
+        jsub_min = 0;
+    }
+    else{
+        for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
+            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+
+            if (elem >= submesh_min_elem && elem <= submesh_max_elem){
+                jsub_min = isubmesh;
+                if (h_submesh[isubmesh].meshtype & uniform){
+                    dx2_min = h_submesh[isubmesh].t0;
+                }
+                if (h_submesh[isubmesh].meshtype & minBL){
+                    int local_cell = elem - submesh_min_elem;
+                    dx2_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+                if (h_submesh[isubmesh].meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
+                    dx2_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+            }
+        }
+    }
+
+    elem = inode_x2;
+    if (elem >= Nel_total){
+        dx2_max = 0.0;
+        jsub_max = nsubmesh+1;
+    }
+    else{
+        for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
+            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+
+            if (elem >= submesh_min_elem && elem <= submesh_max_elem){
+                jsub_max = isubmesh;
+                if (h_submesh[isubmesh].meshtype & uniform){
+                    dx2_max = h_submesh[isubmesh].t0;
+                }
+                if (h_submesh[isubmesh].meshtype & minBL){
+                    int local_cell = elem - submesh_min_elem;
+                    dx2_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+                if (h_submesh[isubmesh].meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
+                    dx2_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                }
+            }
+        }
+    }
+
+    // printf("(%d,%d) + (%d,%d) + (%d,%d) + (%d,%d)\n",isub_min,jsub_min,isub_max,jsub_min,isub_min,jsub_max,isub_max,jsub_max);
+
+    covolume = (dx1_min*dx2_min*h_pumi_mesh(0).host_isactive[isub_min][jsub_min] +
+                dx1_max*dx2_min*h_pumi_mesh(0).host_isactive[isub_max][jsub_min] +
+                dx1_min*dx2_max*h_pumi_mesh(0).host_isactive[isub_min][jsub_max] +
+                dx1_max*dx2_max*h_pumi_mesh(0).host_isactive[isub_max][jsub_max])/4.0;
+    return covolume;
+
 }
 
 void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim){

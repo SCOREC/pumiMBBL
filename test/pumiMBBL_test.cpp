@@ -46,6 +46,21 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
+    // int k=0;
+    // for (int i=0; i<=h_pumi_mesh(0).Nel_tot_x2; i++){
+    //     for (int j=0; j<=h_pumi_mesh(0).Nel_tot_x1; j++){
+    //         double cv = pumi::return_covolume(pumi_obj, j, i);
+    //         double cv_full = pumi::return_covolume_fullmesh(pumi_obj, j, i);
+    //         bool on_bdry, in_domain;
+    //         int bdry_dim, bdry_tag;
+    //         pumi::where_is_node(pumi_obj, j, i, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+    //         // std::cout << "cv[" << j << "," << i << "] = " << cv << " " << cv_full << "\n";
+    //         printf("cv[%3d,%3d] = %2.4f  cv_full[%3d,%3d] = %2.4f  diff = %2.4f -- bdry=%d domain=%d\n",
+    //                 j,i,cv,j,i,cv_full,cv_full-cv, on_bdry,in_domain );
+    //         k++;
+    //     }
+    // }
+
 
     Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (int j) {
         int Nx = pumi_obj.mesh(0).nsubmesh_x1;
