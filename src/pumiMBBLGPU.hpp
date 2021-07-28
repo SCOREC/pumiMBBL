@@ -670,7 +670,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
             printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", submesh_x1(i)()->r);
             printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", submesh_x1(i)()->Nel);
             if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d leftBL node coords stored in a array\n\n", submesh_x1(i)()->BL_coords.extent(0));
+                printf("\t %d leftBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
             }
         }
         if (submesh_x1(i)()->meshtype & maxBL){
@@ -682,7 +682,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
             printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", submesh_x1(i)()->r);
             printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", submesh_x1(i)()->Nel);
             if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d rightBL node coords stored in a array\n\n", submesh_x1(i)()->BL_coords.extent(0));
+                printf("\t %d rightBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
             }
         }
         if (submesh_x1(i)()->meshtype & uniform){
@@ -716,7 +716,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
             printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", submesh_x1(i)()->r);
             printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", submesh_x1(i)()->Nel);
             if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d leftBL node coords stored in a array\n\n", submesh_x1(i)()->BL_coords.extent(0));
+                printf("\t %d leftBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
             }
         }
         if (submesh_x1(i)()->meshtype & maxBL){
@@ -728,7 +728,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
             printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", submesh_x1(i)()->r);
             printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", submesh_x1(i)()->Nel);
             if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d rightBL node coords stored in a array\n\n", submesh_x1(i)()->BL_coords.extent(0));
+                printf("\t %d rightBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
             }
         }
         if (submesh_x1(i)()->meshtype & uniform){
@@ -752,7 +752,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
             printf("\t bottom_r       = %2.4e \t Grading ratio in left BL block\n", submesh_x2(i)()->r);
             printf("\t bottom_Nel     = %d    \t Number of Cells in left BL block\n\n", submesh_x2(i)()->Nel);
             if (submesh_x2(i)()->BL_coords.extent(0)){
-                printf("\t %d bottomBL node coords stored in a array\n\n", submesh_x2(i)()->BL_coords.extent(0));
+                printf("\t %d bottomBL node coords stored in a array\n\n", submesh_x2(i)()->Nel+1);
             }
         }
         if (submesh_x2(i)()->meshtype & maxBL){
@@ -765,7 +765,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
             printf("\t top_r          = %2.4e \t Grading ratio in right BL mesh\n", submesh_x2(i)()->r);
             printf("\t top_Nel        = %d    \t Number of Cells in left BL mesh region\n\n", submesh_x2(i)()->Nel);
             if (submesh_x2(i)()->BL_coords.extent(0)){
-                printf("\t %d topBL node coords stored in a array\n\n", submesh_x2(i)()->BL_coords.extent(0));
+                printf("\t %d topBL node coords stored in a array\n\n", submesh_x2(i)()->Nel+1);
             }
         }
         if (submesh_x2(i)()->meshtype & uniform){
@@ -822,7 +822,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
-        char submesh_coords_filename[30];
+        char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
         double icoord = h_submesh_x1[isubmesh].xmin;
@@ -874,7 +874,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
-        char submesh_coords_filename[30];
+        char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
         double icoord = h_submesh_x1[isubmesh].xmin;
@@ -910,7 +910,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
         printf("X2-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
-        char submesh_coords_filename[30];
+        char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X2_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
         double icoord = h_submesh_x2[isubmesh].xmin;
@@ -1209,7 +1209,7 @@ void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submes
  * \return Final mesh object pointer
  */
 SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir, SubmeshHostViewPtr* hc_submesh){
-    int nsubmesh;
+    int nsubmesh = 0;
     SubmeshDeviceViewPtr submesh;
     SubmeshDeviceViewPtr::HostMirror h_submesh;
 
@@ -1231,10 +1231,17 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
     }
 
     double xmin, xmax, xlength, t0, tN, r, r_t0_ratio, logr;
-    int Nel;
-    unsigned int type;
+    int Nel = 0;
+    unsigned int type = 0x00;
     int Nel_cumulative = 0;
-
+    xmin = 0.0;
+    xmax = 0.0;
+    xlength = 0.0;
+    t0 = 0.0;
+    tN = 0.0;
+    r = 0.0;
+    r_t0_ratio = 0.0;
+    logr = 0.0;
 
     if (dir == x1_dir){
         double total_length = 0.0;
@@ -1523,9 +1530,9 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     Kokkos::View<int*> elemoffset_skip("elemoffset_skip", nsubmesh_x2+2);
     // Kokkos::View<int**> nodeoffset("nodeoffset", nsubmesh_x1+2, Nel_tot_x2+1);
     Kokkos::View<int**> nodeoffset_start("nodeoffset_start", nsubmesh_x1+2, nsubmesh_x2+2);
-    Kokkos::View<int**> nodeoffset_skip_bot("nodeoffset_skip_bot", nsubmesh_x1+1, nsubmesh_x2+2);
-    Kokkos::View<int**> nodeoffset_skip_mid("nodeoffset_skip_mid", nsubmesh_x1+1, nsubmesh_x2+2);
-    Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1+1, nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset_skip_bot("nodeoffset_skip_bot", nsubmesh_x1+2, nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset_skip_mid("nodeoffset_skip_mid", nsubmesh_x1+2, nsubmesh_x2+2);
+    Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1+2, nsubmesh_x2+2);
 
     int **nodeoffset = new int*[nsubmesh_x1+2];
     for (int i=0; i<nsubmesh_x1+2; i++){
@@ -2208,7 +2215,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
     double q1_new = q1+dq1;
     double q2_new = q2+dq2;
     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-    int Ny = pumi_obj.mesh(0).nsubmesh_x2;
+    // int Ny = pumi_obj.mesh(0).nsubmesh_x2;
     int case_id = (dq2>=0.0)+2*(dq1>=0.0);
     int isub = *isubmesh;
     int jsub = *jsubmesh;
@@ -2434,7 +2441,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
     double q1_new = q1+dq1;
     double q2_new = q2+dq2;
     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-    int Ny = pumi_obj.mesh(0).nsubmesh_x2;
+    // int Ny = pumi_obj.mesh(0).nsubmesh_x2;
     int isub = *isubmesh;
     int jsub = *jsubmesh;
 
@@ -2990,6 +2997,16 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
 
     int isub_min, jsub_min, isub_max, jsub_max;
     double dx1_min, dx1_max, dx2_min, dx2_max, covolume;
+
+    dx1_min=0.0;
+    dx2_min=0.0;
+    dx1_max=0.0;
+    dx2_max=0.0;
+    covolume=0.0;
+    isub_min=0;
+    isub_max=0;
+    jsub_min=0;
+    jsub_max=0;
 
     SubmeshHostViewPtr h_submesh;
     int nsubmesh, Nel_total, elem;
@@ -3705,7 +3722,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                     printf("%3dV",bdry_tag );
                 }
                 else{
-                    printf("----",bdry_tag );
+                    printf("----");
                 }
             }
             else{
@@ -3718,7 +3735,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                     printf("----%3dE----",bdry_tag );
                 }
                 else{
-                    printf("------------",bdry_tag );
+                    printf("------------");
                 }
             }
             else{
@@ -3775,7 +3792,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                     printf("%3dE",bdry_tag);
                 }
                 else{
-                    printf("   |",bdry_tag);
+                    printf("   |");
                 }
 
             }
@@ -3852,7 +3869,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                         printf("----%3dE----",bdry_tag );
                     }
                     else{
-                        printf("------------",bdry_tag );
+                        printf("------------");
                     }
                 }
                 else{

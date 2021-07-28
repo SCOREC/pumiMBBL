@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
     // }
 
 
-    Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (int j) {
+    Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
         int Nx = pumi_obj.mesh(0).nsubmesh_x1;
         int Ny = pumi_obj.mesh(0).nsubmesh_x2;
         for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
@@ -101,7 +101,8 @@ int main( int argc, char* argv[] )
                 double q1 = x1_min + L_x1*rand_x1;
                 double q2 = x2_min + L_x2*rand_x2;
 
-                int isub, jsub;
+                int isub=0;
+                int jsub=0;
 
                 for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
                     if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
@@ -149,7 +150,7 @@ int main( int argc, char* argv[] )
                 int part_active = h_part_coords(p,2);
                 num_push += (part_active+1 != 0);
             }
-            Kokkos::parallel_for("particle-push-test-0", 1, KOKKOS_LAMBDA (int j) {
+            Kokkos::parallel_for("particle-push-test-0", 1, KOKKOS_LAMBDA (const int) {
                 for (int ipart=0; ipart<N_part; ipart++){
                     int part_active = part_coords(ipart,2);
                     if (part_active+1){
@@ -218,7 +219,8 @@ int main( int argc, char* argv[] )
                 double q1 = x1_min + L_x1*rand_x1;
                 double q2 = x2_min + L_x2*rand_x2;
 
-                int isub, jsub;
+                int isub=0;
+                int jsub=0;
 
                 for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
                     if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
@@ -265,7 +267,7 @@ int main( int argc, char* argv[] )
                 int part_active = h_part_coords(p,2);
                 num_push += (part_active+1 != 0);
             }
-            Kokkos::parallel_for("particle-push-test-1", 1, KOKKOS_LAMBDA (int j) {
+            Kokkos::parallel_for("particle-push-test-1", 1, KOKKOS_LAMBDA (const int) {
                 for (int ipart=0; ipart<N_part; ipart++){
                     int part_active = part_coords(ipart,2);
                     if (part_active+1){
@@ -338,7 +340,8 @@ int main( int argc, char* argv[] )
                 double q1 = x1_min + L_x1*rand_x1;
                 double q2 = x2_min + L_x2*rand_x2;
 
-                int isub, jsub;
+                int isub=0;
+                int jsub=0;
 
                 for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
                     if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
@@ -385,7 +388,7 @@ int main( int argc, char* argv[] )
                 int part_active = h_part_coords(p,2);
                 num_push += (part_active+1 != 0);
             }
-            Kokkos::parallel_for("particle-push-test-2", 1, KOKKOS_LAMBDA (int j) {
+            Kokkos::parallel_for("particle-push-test-2", 1, KOKKOS_LAMBDA (const int) {
                 for (int ipart=0; ipart<N_part; ipart++){
                     int part_active = part_coords(ipart,2);
                     if (part_active+1){
@@ -447,7 +450,7 @@ int main( int argc, char* argv[] )
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-2 = %d\n",num_push );
     }
-    Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (int j) {
+    Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
         int Nx = pumi_obj.mesh(0).nsubmesh_x1;
         int Ny = pumi_obj.mesh(0).nsubmesh_x2;
         for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
