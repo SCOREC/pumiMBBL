@@ -19,12 +19,14 @@ The following assumes that a valid C and C++ compiler, and `cmake`, are in your 
 `CMAKE_INSTALL_PREFIX` is the path where the library, headers, and test binary
 are installed.
 
-`kk` is the path where kokkos is installed (either GPU or OpenMP based installation)
+`kk` is the path where kokkos is installed (either GPU or OpenMP based installation).
+
 Set path as `export kk=/path/to/kokkos/install`
 
 `kk_compiler` is the path to kokkos compiler
-Set path as `export kk_compiler=/path/to/nvcc_wrapper` for GPU
-You can ignore this for OpenMP
+Set path as `export kk_compiler=/path/to/nvcc_wrapper` for GPU build.
+
+Ignore this for OpenMP build
 
 Load necessary modules:
 ```
@@ -46,7 +48,7 @@ Building with OpenMP
 mkdir build-omp
 cd build-omp
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$kk
-cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install # on GPU
+cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install # on OpenMP
 make -j 8
 make install
 ```
