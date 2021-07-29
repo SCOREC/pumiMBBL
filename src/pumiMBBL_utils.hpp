@@ -1,5 +1,5 @@
-#ifndef pumi_utils_hpp
-#define pumi_utils_hpp
+#ifndef pumiMBBL_utils_hpp
+#define pumiMBBL_utils_hpp
 
 namespace pumi{
 

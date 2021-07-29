@@ -10,7 +10,6 @@ install`)
 
 ```
 git clone https://github.com/SCOREC/pumiMBBL.git
-mkdir build-GPU
 ```
 
 ## build
@@ -20,25 +19,42 @@ The following assumes that a valid C and C++ compiler, and `cmake`, are in your 
 `CMAKE_INSTALL_PREFIX` is the path where the library, headers, and test binary
 are installed.
 
-`kk` is the path where kokkos is installed
+`kk` is the path where kokkos is installed (either GPU or OpenMP based installation)
 Set path as `export kk=/path/to/kokkos/install`
+
+`kk_compiler` is the path to kokkos compiler
+Set path as `export kk_compiler=/path/to/nvcc_wrapper` for GPU
+You can ignore this for OpenMP
 
 Load necessary modules:
 ```
 module load gcc/7.3.0-bt47fwr mpich/3.3-diz4f6i cmake/3.20.0 cuda/10.2
 ```
 
+Building with GPU
 ```
+mkdir build-GPU
 cd build-GPU
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$kk
-cmake ../pumiMBBL -DCMAKE_CXX_COMPILER=path/to/nvcc_wrapper -DCMAKE_INSTALL_PREFIX=$PWD/install
+cmake ../pumiMBBL -DCMAKE_CXX_COMPILER=$kk_compiler -DCMAKE_INSTALL_PREFIX=$PWD/install # on GPU
 make -j 8
 make install
 ```
 
+Building with OpenMP
+```
+mkdir build-omp
+cd build-omp
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$kk
+cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install # on GPU
+make -j 8
+make install
+```
+
+
 ## test
 
 ```
-./install/bin/pumiMBBL2D_Demo
+./install/bin/pumiMBBL1D_Demo # for 1D test
+./install/bin/pumiMBBL2D_Demo # for 2D test
 ```
-
