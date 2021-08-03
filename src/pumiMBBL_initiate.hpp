@@ -389,79 +389,80 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
 }
 
 /**
- * @brief Verifies the computed mesh and submesh parameters
+ * @brief Verifies the computed mesh and submesh parameters and returns true if verified
  *
  * \param[in] mesh object pointer
- * \param[in] x1-submesh object pointer
- * \param[out] Boolean value indicating mesh validity (True -- valid mesh, False -- invalid mesh)
+ * \param[in] host copy of x1-submesh object pointer
  */
-KOKKOS_INLINE_FUNCTION
-void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, Kokkos::View<bool*> mesh_verified){
+bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+
     printf("\n\nNow verifying valdity of pumi mesh parameters for\n");
     int flag = 0;
-    for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         printf("\tX1-SUBMESH %d:\n", isubmesh );
-        if (submesh_x1(isubmesh)()->meshtype & minBL){
-            if (!(submesh_x1(isubmesh)()->Nel > 0)){
-                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
+        if (h_submesh_x1[isubmesh].meshtype & minBL){
+            if (!(h_submesh_x1[isubmesh].Nel > 0)){
+                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
                 flag++;
             }
             else{
                 printf("\t\t left_Nel    -- verified...\n");
             }
-            if (!(submesh_x1(isubmesh)()->r >= 1.0)){
-                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", submesh_x1(isubmesh)()->r);
+            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
+                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
                 flag++;
             }
             else{
                 printf("\t\t left_r      -- verified...\n");
             }
-            double min_computed_T = submesh_x1(isubmesh)()->t0*submesh_x1(isubmesh)()->Nel;
-            if (!(submesh_x1(isubmesh)()->length > 0.0)){
-                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", submesh_x1(isubmesh)()->length);
+            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
+            if (!(h_submesh_x1[isubmesh].length > 0.0)){
+                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
                 flag++;
             }
-            else if (!(submesh_x1(isubmesh)()->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
                 printf("\t\t left_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                submesh_x1(isubmesh)()->length, min_computed_T);
+                h_submesh_x1[isubmesh].length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t left_T      -- verified...\n");
             }
         }
-        if (submesh_x1(isubmesh)()->meshtype & maxBL){
-            if (!(submesh_x1(isubmesh)()->Nel > 0)){
-                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
+        if (h_submesh_x1[isubmesh].meshtype & maxBL){
+            if (!(h_submesh_x1[isubmesh].Nel > 0)){
+                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
                 flag++;
             }
             else{
                 printf("\t\t right_Nel   -- verified...\n");
             }
-            if (!(submesh_x1(isubmesh)()->r >= 1.0)){
-                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", submesh_x1(isubmesh)()->r);
+            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
+                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
                 flag++;
             }
             else{
                 printf("\t\t right_r     -- verified...\n");
             }
-            double min_computed_T = submesh_x1(isubmesh)()->t0*submesh_x1(isubmesh)()->Nel;
-            if (!(submesh_x1(isubmesh)()->length > 0.0)){
-                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", submesh_x1(isubmesh)()->length);
+            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
+            if (!(h_submesh_x1[isubmesh].length > 0.0)){
+                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
                 flag++;
             }
-            else if (!(submesh_x1(isubmesh)()->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
                 printf("\t\t right_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                submesh_x1(isubmesh)()->length, min_computed_T);
+                h_submesh_x1[isubmesh].length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t right_T     -- verified...\n");
             }
         }
-        if (submesh_x1(isubmesh)()->meshtype & uniform){
-            if (!(submesh_x1(isubmesh)()->Nel > 0)){
-                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
+        if (h_submesh_x1[isubmesh].meshtype & uniform){
+            if (!(h_submesh_x1[isubmesh].Nel > 0)){
+                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
                 flag++;
             }
             else{
@@ -472,89 +473,90 @@ void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submes
 
     if (flag == 0){
         printf("\n\tThe input mesh parameters and the calculated mesh parameters are all valid and verified\n\n");
-        mesh_verified(0) = true;
+        return true;
     }
     else{
         printf("\t\nERROR: One or more input/calculated mesh paramater is not valid. Abort\n");
-        mesh_verified(0) = false;
+        return false;
     }
 }
 
 /**
- * @brief Verifies the computed mesh and submesh parameters
+ * @brief Verifies the computed mesh and submesh parameters and returns true if verified
  *
  * \param[in] mesh object pointer
- * \param[in] x1-submesh object pointer
- * \param[in] x2-submesh object pointer
- * \param[out] Boolean value indicating mesh validity (True -- valid mesh, False -- invalid mesh )
+ * \param[in] host copy of x1-submesh object pointer
+ * \param[in] host copy of x2-submesh object pointer
  */
-KOKKOS_INLINE_FUNCTION
-void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, SubmeshDeviceViewPtr submesh_x2, Kokkos::View<bool*> mesh_verified){
+bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+
     printf("\n\nNow verifying valdity of pumi mesh parameters for\n");
     int flag = 0;
-    for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         printf("\tX1-SUBMESH %d:\n", isubmesh );
-        if (submesh_x1(isubmesh)()->meshtype & minBL){
-            if (!(submesh_x1(isubmesh)()->Nel > 0)){
-                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
+        if (h_submesh_x1[isubmesh].meshtype & minBL){
+            if (!(h_submesh_x1[isubmesh].Nel > 0)){
+                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
                 flag++;
             }
             else{
                 printf("\t\t left_Nel    -- verified...\n");
             }
-            if (!(submesh_x1(isubmesh)()->r >= 1.0)){
-                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", submesh_x1(isubmesh)()->r);
+            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
+                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
                 flag++;
             }
             else{
                 printf("\t\t left_r      -- verified...\n");
             }
-            double min_computed_T = submesh_x1(isubmesh)()->t0*submesh_x1(isubmesh)()->Nel;
-            if (!(submesh_x1(isubmesh)()->length > 0.0)){
-                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", submesh_x1(isubmesh)()->length);
+            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
+            if (!(h_submesh_x1[isubmesh].length > 0.0)){
+                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
                 flag++;
             }
-            else if (!(submesh_x1(isubmesh)()->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
                 printf("\t\t left_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                submesh_x1(isubmesh)()->length, min_computed_T);
+                h_submesh_x1[isubmesh].length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t left_T      -- verified...\n");
             }
         }
-        if (submesh_x1(isubmesh)()->meshtype & maxBL){
-            if (!(submesh_x1(isubmesh)()->Nel > 0)){
-                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
+        if (h_submesh_x1[isubmesh].meshtype & maxBL){
+            if (!(h_submesh_x1[isubmesh].Nel > 0)){
+                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
                 flag++;
             }
             else{
                 printf("\t\t right_Nel   -- verified...\n");
             }
-            if (!(submesh_x1(isubmesh)()->r >= 1.0)){
-                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", submesh_x1(isubmesh)()->r);
+            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
+                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
                 flag++;
             }
             else{
                 printf("\t\t right_r     -- verified...\n");
             }
-            double min_computed_T = submesh_x1(isubmesh)()->t0*submesh_x1(isubmesh)()->Nel;
-            if (!(submesh_x1(isubmesh)()->length > 0.0)){
-                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", submesh_x1(isubmesh)()->length);
+            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
+            if (!(h_submesh_x1[isubmesh].length > 0.0)){
+                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
                 flag++;
             }
-            else if (!(submesh_x1(isubmesh)()->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
                 printf("\t\t right_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                submesh_x1(isubmesh)()->length, min_computed_T);
+                h_submesh_x1[isubmesh].length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t right_T     -- verified...\n");
             }
         }
-        if (submesh_x1(isubmesh)()->meshtype & uniform){
-            if (!(submesh_x1(isubmesh)()->Nel > 0)){
-                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x1(isubmesh)()->Nel);
+        if (h_submesh_x1[isubmesh].meshtype & uniform){
+            if (!(h_submesh_x1[isubmesh].Nel > 0)){
+                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
                 flag++;
             }
             else{
@@ -564,69 +566,69 @@ void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submes
     }
 
 
-    for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x2; isubmesh++){
+    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
         printf("\tX2-SUBMESH %d:\n", isubmesh );
-        if (submesh_x2(isubmesh)()->meshtype & minBL){
-            if (!(submesh_x2(isubmesh)()->Nel > 0)){
-                printf("\t\t bottom_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x2(isubmesh)()->Nel);
+        if (h_submesh_x2[isubmesh].meshtype & minBL){
+            if (!(h_submesh_x2[isubmesh].Nel > 0)){
+                printf("\t\t bottom_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh].Nel);
                 flag++;
             }
             else{
                 printf("\t\t bottom_Nel  -- verified...\n");
             }
-            if (!(submesh_x2(isubmesh)()->r >= 1.0)){
-                printf("\t\t bottom_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", submesh_x2(isubmesh)()->r);
+            if (!(h_submesh_x2[isubmesh].r >= 1.0)){
+                printf("\t\t bottom_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x2[isubmesh].r);
                 flag++;
             }
             else{
                 printf("\t\t bottom_r    -- verified...\n");
             }
-            double min_computed_T = submesh_x2(isubmesh)()->t0*submesh_x2(isubmesh)()->Nel;
-            if (!(submesh_x2(isubmesh)()->length > 0.0)){
-                printf("\t\t bottom_T   = %2.4f is not a valid input. It has to be postive\n", submesh_x2(isubmesh)()->length);
+            double min_computed_T = h_submesh_x2[isubmesh].t0*h_submesh_x2[isubmesh].Nel;
+            if (!(h_submesh_x2[isubmesh].length > 0.0)){
+                printf("\t\t bottom_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh].length);
                 flag++;
             }
-            else if (!(submesh_x2(isubmesh)()->length > min_computed_T)){
+            else if (!(h_submesh_x2[isubmesh].length > min_computed_T)){
                 printf("\t\t bottom_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                submesh_x2(isubmesh)()->length, min_computed_T);
+                h_submesh_x2[isubmesh].length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t bottom_T    -- verified...\n");
             }
         }
-        if (submesh_x2(isubmesh)()->meshtype & maxBL){
-            if (!(submesh_x2(isubmesh)()->Nel > 0)){
-                printf("\t\t top_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x2(isubmesh)()->Nel);
+        if (h_submesh_x2[isubmesh].meshtype & maxBL){
+            if (!(h_submesh_x2[isubmesh].Nel > 0)){
+                printf("\t\t top_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh].Nel);
                 flag++;
             }
             else{
                 printf("\t\t top_Nel     -- verified...\n");
             }
-            if (!(submesh_x2(isubmesh)()->r >= 1.0)){
-                printf("\t\t top_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", submesh_x2(isubmesh)()->r);
+            if (!(h_submesh_x2[isubmesh].r >= 1.0)){
+                printf("\t\t top_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x2[isubmesh].r);
                 flag++;
             }
             else{
                 printf("\t\t top_r       -- verified...\n");
             }
-            double min_computed_T = submesh_x2(isubmesh)()->t0*submesh_x2(isubmesh)()->Nel;
-            if (!(submesh_x2(isubmesh)()->length > 0.0)){
-                printf("\t\t top_T   = %2.4f is not a valid input. It has to be postive\n", submesh_x2(isubmesh)()->length);
+            double min_computed_T = h_submesh_x2[isubmesh].t0*h_submesh_x2[isubmesh].Nel;
+            if (!(h_submesh_x2[isubmesh].length > 0.0)){
+                printf("\t\t top_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh].length);
                 flag++;
             }
-            else if (!(submesh_x2(isubmesh)()->length > min_computed_T)){
+            else if (!(h_submesh_x2[isubmesh].length > min_computed_T)){
                 printf("\t\t top_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                submesh_x2(isubmesh)()->length, min_computed_T);
+                h_submesh_x2[isubmesh].length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t top_T       -- verified...\n");
             }
         }
-        if (submesh_x2(isubmesh)()->meshtype & uniform){
-            if (!(submesh_x2(isubmesh)()->Nel > 0)){
-                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", submesh_x2(isubmesh)()->Nel);
+        if (h_submesh_x2[isubmesh].meshtype & uniform){
+            if (!(h_submesh_x2[isubmesh].Nel > 0)){
+                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh].Nel);
             }
             else{
                 printf("\t\t uniform_Nel -- verified...\n");
@@ -637,11 +639,11 @@ void verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submes
 
     if (flag == 0){
         printf("\n\tThe input mesh parameters and the calculated mesh parameters are all valid and verified\n\n");
-        mesh_verified(0) = true;
+        return true;
     }
     else{
         printf("\t\nERROR: One or more input/calculated mesh paramater is not valid. Abort\n");
-        mesh_verified(0) = false;
+        return false;
     }
 }
 
@@ -884,14 +886,8 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         print_mesh_params(pumi_mesh, submesh_x1);
     });
 
-    Kokkos::View<bool*> mesh_verified("mesh-verified",1);
-    Kokkos::View<bool*>::HostMirror h_mesh_verified = Kokkos::create_mirror_view(mesh_verified);
-    Kokkos::parallel_for("1D-mesh-verifications", 1, KOKKOS_LAMBDA (const int) {
-        verify_mesh_params(pumi_mesh, submesh_x1, mesh_verified);
-    });
-    Kokkos::deep_copy(h_mesh_verified, mesh_verified);
-
-    if (!(h_mesh_verified(0))){
+    bool mesh_verified = verify_mesh_params(pumi_mesh, hc_submesh_x1);
+    if (!mesh_verified){
         Kokkos::finalize();
         exit(0);
     }
@@ -1346,20 +1342,15 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         print_mesh_params(pumi_mesh, submesh_x1, submesh_x2);
     });
 
-    Kokkos::View<bool*> mesh_verified("mesh-verified",1);
-    Kokkos::View<bool*>::HostMirror h_mesh_verified = Kokkos::create_mirror_view(mesh_verified);
-    Kokkos::parallel_for("2D-mesh-verifications", 1, KOKKOS_LAMBDA (const int) {
-        verify_mesh_params(pumi_mesh, submesh_x1, submesh_x2, mesh_verified);
-    });
-    Kokkos::deep_copy(h_mesh_verified, mesh_verified);
-
-    if (!(h_mesh_verified(0))){
+    bool mesh_verified = verify_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
+    if (!mesh_verified){
         Kokkos::finalize();
         exit(0);
     }
     else{
         print_mesh_nodes(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
     }
+
 
     return pumi_mesh;
 
