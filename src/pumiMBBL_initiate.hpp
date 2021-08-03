@@ -876,14 +876,15 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int Nel_tot_x1;
 
-    Kokkos::View<int*> Nel_total_x1("total-x1-elems",1);
-    Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
-
-    Kokkos::parallel_for("1D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
-        Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
-    });
-    Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
-    Nel_tot_x1 = h_Nel_total_x1(0);
+    // Kokkos::View<int*> Nel_total_x1("total-x1-elems",1);
+    // Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
+    //
+    // Kokkos::parallel_for("1D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
+    //     Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
+    // });
+    // Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
+    // Nel_tot_x1 = h_Nel_total_x1(0);
+    Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1].Nel + hc_submesh_x1[nsubmesh_x1].Nel_cumulative;
 
     Kokkos::parallel_for("1D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1);
@@ -920,18 +921,20 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     int nsubmesh_x2 = pumi_inputs->nsubmesh_x2;
     int Nel_tot_x1, Nel_tot_x2, Nel_total_2D, Nnp_total_2D;
 
-    Kokkos::View<int*> Nel_total_x1("total-x1-elems",1);
-    Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
-    Kokkos::View<int*> Nel_total_x2("total-x2-elems",1);
-    Kokkos::View<int*>::HostMirror h_Nel_total_x2 = Kokkos::create_mirror_view(Nel_total_x2);
-    Kokkos::parallel_for("2D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
-        Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
-        Nel_total_x2(0) = submesh_x2(nsubmesh_x2)()->Nel + submesh_x2(nsubmesh_x2)()->Nel_cumulative;
-    });
-    Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
-    Kokkos::deep_copy(h_Nel_total_x2,Nel_total_x2);
-    Nel_tot_x1 = h_Nel_total_x1(0);
-    Nel_tot_x2 = h_Nel_total_x2(0);
+    // Kokkos::View<int*> Nel_total_x1("total-x1-elems",1);
+    // Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
+    // Kokkos::View<int*> Nel_total_x2("total-x2-elems",1);
+    // Kokkos::View<int*>::HostMirror h_Nel_total_x2 = Kokkos::create_mirror_view(Nel_total_x2);
+    // Kokkos::parallel_for("2D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
+    //     Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
+    //     Nel_total_x2(0) = submesh_x2(nsubmesh_x2)()->Nel + submesh_x2(nsubmesh_x2)()->Nel_cumulative;
+    // });
+    // Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
+    // Kokkos::deep_copy(h_Nel_total_x2,Nel_total_x2);
+    // Nel_tot_x1 = h_Nel_total_x1(0);
+    // Nel_tot_x2 = h_Nel_total_x2(0);
+    Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1].Nel + hc_submesh_x1[nsubmesh_x1].Nel_cumulative;
+    Nel_tot_x2 = hc_submesh_x2[nsubmesh_x2].Nel + hc_submesh_x2[nsubmesh_x2].Nel_cumulative;
     Nel_total_2D = Nel_tot_x1*Nel_tot_x2;
     Nnp_total_2D = (Nel_tot_x1+1)*(Nel_tot_x2+1);
 
