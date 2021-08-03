@@ -62,13 +62,13 @@ int main( int argc, char* argv[] )
     // }
 
 
-    Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
-        int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-        int Ny = pumi_obj.mesh(0).nsubmesh_x2;
-        for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-            printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh(0).is_bdry(i) );
-        }
-    });
+    // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
+    //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
+    //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
+    //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
+    //         printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh(0).is_bdry(i) );
+    //     }
+    // });
 
     int N_part = 100000;
     int N_step = 20;
@@ -450,13 +450,13 @@ int main( int argc, char* argv[] )
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-2 = %d\n",num_push );
     }
-    Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
-        int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-        int Ny = pumi_obj.mesh(0).nsubmesh_x2;
-        for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-            printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh(0).is_bdry(i) );
-        }
-    });
+    // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
+    //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
+    //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
+    //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
+    //         printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh(0).is_bdry(i) );
+    //     }
+    // });
 
 
   }

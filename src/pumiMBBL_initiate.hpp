@@ -99,43 +99,45 @@ void inputs_deallocate(Mesh_Inputs* pumi_inputs){
  * @brief Prints the all relevant 1D-mesh details
  *
  * \param[in] mesh object pointer
- * \param[in] x1-submesh object pointer
+ * \param[in] host copy of x1-submesh object pointer
  */
-KOKKOS_INLINE_FUNCTION
-void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1){
+void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+
     printf("\n\nPUMI mesh parameter info [X1-Direction] :\n\n");
-    printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh(0).Nel_tot_x1);
-    for (int i=1; i<=pumi_mesh(0).nsubmesh_x1; i++){
+    printf("\tTotal elements along X1-direction = %d\n\n", h_pumi_mesh(0).Nel_tot_x1);
+    for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
-        if (submesh_x1(i)()->meshtype & minBL){
+        if (h_submesh_x1[i].meshtype & minBL){
             printf("leftBL\n");
-            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", submesh_x1(i)()->t0);
+            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", h_submesh_x1[i].t0);
             printf("\t left_tN        = %2.4e \t [m] Cell size of last/rightmost cell in left BL block\n",
-                (submesh_x1(i)()->t0)*pow(submesh_x1(i)()->r,submesh_x1(i)()->Nel-1));
-            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", submesh_x1(i)()->length);
-            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", submesh_x1(i)()->r);
-            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", submesh_x1(i)()->Nel);
-            if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d leftBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
-            }
+                (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
+            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x1[i].length);
+            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", h_submesh_x1[i].r);
+            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", h_submesh_x1[i].Nel);
+            // if (h_submesh_x1[i].BL_coords.extent(0)){
+                printf("\t %d leftBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
+            // }
         }
-        if (submesh_x1(i)()->meshtype & maxBL){
+        if (h_submesh_x1[i].meshtype & maxBL){
             printf("rightBL\n");
-            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", submesh_x1(i)()->t0);
+            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", h_submesh_x1[i].t0);
             printf("\t right_tN       = %2.4e \t [m] Cell size of first/leftmost cell in right BL block\n",
-            (submesh_x1(i)()->t0)*pow(submesh_x1(i)()->r,submesh_x1(i)()->Nel-1));
-            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", submesh_x1(i)()->length);
-            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", submesh_x1(i)()->r);
-            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", submesh_x1(i)()->Nel);
-            if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d rightBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
-            }
+            (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
+            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x1[i].length);
+            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x1[i].r);
+            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x1[i].Nel);
+            // if (h_submesh_x1[i].BL_coords.extent(0)){
+                printf("\t %d rightBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
+            // }
         }
-        if (submesh_x1(i)()->meshtype & uniform){
+        if (h_submesh_x1[i].meshtype & uniform){
             printf("uniform\n");
-            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", submesh_x1(i)()->t0);
-            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", submesh_x1(i)()->Nel);
+            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i].t0);
+            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i].Nel);
         }
     }
 }
@@ -144,97 +146,99 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
  * @brief Prints the all relevant 2D-mesh details
  *
  * \param[in] mesh object pointer
- * \param[in] x1-submesh object pointer
- * \param[in] x2-submesh object pointer
+ * \param[in] host copy of x1-submesh object pointer
+ * \param[in] host copy of x2-submesh object pointer
  */
-KOKKOS_INLINE_FUNCTION
-void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, SubmeshDeviceViewPtr submesh_x2){
+void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+
     printf("\n\nPUMI mesh parameter info [X1-Direction] :\n\n");
-    printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh(0).Nel_tot_x1);
-    for (int i=1; i<=pumi_mesh(0).nsubmesh_x1; i++){
+    printf("\tTotal elements along X1-direction = %d\n\n", h_pumi_mesh(0).Nel_tot_x1);
+    for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
-        if (submesh_x1(i)()->meshtype & minBL){
+        if (h_submesh_x1[i].meshtype & minBL){
             printf("leftBL\n");
-            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", submesh_x1(i)()->t0);
+            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", h_submesh_x1[i].t0);
             printf("\t left_tN        = %2.4e \t [m] Cell size of last/rightmost cell in left BL block\n",
-                (submesh_x1(i)()->t0)*pow(submesh_x1(i)()->r,submesh_x1(i)()->Nel-1));
-            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", submesh_x1(i)()->length);
-            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", submesh_x1(i)()->r);
-            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", submesh_x1(i)()->Nel);
-            if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d leftBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
+                (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
+            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x1[i].length);
+            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", h_submesh_x1[i].r);
+            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", h_submesh_x1[i].Nel);
+            if (h_submesh_x1[i].BL_coords.extent(0)){
+                printf("\t %d leftBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
             }
         }
-        if (submesh_x1(i)()->meshtype & maxBL){
+        if (h_submesh_x1[i].meshtype & maxBL){
             printf("rightBL\n");
-            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", submesh_x1(i)()->t0);
+            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", h_submesh_x1[i].t0);
             printf("\t right_tN       = %2.4e \t [m] Cell size of first/leftmost cell in right BL block\n",
-            (submesh_x1(i)()->t0)*pow(submesh_x1(i)()->r,submesh_x1(i)()->Nel-1));
-            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", submesh_x1(i)()->length);
-            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", submesh_x1(i)()->r);
-            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", submesh_x1(i)()->Nel);
-            if (submesh_x1(i)()->BL_coords.extent(0)){
-                printf("\t %d rightBL node coords stored in a array\n\n", submesh_x1(i)()->Nel+1);
+            (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
+            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x1[i].length);
+            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x1[i].r);
+            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x1[i].Nel);
+            if (h_submesh_x1[i].BL_coords.extent(0)){
+                printf("\t %d rightBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
             }
         }
-        if (submesh_x1(i)()->meshtype & uniform){
+        if (h_submesh_x1[i].meshtype & uniform){
             printf("uniform\n");
-            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", submesh_x1(i)()->t0);
-            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", submesh_x1(i)()->Nel);
+            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i].t0);
+            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i].Nel);
         }
     }
 
     printf("PUMI mesh parameter info [X2-Direction] :\n\n");
-    printf("\tTotal elements along X2-direction = %d\n\n", pumi_mesh(0).Nel_tot_x2);
-    for (int i=1; i<=pumi_mesh(0).nsubmesh_x2; i++){
+    printf("\tTotal elements along X2-direction = %d\n\n", h_pumi_mesh(0).Nel_tot_x2);
+    for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x2; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
-        if (submesh_x2(i)()->meshtype & minBL){
+        if (h_submesh_x2[i].meshtype & minBL){
             printf("bottomBL\n");
-            printf("\t bottom_t0      = %2.4e \t [m] Cell size of first/bottom-most cell in left BL block\n", submesh_x2(i)()->t0);
+            printf("\t bottom_t0      = %2.4e \t [m] Cell size of first/bottom-most cell in left BL block\n", h_submesh_x2[i].t0);
             printf("\t bottom_tN      = %2.4e \t [m] Cell size of last /   top-most cell in left BL block\n",
-                (submesh_x2(i)()->t0)*pow(submesh_x2(i)()->r,submesh_x2(i)()->Nel-1));
-            printf("\t bottom_T       = %2.4e \t [m] Left boundary layer (left BL) thickness\n", submesh_x2(i)()->length);
-            printf("\t bottom_r       = %2.4e \t Grading ratio in left BL block\n", submesh_x2(i)()->r);
-            printf("\t bottom_Nel     = %d    \t Number of Cells in left BL block\n\n", submesh_x2(i)()->Nel);
-            if (submesh_x2(i)()->BL_coords.extent(0)){
-                printf("\t %d bottomBL node coords stored in a array\n\n", submesh_x2(i)()->Nel+1);
+                (h_submesh_x2[i].t0)*pow(h_submesh_x2[i].r,h_submesh_x2[i].Nel-1));
+            printf("\t bottom_T       = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x2[i].length);
+            printf("\t bottom_r       = %2.4e \t Grading ratio in left BL block\n", h_submesh_x2[i].r);
+            printf("\t bottom_Nel     = %d    \t Number of Cells in left BL block\n\n", h_submesh_x2[i].Nel);
+            if (h_submesh_x2[i].BL_coords.extent(0)){
+                printf("\t %d bottomBL node coords stored in a array\n\n", h_submesh_x2[i].Nel+1);
             }
         }
-        if (submesh_x2(i)()->meshtype & maxBL){
+        if (h_submesh_x2[i].meshtype & maxBL){
             printf("topBL\n");
-            printf("\t top_t0         = %2.4e \t [m] Cell size of last /   top-most cell in right BL block\n", submesh_x2(i)()->t0);
+            printf("\t top_t0         = %2.4e \t [m] Cell size of last /   top-most cell in right BL block\n", h_submesh_x2[i].t0);
             printf("\t top_tN         = %2.4e \t [m] Cell size of first/bottom-most cell in right BL block\n",
-            (submesh_x2(i)()->t0)*pow(submesh_x2(i)()->r,submesh_x2(i)()->Nel-1));
+            (h_submesh_x2[i].t0)*pow(h_submesh_x2[i].r,h_submesh_x2[i].Nel-1));
 
-            printf("\t top_T          = %2.4e \t [m] Left boundary layer (right BL) thickness\n", submesh_x2(i)()->length);
-            printf("\t top_r          = %2.4e \t Grading ratio in right BL mesh\n", submesh_x2(i)()->r);
-            printf("\t top_Nel        = %d    \t Number of Cells in left BL mesh region\n\n", submesh_x2(i)()->Nel);
-            if (submesh_x2(i)()->BL_coords.extent(0)){
-                printf("\t %d topBL node coords stored in a array\n\n", submesh_x2(i)()->Nel+1);
+            printf("\t top_T          = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x2[i].length);
+            printf("\t top_r          = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x2[i].r);
+            printf("\t top_Nel        = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x2[i].Nel);
+            if (h_submesh_x2[i].BL_coords.extent(0)){
+                printf("\t %d topBL node coords stored in a array\n\n", h_submesh_x2[i].Nel+1);
             }
         }
-        if (submesh_x2(i)()->meshtype & uniform){
+        if (h_submesh_x2[i].meshtype & uniform){
             printf("uniform\n");
-            printf("\t uniform_dx2    = %2.4e \t [m] Cell size in uniform block\n", submesh_x2(i)()->t0);
-            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", submesh_x2(i)()->Nel);
+            printf("\t uniform_dx2    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x2[i].t0);
+            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x2[i].Nel);
         }
     }
 
     printf("PUMI submesh activity info :\n\n");
-    for (int jsubmesh=pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
-        if (jsubmesh != pumi_mesh(0).nsubmesh_x2){
-            for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1-1; isubmesh++ ){
+    for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
+        if (jsubmesh != h_pumi_mesh(0).nsubmesh_x2){
+            for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1-1; isubmesh++ ){
                 printf("_____________");
             }
             printf("__________________\n\n");
         }
-        for (int isubmesh=1; isubmesh<=pumi_mesh(0).nsubmesh_x1; isubmesh++ ){
+        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++ ){
             if (isubmesh-1){
                 printf("|");
             }
-            if(pumi_mesh(0).isactive(isubmesh,jsubmesh)){
+            if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
                 printf("    ACTIVE    ");
             }
             else{
@@ -245,8 +249,8 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh
     }
     printf("\n\n");
 
-    printf("Total active elements in 2D Mesh = %d\n",pumi_mesh(0).Nel_total);
-    printf("Total active nodes in 2D Mesh = %d\n",pumi_mesh(0).Nnp_total);
+    printf("Total active elements in 2D Mesh = %d\n",h_pumi_mesh(0).Nel_total);
+    printf("Total active nodes in 2D Mesh = %d\n",h_pumi_mesh(0).Nnp_total);
 
 }
 
@@ -883,8 +887,8 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
 
     Kokkos::parallel_for("1D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1);
-        print_mesh_params(pumi_mesh, submesh_x1);
     });
+    print_mesh_params(pumi_mesh, hc_submesh_x1);
 
     bool mesh_verified = verify_mesh_params(pumi_mesh, hc_submesh_x1);
     if (!mesh_verified){
@@ -1339,8 +1343,9 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                         submesh_activity, elemoffset_start, elemoffset_skip,
                         nodeoffset_start, nodeoffset_skip_bot, nodeoffset_skip_mid, nodeoffset_skip_top,
                         is_bdry, Nel_total_2D, Nnp_total_2D, host_isactive);
-        print_mesh_params(pumi_mesh, submesh_x1, submesh_x2);
     });
+
+    print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
 
     bool mesh_verified = verify_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
     if (!mesh_verified){
