@@ -184,8 +184,11 @@ void pumi_compute_Qspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, double xi, int ie
 void pumi_compute_covspl_coeffs(pumi_mesh_t* pumi_mesh, int dir);
 void pumi_compute_covspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, int dir);
 void pumi_reset_Espl_coeffs(pumi_mesh_t* pumi_mesh);
-void pumi_compute_Espl_coeffs(pumi_mesh_t *pumi_mesh, double *E_dir, int dir);
+void pumi_compute_matrices_for_Espl_solver(pumi_mesh_t *pumi_mesh, double *E_dir, int dir, double ***LHS_mat, double **RHS_vec, double **x0);
+void pumi_free_Espl_matrices(pumi_mesh_t* pumi_mesh, double **LHS_mat, double *RHS_vec, double *x0);
 double pumi_compute_Espl_value(pumi_mesh_t* pumi_mesh, double xi, int iel);
 void pumi_compute_bspline_nodal_density(pumi_mesh_t* pumi_mesh, int dir, double* charge_density);
 void pumi_compute_bspline_nodal_density_periodic(pumi_mesh_t* pumi_mesh, int dir, double* charge_density);
+int pumi_spline_order(pumi_mesh_t *pumi_mesh);
+int pumi_num_spline(pumi_mesh_t *pumi_mesh);
 #endif /* pumi_routines_h */

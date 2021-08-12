@@ -22,7 +22,7 @@ are installed.
 ```
 cd buildpumiMBBL
 cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install
-# For release build, run the following instead 
+# For release build, run the following instead
 # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/install ../pumiMBBL
 make
 make install
