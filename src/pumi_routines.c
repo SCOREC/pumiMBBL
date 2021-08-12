@@ -2779,7 +2779,7 @@ void pumi_compute_Qspl_coeffs_periodic(pumi_mesh_t* pumi_mesh, double xi, int ie
     for (i=0; i<pumi_mesh->P_spline+1; i++){
         spl_contribution[i] = 0.0;
         for (j=0; j<pumi_mesh->P_spline+1; j++){
-            spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];;
+            spl_contribution[i] += pumi_mesh->pumi_bspl.pumi_bez_ex_x1[pumi_mesh->pumi_bspl.iel_bezex_map[iel]].C[i][j]*pumi_mesh->pumi_bspl.bernstein_vector[j];
         }
         pumi_mesh->pumi_bspl.Q_coeffs[(iel+i)%pumi_mesh->pumi_Nel_total_x1] += Q_macro_particle*spl_contribution[i];
     }
