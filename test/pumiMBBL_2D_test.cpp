@@ -71,7 +71,7 @@ int main( int argc, char* argv[] )
     // });
 
     int N_part = 100000;
-    int N_step = 20;
+    int N_step = 10;
     Kokkos::View<double**> part_coords("particle-coordinates",N_part,6);
 
     bool test0 = true;
@@ -86,7 +86,7 @@ int main( int argc, char* argv[] )
     double x2_min = pumi::get_global_bottom_coord(pumi_obj);
     double x2_max = pumi::get_global_top_coord(pumi_obj);
     double L_x2 = x2_max-x2_min;
-    double dist_factor = 100.0;
+    double dist_factor = 20.0;
     int num_push = 0;
     Kokkos::View<double**>::HostMirror h_part_coords = Kokkos::create_mirror_view(part_coords);
 
