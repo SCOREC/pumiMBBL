@@ -1414,6 +1414,10 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
 
 }
 
+void check_is_pumi_working(){
+    printf("Yes, pumiMBBL-GPU is working\n\n");
+}
+
 } // namespace pumi
 #include "pumiMBBL_initiate.hpp"
 #include "pumiMBBL_routines.hpp"

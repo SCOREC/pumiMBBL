@@ -11,7 +11,7 @@ int main( int argc, char* argv[] )
       {
           print_usage();
       }
-
+    pumi::check_is_pumi_working();  
     int nsubmesh_x1 = atoi( argv[1] );
     int nsubmesh_x2 = atoi( argv[6] );
     int nsubmesh = nsubmesh_x1+nsubmesh_x2;
