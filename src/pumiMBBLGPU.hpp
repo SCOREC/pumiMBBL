@@ -57,12 +57,12 @@ struct Mesh_Inputs{
     int nsubmesh_x1; //!< number of x1-submesh blocks in the domain
     int nsubmesh_x2; //!< number of x2-submesh blocks in the domain
     bool isactive[MAX_SUBMESHES][MAX_SUBMESHES];
-    double *block_length_x1;//! Number of debye lenghts in a x1-submesh
-    double *block_length_x2;//! Number of debye lenghts in a x2-submesh
-    double *max_elem_size_x1;//!< Maximum size cells in Debye Length (along x1-direction)
-    double *max_elem_size_x2;//!< Maximum size cells in Debye Length (along x2-direction)
-    double *min_elem_size_x1;//!< Minimum size cells in Debye Length (along x1-direction)
-    double *min_elem_size_x2;//!< Minimum size cells in Debye Length (along x2-direction)
+    std::vector<double> block_length_x1;//! Number of debye lenghts in a x1-submesh
+    std::vector<double> block_length_x2;//! Number of debye lenghts in a x2-submesh
+    std::vector<double> max_elem_size_x1;//!< Maximum size cells in Debye Length (along x1-direction)
+    std::vector<double> max_elem_size_x2;//!< Maximum size cells in Debye Length (along x2-direction)
+    std::vector<double> min_elem_size_x1;//!< Minimum size cells in Debye Length (along x1-direction)
+    std::vector<double> min_elem_size_x2;//!< Minimum size cells in Debye Length (along x2-direction)
     std::vector<std::string> meshtype_x1; //!< Type of mesh as string (uniform/minBL/maxBL)
     std::vector<std::string> meshtype_x2; //!< Type of mesh as string (uniform/minBL/maxBL)
 };

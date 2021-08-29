@@ -1,5 +1,6 @@
 #include "pumiMBBLGPU.hpp"
 void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs);
+void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
 
 int main( int argc, char* argv[] )
@@ -13,8 +14,7 @@ int main( int argc, char* argv[] )
 
     int nsubmesh_x1 = atoi( argv[1] );
     int nsubmesh = nsubmesh_x1;
-    pumi::Mesh_Inputs *pumi_inputs;
-    pumi_inputs = pumi::inputs_allocate(nsubmesh);
+    pumi::Mesh_Inputs *pumi_inputs = pumi::inputs_allocate();
 
     pumi_inputs->ndim = 1; // Fixed pumi input
     pumi_inputs->nsubmesh_x1 = nsubmesh_x1;
@@ -214,11 +214,24 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
 
     for (isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
         (pumi_inputs->meshtype_x1).push_back(each_submesh_flag_x1[isubmesh]);
-        *(pumi_inputs->block_length_x1 + isubmesh) = atof(each_p1_submesh_x1[isubmesh]);
-        *(pumi_inputs->max_elem_size_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
-        *(pumi_inputs->min_elem_size_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
+        (pumi_inputs->block_length_x1).push_back(atof(each_p1_submesh_x1[isubmesh]));
+        (pumi_inputs->max_elem_size_x1).push_back(atof(each_p2max_submesh_x1[isubmesh]));
+        (pumi_inputs->min_elem_size_x1).push_back(atof(each_p2min_submesh_x1[isubmesh]));
     }
+    print_parsed_inputs(pumi_inputs);
+}
 
+void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
+{
+    printf("Printing the parsed commandline inputs\n\n");
+    printf("Number of blocks in x1-direction = %d\n",pumi_inputs->nsubmesh_x1 );
+    for(int i=0; i<pumi_inputs->nsubmesh_x1; i++){
+        printf("\n[X1-BLOCK #%d]\n",i+1 );
+        std::cout << "\t type          = " << pumi_inputs->meshtype_x1[i] << "\n";
+        printf("\t length        = %2.4e\n",pumi_inputs->block_length_x1[i] );
+        printf("\t max-elem-size = %2.4e\n",pumi_inputs->max_elem_size_x1[i] );
+        printf("\t min-elem-size = %2.4e\n",pumi_inputs->min_elem_size_x1[i] );
+    }
 }
 
 void print_usage()

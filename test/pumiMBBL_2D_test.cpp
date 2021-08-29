@@ -1,5 +1,6 @@
 #include "pumiMBBLGPU.hpp"
 void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs);
+void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
 void write2file(Kokkos::View<double**>::HostMirror hp_coords, int N_part, int nstep);
 
@@ -14,9 +15,8 @@ int main( int argc, char* argv[] )
     pumi::check_is_pumi_working();
     int nsubmesh_x1 = atoi( argv[1] );
     int nsubmesh_x2 = atoi( argv[6] );
-    int nsubmesh = nsubmesh_x1+nsubmesh_x2;
-    pumi::Mesh_Inputs *pumi_inputs;
-    pumi_inputs = pumi::inputs_allocate(nsubmesh);
+    // int nsubmesh = nsubmesh_x1+nsubmesh_x2;
+    pumi::Mesh_Inputs *pumi_inputs = pumi::inputs_allocate();
 
     pumi_inputs->ndim = 2; // Fixed pumi input
     pumi_inputs->nsubmesh_x1 = nsubmesh_x1;
@@ -633,16 +633,16 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
 
     for (isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
         (pumi_inputs->meshtype_x1).push_back(each_submesh_flag_x1[isubmesh]);
-        *(pumi_inputs->block_length_x1 + isubmesh) = atof(each_p1_submesh_x1[isubmesh]);
-        *(pumi_inputs->max_elem_size_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
-        *(pumi_inputs->min_elem_size_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
+        (pumi_inputs->block_length_x1).push_back(atof(each_p1_submesh_x1[isubmesh]));
+        (pumi_inputs->max_elem_size_x1).push_back(atof(each_p2max_submesh_x1[isubmesh]));
+        (pumi_inputs->min_elem_size_x1).push_back(atof(each_p2min_submesh_x1[isubmesh]));
     }
 
-    for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
-        (pumi_inputs->meshtype_x2).push_back(each_submesh_flag_x2[jsubmesh]);
-        *(pumi_inputs->block_length_x2 + jsubmesh) = atof(each_p1_submesh_x2[jsubmesh]);
-        *(pumi_inputs->max_elem_size_x2 + jsubmesh) = atof( each_p2max_submesh_x2[jsubmesh]);
-        *(pumi_inputs->min_elem_size_x2 + jsubmesh) = atof( each_p2min_submesh_x2[jsubmesh]);
+    for (isubmesh=0; isubmesh<nsubmesh_x2; isubmesh++){
+        (pumi_inputs->meshtype_x2).push_back(each_submesh_flag_x2[isubmesh]);
+        (pumi_inputs->block_length_x2).push_back(atof(each_p1_submesh_x2[isubmesh]));
+        (pumi_inputs->max_elem_size_x2).push_back(atof(each_p2max_submesh_x2[isubmesh]));
+        (pumi_inputs->min_elem_size_x2).push_back(atof(each_p2min_submesh_x2[isubmesh]));
     }
 
     int ksubmesh=0;
@@ -657,6 +657,29 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
                 pumi_inputs->isactive[isubmesh][jsubmesh] = false;
             }
         }
+    }
+
+    print_parsed_inputs(pumi_inputs);
+}
+
+void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
+{
+    printf("Printing the parsed commandline inputs\n\n");
+    printf("Number of blocks in x1-direction = %d\n",pumi_inputs->nsubmesh_x1 );
+    for(int i=0; i<pumi_inputs->nsubmesh_x1; i++){
+        printf("\n[X1-BLOCK #%d]\n",i+1 );
+        std::cout << "\t type          = " << pumi_inputs->meshtype_x1[i] << "\n";
+        printf("\t length        = %2.4e\n",pumi_inputs->block_length_x1[i] );
+        printf("\t max-elem-size = %2.4e\n",pumi_inputs->max_elem_size_x1[i] );
+        printf("\t min-elem-size = %2.4e\n",pumi_inputs->min_elem_size_x1[i] );
+    }
+    printf("\nNumber of blocks in x2-direction = %d\n",pumi_inputs->nsubmesh_x2 );
+    for(int i=0; i<pumi_inputs->nsubmesh_x2; i++){
+        printf("\n[X2-BLOCK #%d]\n",i+1 );
+        std::cout << "\t type          = " << pumi_inputs->meshtype_x2[i] << "\n";
+        printf("\t length        = %2.4e\n",pumi_inputs->block_length_x2[i] );
+        printf("\t max-elem-size = %2.4e\n",pumi_inputs->max_elem_size_x2[i] );
+        printf("\t min-elem-size = %2.4e\n",pumi_inputs->min_elem_size_x2[i] );
     }
 }
 
