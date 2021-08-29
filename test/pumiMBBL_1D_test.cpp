@@ -172,7 +172,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmesh_x1){
-        printf("ERROR: Number of p1_i_x1 arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of block_length_x1 arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
@@ -208,15 +208,15 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmesh_x1){
-        printf("ERROR: Number of p2max_i_x1 arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of max_elem_size_x1 arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
     for (isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
-        (pumi_inputs->meshtype).push_back(each_submesh_flag_x1[isubmesh]);
-        *(pumi_inputs->p1_i_x1 + isubmesh) = atof(each_p1_submesh_x1[isubmesh]);
-        *(pumi_inputs->p2max_i_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
-        *(pumi_inputs->p2min_i_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
+        (pumi_inputs->meshtype_x1).push_back(each_submesh_flag_x1[isubmesh]);
+        *(pumi_inputs->block_length_x1 + isubmesh) = atof(each_p1_submesh_x1[isubmesh]);
+        *(pumi_inputs->max_elem_size_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
+        *(pumi_inputs->min_elem_size_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
     }
 
 }
@@ -224,12 +224,12 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
 void print_usage()
 {
     printf("Execute the code with the following command line arguments -- \n\n" );
-    printf("\t ./install/bin/pumiMBBL1D_Demo N_x1 \"typeflag_i_x1\" \"p1_i_x1\" \"Nel_i_x1\" \"p2min_i_x1\" \n\n\n");
+    printf("\t ./install/bin/pumiMBBL1D_Demo N_x1 \"typeflag_i_x1\" \"block_length_x1\" \"Nel_i_x1\" \"min_elem_size_x1\" \n\n\n");
     printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
     printf("\t \"typeflag_i_x1\" \t Active mesh type segment in i-th submesh along the x1-direction \n" );
-    printf("\t \"p1_i_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
-    printf("\t \"p2max_i_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
-    printf("\t \"p2min_i_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
+    printf("\t \"block_length_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
+    printf("\t \"max_elem_size_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
+    printf("\t \"min_elem_size_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
     printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");

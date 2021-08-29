@@ -11,7 +11,7 @@ int main( int argc, char* argv[] )
       {
           print_usage();
       }
-    pumi::check_is_pumi_working();  
+    pumi::check_is_pumi_working();
     int nsubmesh_x1 = atoi( argv[1] );
     int nsubmesh_x2 = atoi( argv[6] );
     int nsubmesh = nsubmesh_x1+nsubmesh_x2;
@@ -501,7 +501,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmesh_x1){
-        printf("ERROR: Number of p1_i_x1 arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of block_length_x1 arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
@@ -537,7 +537,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmesh_x1){
-        printf("ERROR: Number of p2max_i_x1 arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of max_elem_size_x1 arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
@@ -573,7 +573,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmesh_x2){
-        printf("ERROR: Number of p1_i_x2 arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of block_length_x2 arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
@@ -609,7 +609,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
     //print error if number of inputs do not match nsubmeshes
     if (isubmesh != pumi_inputs->nsubmesh_x2){
-        printf("ERROR: Number of p2max_i_x2 arguments not equal to number of submeshes...\n");
+        printf("ERROR: Number of max_elem_size_x2 arguments not equal to number of submeshes...\n");
         exit(0);
     }
 
@@ -632,17 +632,17 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     }
 
     for (isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
-        (pumi_inputs->meshtype).push_back(each_submesh_flag_x1[isubmesh]);
-        *(pumi_inputs->p1_i_x1 + isubmesh) = atof(each_p1_submesh_x1[isubmesh]);
-        *(pumi_inputs->p2max_i_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
-        *(pumi_inputs->p2min_i_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
+        (pumi_inputs->meshtype_x1).push_back(each_submesh_flag_x1[isubmesh]);
+        *(pumi_inputs->block_length_x1 + isubmesh) = atof(each_p1_submesh_x1[isubmesh]);
+        *(pumi_inputs->max_elem_size_x1 + isubmesh) = atof( each_p2max_submesh_x1[isubmesh]);
+        *(pumi_inputs->min_elem_size_x1 + isubmesh) = atof( each_p2min_submesh_x1[isubmesh]);
     }
 
     for (int jsubmesh=0; jsubmesh<nsubmesh_x2; jsubmesh++){
-        (pumi_inputs->meshtype).push_back(each_submesh_flag_x2[jsubmesh]);
-        *(pumi_inputs->p1_i_x2 + jsubmesh) = atof(each_p1_submesh_x2[jsubmesh]);
-        *(pumi_inputs->p2max_i_x2 + jsubmesh) = atof( each_p2max_submesh_x2[jsubmesh]);
-        *(pumi_inputs->p2min_i_x2 + jsubmesh) = atof( each_p2min_submesh_x2[jsubmesh]);
+        (pumi_inputs->meshtype_x2).push_back(each_submesh_flag_x2[jsubmesh]);
+        *(pumi_inputs->block_length_x2 + jsubmesh) = atof(each_p1_submesh_x2[jsubmesh]);
+        *(pumi_inputs->max_elem_size_x2 + jsubmesh) = atof( each_p2max_submesh_x2[jsubmesh]);
+        *(pumi_inputs->min_elem_size_x2 + jsubmesh) = atof( each_p2min_submesh_x2[jsubmesh]);
     }
 
     int ksubmesh=0;
@@ -663,18 +663,18 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
 void print_usage()
 {
     printf("Execute the code with the following command line arguments -- \n\n" );
-    printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 \"typeflag_i_x1\" \"p1_i_x1\" \"Nel_i_x1\" \"p2min_i_x1\" N_x2 \"typeflag_i_x2\" \"p1_i_x2\" \"Nel_i_x2\" \"p2min_i_x2\" \"block_isactive\"\n\n\n");
+    printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 \"typeflag_i_x1\" \"block_length_x1\" \"Nel_i_x1\" \"min_elem_size_x1\" N_x2 \"typeflag_i_x2\" \"block_length_x2\" \"Nel_i_x2\" \"min_elem_size_x2\" \"block_isactive\"\n\n\n");
     printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
     printf("\t \"typeflag_i_x1\" \t Active mesh type segment in i-th submesh along the x1-direction \n" );
-    printf("\t \"p1_i_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
-    printf("\t \"p2max_i_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
-    printf("\t \"p2min_i_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
+    printf("\t \"block_length_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
+    printf("\t \"max_elem_size_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
+    printf("\t \"min_elem_size_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
     printf("\t N_x2     \t\t Total Number of submeshes along the x2-direction \n");
     printf("\t \"typeflag_i_x2\" \t Active mesh type segment in i-th submesh along the x2-direction \n" );
-    printf("\t \"p1_i_x2\"  \t\t Number of Debye Lengths in i-th submesh along the x2-direction \n");
-    printf("\t \"p2max_i_x2\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x2-direction \n");
-    printf("\t \"p2min_i_x2\"  \t\t For bottomBL/topBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x2-direction \n");
+    printf("\t \"block_length_x2\"  \t\t Number of Debye Lengths in i-th submesh along the x2-direction \n");
+    printf("\t \"max_elem_size_x2\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x2-direction \n");
+    printf("\t \"min_elem_size_x2\"  \t\t For bottomBL/topBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x2-direction \n");
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
     printf("\t block_isactive \t Activity info of each submesh-block (N_x1*N_x2 inputs required)\n" );
     printf("\t \t  \t\t 0 is inactive \n\n");

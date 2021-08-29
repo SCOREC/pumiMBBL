@@ -57,20 +57,14 @@ struct Mesh_Inputs{
     int nsubmesh_x1; //!< number of x1-submesh blocks in the domain
     int nsubmesh_x2; //!< number of x2-submesh blocks in the domain
     bool isactive[MAX_SUBMESHES][MAX_SUBMESHES];
-    double *p1_i_x1;//! Number of debye lenghts in a x1-submesh
-    double *p1_i_x2;//! Number of debye lenghts in a x2-submesh
-    double *p2max_i_x1;//!< Maximum size cells in Debye Length (along x1-direction)
-    double *p2max_i_x2;//!< Maximum size cells in Debye Length (along x2-direction)
-    double *p2min_i_x1;//!< Minimum size cells in Debye Length (along x1-direction)
-    double *p2min_i_x2;//!< Minimum size cells in Debye Length (along x2-direction)
-    std::vector<std::string> meshtype; //!< Type of mesh as string (uniform/minBL/maxBL)
-
-    double *x1_min; //!< Min-side coordinate (along x1-direction)
-    double *x1_max; //!< Max-side coordinate (along x1-direction)
-    double *x2_min; //!< Min-side coordinate (along x2-direction)
-    double *x2_max; //!< Max-side coordinate (along x2-direction)
-    int *Nel_i_x1;//!< Number of cells in a x1-submesh block
-    int *Nel_i_x2;//!< Number of cells in a x2-submesh block
+    double *block_length_x1;//! Number of debye lenghts in a x1-submesh
+    double *block_length_x2;//! Number of debye lenghts in a x2-submesh
+    double *max_elem_size_x1;//!< Maximum size cells in Debye Length (along x1-direction)
+    double *max_elem_size_x2;//!< Maximum size cells in Debye Length (along x2-direction)
+    double *min_elem_size_x1;//!< Minimum size cells in Debye Length (along x1-direction)
+    double *min_elem_size_x2;//!< Minimum size cells in Debye Length (along x2-direction)
+    std::vector<std::string> meshtype_x1; //!< Type of mesh as string (uniform/minBL/maxBL)
+    std::vector<std::string> meshtype_x2; //!< Type of mesh as string (uniform/minBL/maxBL)
 };
 
 /*!

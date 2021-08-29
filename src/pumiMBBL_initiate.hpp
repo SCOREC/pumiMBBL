@@ -70,12 +70,12 @@ double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel){
  */
 Mesh_Inputs* inputs_allocate(int nsubmeshes){
     Mesh_Inputs* pumi_inputs = new Mesh_Inputs;
-    pumi_inputs->p1_i_x1 = new double[nsubmeshes];
-    pumi_inputs->p1_i_x2 = new double[nsubmeshes];
-    pumi_inputs->p2max_i_x1 = new double[nsubmeshes];
-    pumi_inputs->p2max_i_x2 = new double[nsubmeshes];
-    pumi_inputs->p2min_i_x1 = new double[nsubmeshes];
-    pumi_inputs->p2min_i_x2 = new double[nsubmeshes];
+    pumi_inputs->block_length_x1 = new double[nsubmeshes];
+    pumi_inputs->block_length_x2 = new double[nsubmeshes];
+    pumi_inputs->max_elem_size_x1 = new double[nsubmeshes];
+    pumi_inputs->max_elem_size_x2 = new double[nsubmeshes];
+    pumi_inputs->min_elem_size_x1 = new double[nsubmeshes];
+    pumi_inputs->min_elem_size_x2 = new double[nsubmeshes];
 
     return pumi_inputs;
 }
@@ -86,12 +86,12 @@ Mesh_Inputs* inputs_allocate(int nsubmeshes){
  * \param[in] mesh inputs struct pointer
  */
 void inputs_deallocate(Mesh_Inputs* pumi_inputs){
-    delete[] pumi_inputs->p1_i_x1;
-    delete[] pumi_inputs->p1_i_x2;
-    delete[] pumi_inputs->p2max_i_x1;
-    delete[] pumi_inputs->p2max_i_x2;
-    delete[] pumi_inputs->p2min_i_x1;
-    delete[] pumi_inputs->p2min_i_x2;
+    delete[] pumi_inputs->block_length_x1;
+    delete[] pumi_inputs->block_length_x2;
+    delete[] pumi_inputs->max_elem_size_x1;
+    delete[] pumi_inputs->max_elem_size_x2;
+    delete[] pumi_inputs->min_elem_size_x1;
+    delete[] pumi_inputs->min_elem_size_x2;
     delete pumi_inputs;
 }
 
@@ -699,7 +699,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
     if (dir == x1_dir){
         double total_length = 0.0;
         for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
-            total_length += *(pumi_inputs->p1_i_x1 + isubmesh);
+            total_length += *(pumi_inputs->block_length_x1 + isubmesh);
         }
 
         type = unassigned;
@@ -721,7 +721,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
     else if (dir == x2_dir){
         double total_length = 0.0;
         for (int isubmesh=0; isubmesh<nsubmesh; isubmesh++){
-            total_length += *(pumi_inputs->p1_i_x2 + isubmesh);
+            total_length += *(pumi_inputs->block_length_x2 + isubmesh);
         }
         type = unassigned;
         xlength = 1000.0*total_length;
@@ -746,9 +746,9 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         std::string BLcoordsname;
 
         if (dir == x1_dir){
-            type = get_submesh_type(pumi_inputs->meshtype[isubmesh-1]);
+            type = get_submesh_type(pumi_inputs->meshtype_x1[isubmesh-1]);
 
-            xlength = *(pumi_inputs->p1_i_x1 + isubmesh-1);
+            xlength = *(pumi_inputs->block_length_x1 + isubmesh-1);
             if (isubmesh==1){
                 xmin = 0.0;
             }
@@ -756,16 +756,16 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
                 xmin = xmax;
             }
             xmax = xmin + xlength;
-            t0 = *(pumi_inputs->p2min_i_x1 + isubmesh-1);
-            tN = *(pumi_inputs->p2max_i_x1 + isubmesh-1);
+            t0 = *(pumi_inputs->min_elem_size_x1 + isubmesh-1);
+            tN = *(pumi_inputs->max_elem_size_x1 + isubmesh-1);
 
             BLcoordsname = "x1-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
         }
         else if (dir == x2_dir){
-            type = get_submesh_type(pumi_inputs->meshtype[isubmesh+pumi_inputs->nsubmesh_x1-1]);
+            type = get_submesh_type(pumi_inputs->meshtype_x2[isubmesh-1]);
 
-            xlength = *(pumi_inputs->p1_i_x2 + isubmesh-1);
+            xlength = *(pumi_inputs->block_length_x2 + isubmesh-1);
             if (isubmesh==1){
                 xmin = 0.0;
             }
@@ -773,8 +773,8 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
                 xmin = xmax;
             }
             xmax = xmin + xlength;
-            t0 = *(pumi_inputs->p2min_i_x2 + isubmesh-1);
-            tN = *(pumi_inputs->p2max_i_x2 + isubmesh-1);
+            t0 = *(pumi_inputs->min_elem_size_x2 + isubmesh-1);
+            tN = *(pumi_inputs->max_elem_size_x2 + isubmesh-1);
 
             BLcoordsname = "x2-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
