@@ -131,28 +131,28 @@ public:
     * \param[in] submesh log(r) value
     * \param[in] submesh BL coordinates (explicitly stored)
     */
-    Submesh(double submesh_xmin,
-            double submesh_xmax,
-            int submesh_Nel,
-            double submesh_t0,
-            double submesh_r,
-            Meshtype submesh_type,
-            double submesh_length,
-            int submesh_Nel_cumulative,
-            double r_t0_ratio,
-            double logr,
-            DoubleViewPtr BLcoords):
-            xmin(submesh_xmin),
-            xmax(submesh_xmax),
-            Nel(submesh_Nel),
-            t0(submesh_t0),
-            r(submesh_r),
-            meshtype(submesh_type),
-            length(submesh_length),
-            Nel_cumulative(submesh_Nel_cumulative),
-            r_by_t0(r_t0_ratio),
-            log_r(logr),
-            BL_coords(BLcoords){};
+    Submesh(double xmin_,
+            double xmax_,
+            int Nel_,
+            double t0_,
+            double r_,
+            Meshtype meshtype_,
+            double length_,
+            int Nel_cumulative_,
+            double r_by_t0_,
+            double log_r_,
+            DoubleViewPtr BL_coords_):
+            xmin(xmin_),
+            xmax(xmax_),
+            Nel(Nel_),
+            t0(t0_),
+            r(r_),
+            meshtype(meshtype_),
+            length(length_),
+            Nel_cumulative(Nel_cumulative_),
+            r_by_t0(r_by_t0_),
+            log_r(log_r_),
+            BL_coords(BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     virtual int locate_cell(double q) { return -1; }
@@ -193,17 +193,17 @@ public:
     * \param[in] submesh log(r) value
     * \param[in] submesh BL coordinates (explicitly stored)
     */
-    Uniform_Submesh(double submesh_xmin,
-                    double submesh_xmax,
-                    int submesh_Nel,
-                    double submesh_t0,
-                    double submesh_r,
-                    double submesh_length,
-                    int submesh_Nel_cumulative,
-                    double r_t0_ratio,
-                    double logr,
-                    DoubleViewPtr BLcoords):
-                    Submesh(submesh_xmin,submesh_xmax,submesh_Nel,submesh_t0,submesh_r,uniform,submesh_length,submesh_Nel_cumulative,r_t0_ratio,logr,BLcoords){};
+    Uniform_Submesh(double xmin_,
+                    double xmax_,
+                    int Nel_,
+                    double t0_,
+                    double r_,
+                    double length_,
+                    int Nel_cumulative_,
+                    double r_by_t0_,
+                    double log_r_,
+                    DoubleViewPtr BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,uniform,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -246,17 +246,17 @@ public:
     * \param[in] submesh log(r) value
     * \param[in] submesh BL coordinates (explicitly stored)
     */
-    MinBL_Submesh(double submesh_xmin,
-                  double submesh_xmax,
-                  int submesh_Nel,
-                  double submesh_t0,
-                  double submesh_r,
-                  double submesh_length,
-                  int submesh_Nel_cumulative,
-                  double r_t0_ratio,
-                  double logr,
-                  DoubleViewPtr BLcoords):
-                  Submesh(submesh_xmin,submesh_xmax,submesh_Nel,submesh_t0,submesh_r,minBL,submesh_length,submesh_Nel_cumulative,r_t0_ratio,logr,BLcoords){};
+    MinBL_Submesh(double xmin_,
+                    double xmax_,
+                    int Nel_,
+                    double t0_,
+                    double r_,
+                    double length_,
+                    int Nel_cumulative_,
+                    double r_by_t0_,
+                    double log_r_,
+                    DoubleViewPtr BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,minBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -311,17 +311,17 @@ public:
     * \param[in] submesh log(r) value
     * \param[in] submesh BL coordinates (explicitly stored)
     */
-    MaxBL_Submesh(double submesh_xmin,
-                  double submesh_xmax,
-                  int submesh_Nel,
-                  double submesh_t0,
-                  double submesh_r,
-                  double submesh_length,
-                  int submesh_Nel_cumulative,
-                  double r_t0_ratio,
-                  double logr,
-                  DoubleViewPtr BLcoords):
-                  Submesh(submesh_xmin,submesh_xmax,submesh_Nel,submesh_t0,submesh_r,maxBL,submesh_length,submesh_Nel_cumulative,r_t0_ratio,logr,BLcoords){};
+    MaxBL_Submesh(double xmin_,
+                    double xmax_,
+                    int Nel_,
+                    double t0_,
+                    double r_,
+                    double length_,
+                    int Nel_cumulative_,
+                    double r_by_t0_,
+                    double log_r_,
+                    DoubleViewPtr BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,maxBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -377,17 +377,17 @@ public:
     * \param[in] submesh log(r) value
     * \param[in] submesh BL coordinates (explicitly stored)
     */
-    Unassigned_Submesh(double submesh_xmin,
-                  double submesh_xmax,
-                  int submesh_Nel,
-                  double submesh_t0,
-                  double submesh_r,
-                  double submesh_length,
-                  int submesh_Nel_cumulative,
-                  double r_t0_ratio,
-                  double logr,
-                  DoubleViewPtr BLcoords):
-                  Submesh(submesh_xmin,submesh_xmax,submesh_Nel,submesh_t0,submesh_r,maxBL,submesh_length,submesh_Nel_cumulative,r_t0_ratio,logr,BLcoords){};
+    Unassigned_Submesh(double xmin_,
+                    double xmax_,
+                    int Nel_,
+                    double t0_,
+                    double r_,
+                    double length_,
+                    int Nel_cumulative_,
+                    double r_by_t0_,
+                    double log_r_,
+                    DoubleViewPtr BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,unassigned,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -457,13 +457,13 @@ public:
     * \param[in] total number of elements along x1-direction
     */
     KOKKOS_INLINE_FUNCTION
-    Mesh(int numsubmesh_x1,
-         int Nel_total_x1):
+    Mesh(int nsubmesh_x1_,
+         int Nel_tot_x1_):
          ndim(1),
-         nsubmesh_x1(numsubmesh_x1),
-         Nel_tot_x1(Nel_total_x1){
-             Nel_total = Nel_total_x1;
-             Nnp_total = Nel_total_x1+1;
+         nsubmesh_x1(nsubmesh_x1_),
+         Nel_tot_x1(Nel_tot_x1_){
+             Nel_total = Nel_tot_x1_;
+             Nnp_total = Nel_tot_x1_+1;
              nsubmesh_x2 = 0;
              nsubmesh_x3 = 0;
              Nel_tot_x2 = 0;
@@ -480,39 +480,37 @@ public:
      * \param[in] submesh activity info
      */
      KOKKOS_INLINE_FUNCTION
-     Mesh(int numsubmesh_x1,
-         int Nel_total_x1,
-         int numsubmesh_x2,
-         int Nel_total_x2,
-         Kokkos::View<bool**> submesh_activity,
-         Kokkos::View<int**> elem_offset_start,
-         Kokkos::View<int*> elem_offset_skip,
-        //  Kokkos::View<int**> node_offset,
-         Kokkos::View<int**> node_offset_start,
-         Kokkos::View<int**> node_offset_skip_bot,
-         Kokkos::View<int**> node_offset_skip_mid,
-         Kokkos::View<int**> node_offset_skip_top,
-         Kokkos::View<bool*> isbdry,
-         int Nel_tot,
-         int Nnp_tot,
-         bool** h_isactive):
+     Mesh(int nsubmesh_x1_,
+         int Nel_tot_x1_,
+         int nsubmesh_x2_,
+         int Nel_tot_x2_,
+         Kokkos::View<bool**> isactive_,
+         Kokkos::View<int**> elemoffset_start_,
+         Kokkos::View<int*> elemoffset_skip_,
+         Kokkos::View<int**> nodeoffset_start_,
+         Kokkos::View<int**> nodeoffset_skip_bot_,
+         Kokkos::View<int**> nodeoffset_skip_mid_,
+         Kokkos::View<int**> nodeoffset_skip_top_,
+         Kokkos::View<bool*> is_bdry_,
+         int Nel_total_,
+         int Nnp_total_,
+         bool** host_isactive_):
          ndim(2),
-         nsubmesh_x1(numsubmesh_x1),
-         Nel_tot_x1(Nel_total_x1),
-         nsubmesh_x2(numsubmesh_x2),
-         Nel_tot_x2(Nel_total_x2),
-         isactive(submesh_activity),
-         elemoffset_start(elem_offset_start),
-         elemoffset_skip(elem_offset_skip),
-        //  nodeoffset(node_offset),
-         nodeoffset_start(node_offset_start),
-         nodeoffset_skip_bot(node_offset_skip_bot),
-         nodeoffset_skip_mid(node_offset_skip_mid),
-         nodeoffset_skip_top(node_offset_skip_top),
-         is_bdry(isbdry),
-         Nel_total(Nel_tot),
-         Nnp_total(Nnp_tot),
-         host_isactive(h_isactive)
+         nsubmesh_x1(nsubmesh_x1_),
+         Nel_tot_x1(Nel_tot_x1_),
+         nsubmesh_x2(nsubmesh_x2_),
+         Nel_tot_x2(Nel_tot_x2_),
+         isactive(isactive_),
+         elemoffset_start(elemoffset_start_),
+         elemoffset_skip(elemoffset_skip_),
+         nodeoffset_start(nodeoffset_start_),
+         nodeoffset_skip_bot(nodeoffset_skip_bot_),
+         nodeoffset_skip_mid(nodeoffset_skip_mid_),
+         nodeoffset_skip_top(nodeoffset_skip_top_),
+         is_bdry(is_bdry_),
+         Nel_total(Nel_total_),
+         Nnp_total(Nnp_total_),
+         host_isactive(host_isactive_)
          {
              nsubmesh_x3 = 0;
              Nel_tot_x3 = 0;
@@ -544,12 +542,12 @@ struct MBBL{
     * \param[in] x1-submesh object in GPU
     * \param[in] copy of x1-submesh object in CPU
     */
-    MBBL(MeshDeviceViewPtr pumi_mesh,
-         SubmeshDeviceViewPtr pumi_submesh_x1,
-         SubmeshHostViewPtr pumi_host_submesh_x1):
-         mesh(pumi_mesh),
-         submesh_x1(pumi_submesh_x1),
-         host_submesh_x1(pumi_host_submesh_x1){};
+    MBBL(MeshDeviceViewPtr mesh_,
+         SubmeshDeviceViewPtr submesh_x1_,
+         SubmeshHostViewPtr host_submesh_x1_):
+         mesh(mesh_),
+         submesh_x1(submesh_x1_),
+         host_submesh_x1(host_submesh_x1_){};
 
     /**
     * @brief Constructor for 2D Wrapper structure
@@ -559,16 +557,16 @@ struct MBBL{
     * \param[in] x2-submesh object in GPU
     * \param[in] copy of x2-submesh object in CPU
     */
-    MBBL(MeshDeviceViewPtr pumi_mesh,
-         SubmeshDeviceViewPtr pumi_submesh_x1,
-         SubmeshHostViewPtr pumi_host_submesh_x1,
-         SubmeshDeviceViewPtr pumi_submesh_x2,
-         SubmeshHostViewPtr pumi_host_submesh_x2):
-         mesh(pumi_mesh),
-         submesh_x1(pumi_submesh_x1),
-         host_submesh_x1(pumi_host_submesh_x1),
-         submesh_x2(pumi_submesh_x2),
-         host_submesh_x2(pumi_host_submesh_x2){};
+    MBBL(MeshDeviceViewPtr mesh_,
+         SubmeshDeviceViewPtr submesh_x1_,
+         SubmeshHostViewPtr host_submesh_x1_,
+         SubmeshDeviceViewPtr submesh_x2_,
+         SubmeshHostViewPtr host_submesh_x2_):
+         mesh(mesh_),
+         submesh_x1(submesh_x1_),
+         host_submesh_x1(host_submesh_x1_),
+         submesh_x2(submesh_x2_),
+         host_submesh_x2(host_submesh_x2_){};
 };
 
 
