@@ -261,17 +261,19 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
  * \param[in] mesh object pointer
  * \param[in] CPU copy of x1-submesh object pointer
  */
-void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
+void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Options pumi_options){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
-    printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
+    if (pumi_options.print_node_options)
+        printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
     FILE *mesh_coords_file;
     char mesh_coords_filename[30];
     sprintf(mesh_coords_filename,"X1_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     int inode=0;
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        printf("X1-SUBMESH %d:\n", isubmesh );
+        if (pumi_options.print_node_options)
+            printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
@@ -289,16 +291,18 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
             fprintf(mesh_coords_file, "%.16e\n", icoord);
         }
         fprintf(submesh_coords_file, "%.16e\n", icoord);
-        printf("\t\tNode %6d: %2.8e\n", inode, icoord );
+        if (pumi_options.print_node_options)
+            printf("\t\tNode %6d: %2.8e\n", inode, icoord );
         for (int icell=0; icell<h_submesh_x1[isubmesh].Nel; icell++){
             inode++;
             icoord += cell_size;
             cell_size *= r;
             fprintf(mesh_coords_file, "%.16e\n", icoord);
             fprintf(submesh_coords_file, "%.16e\n", icoord);
-            printf("\t\tNode %6d: %2.8e\n", inode, icoord );
+            if (pumi_options.print_node_options)
+                printf("\t\tNode %6d: %2.8e\n", inode, icoord );
         }
-        printf("\n\t Coordinates written to file %s\n\n", submesh_coords_filename);
+        printf("\n\t X1-SUBMESH %d -- Coordinates written to file %s\n\n",isubmesh, submesh_coords_filename);
         fclose(submesh_coords_file);
     }
     fclose(mesh_coords_file);
@@ -312,18 +316,19 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
  * \param[in] CPU copy of x1-submesh object pointer
  * \param[in] CPU copy of x2-submesh object pointer
  */
-void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
+void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2, Mesh_Options pumi_options){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
-
-    printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
+    if (pumi_options.print_node_options)
+        printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
     FILE *mesh_coords_file;
     char mesh_coords_filename[30];
     sprintf(mesh_coords_filename,"X1_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     int inode=0;
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        printf("X1-SUBMESH %d:\n", isubmesh );
+        if (pumi_options.print_node_options)
+            printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
@@ -341,16 +346,18 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
             fprintf(mesh_coords_file, "%.16e\n", icoord);
         }
         fprintf(submesh_coords_file, "%.16e\n", icoord);
-        printf("\t\tNode %6d: %2.8e\n", inode, icoord );
+        if (pumi_options.print_node_options)
+            printf("\t\tNode %6d: %2.8e\n", inode, icoord );
         for (int icell=0; icell<h_submesh_x1[isubmesh].Nel; icell++){
             inode++;
             icoord += cell_size;
             cell_size *= r;
             fprintf(mesh_coords_file, "%.16e\n", icoord);
             fprintf(submesh_coords_file, "%.16e\n", icoord);
-            printf("\t\tNode %6d: %2.8e\n", inode, icoord );
+            if (pumi_options.print_node_options)
+                printf("\t\tNode %6d: %2.8e\n", inode, icoord );
         }
-        printf("\n\t Coordinates written to file %s\n\n", submesh_coords_filename);
+        printf("\n\t X1-SUBMESH %d -- Coordinates written to file %s\n\n", isubmesh, submesh_coords_filename);
         fclose(submesh_coords_file);
     }
     fclose(mesh_coords_file);
@@ -359,7 +366,8 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     inode = 0;
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
-        printf("X2-SUBMESH %d:\n", isubmesh );
+        if (pumi_options.print_node_options)
+            printf("X2-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
         char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X2_submesh_%d_coords.dat",isubmesh);
@@ -377,16 +385,18 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
             fprintf(mesh_coords_file, "%.16e\n", icoord);
         }
         fprintf(submesh_coords_file, "%.16e\n", icoord);
-        printf("\t\tNode %6d: %2.8e\n", inode, icoord );
+        if (pumi_options.print_node_options)
+            printf("\t\tNode %6d: %2.8e\n", inode, icoord );
         for (int icell=0; icell<h_submesh_x2[isubmesh].Nel; icell++){
             inode++;
             icoord += cell_size;
             cell_size *= r;
             fprintf(mesh_coords_file, "%.16e\n", icoord);
             fprintf(submesh_coords_file, "%.16e\n", icoord);
-            printf("\t\tNode %6d: %2.8e\n", inode, icoord );
+            if (pumi_options.print_node_options)
+                printf("\t\tNode %6d: %2.8e\n", inode, icoord );
         }
-        printf("\n\t Coordinates written to file %s\n\n", submesh_coords_filename);
+        printf("\n\t X2-SUBMESH %d -- Coordinates written to file %s\n\n",isubmesh, submesh_coords_filename);
         fclose(submesh_coords_file);
     }
     fclose(mesh_coords_file);
@@ -870,7 +880,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
  * \param[in] Copy of x1-submesh object pointer on CPU
  * \return Final mesh object pointer
  */
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1){
+MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1){
     MeshDeviceViewPtr pumi_mesh("1D-meshobj",1);
 
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
@@ -897,7 +907,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         exit(0);
     }
     else{
-        print_mesh_nodes(pumi_mesh, hc_submesh_x1);
+        print_mesh_nodes(pumi_mesh, hc_submesh_x1, pumi_options);
     }
 
     return pumi_mesh;
@@ -913,7 +923,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
  * \param[in] Copy of x2-submesh object pointer on CPU
  * \return Final mesh object pointer
  */
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1,
+MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1,
                             SubmeshDeviceViewPtr submesh_x2, SubmeshHostViewPtr hc_submesh_x2){
     MeshDeviceViewPtr pumi_mesh("2D-meshobj",1);
 
@@ -1434,7 +1444,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         exit(0);
     }
     else{
-        print_mesh_nodes(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
+        print_mesh_nodes(pumi_mesh, hc_submesh_x1, hc_submesh_x2, pumi_options);
     }
 
 

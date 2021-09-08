@@ -35,7 +35,7 @@ int main( int argc, char* argv[] )
 
     submesh_x1 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir, &host_submesh_x1);
     submesh_x2 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir, &host_submesh_x2);
-    mesh = pumi::mesh_initialize(pumi_inputs, submesh_x1, host_submesh_x1, submesh_x2, host_submesh_x2);
+    mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, submesh_x1, host_submesh_x1, submesh_x2, host_submesh_x2);
 
     pumi::MBBL pumi_obj(mesh, submesh_x1, host_submesh_x1, submesh_x2, host_submesh_x2);
 

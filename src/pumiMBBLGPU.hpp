@@ -76,14 +76,23 @@ enum store_BL_coords{
 };
 
 /*!
+* \brief enum type for printing node coordinates to terminal
+*/
+enum print_node_coords{
+    print_node_coords_OFF = 0, //!< option to disable printing node coords
+    print_node_coords_ON  = 1, //!< option to enable printing node coords
+};
+
+/*!
 * \brief struct of mesh options
 */
 struct Mesh_Options{
     store_BL_coords BL_storage_option;
+    print_node_coords print_node_options;
     /*!
     * \brief Struct default constructor
     */
-    Mesh_Options():BL_storage_option(store_BL_coords_ON){};
+    Mesh_Options():BL_storage_option(store_BL_coords_ON),print_node_options(print_node_coords_OFF){};
 };
 
 
