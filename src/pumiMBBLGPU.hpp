@@ -437,6 +437,7 @@ public:
     Kokkos::View<int*> elemoffset_skip;
 
     Kokkos::View<bool*> is_bdry;
+    Kokkos::View<double*[3]> bdry_normal;
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
@@ -492,6 +493,7 @@ public:
          Kokkos::View<int**> nodeoffset_skip_mid_,
          Kokkos::View<int**> nodeoffset_skip_top_,
          Kokkos::View<bool*> is_bdry_,
+         Kokkos::View<double*[3]> bdry_normal_,
          int Nel_total_,
          int Nnp_total_,
          bool** host_isactive_):
@@ -508,6 +510,7 @@ public:
          nodeoffset_skip_mid(nodeoffset_skip_mid_),
          nodeoffset_skip_top(nodeoffset_skip_top_),
          is_bdry(is_bdry_),
+         bdry_normal(bdry_normal_),
          Nel_total(Nel_total_),
          Nnp_total(Nnp_total_),
          host_isactive(host_isactive_)

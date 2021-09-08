@@ -63,14 +63,28 @@ int main( int argc, char* argv[] )
 
 
     // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
+    //     printf("\n\n");
     //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
     //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
     //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-    //         printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh(0).is_bdry(i) );
+    //         if (pumi_obj.mesh(0).is_bdry(i)){
+    //             if (pumi_obj.mesh(0).bdry_normal(i,0)==1.0){
+    //                 printf("edge-%2d is boundary with +ve X normal\n",i);
+    //             }
+    //             else if (pumi_obj.mesh(0).bdry_normal(i,0)==-1.0){
+    //                 printf("edge-%2d is boundary with -ve X normal\n",i);
+    //             }
+    //             else if (pumi_obj.mesh(0).bdry_normal(i,1)==1.0){
+    //                 printf("edge-%2d is boundary with +ve Y normal\n",i);
+    //             }
+    //             else if (pumi_obj.mesh(0).bdry_normal(i,1)==-1.0){
+    //                 printf("edge-%2d is boundary with -ve Y normal\n",i);
+    //             }
+    //         }
     //     }
     // });
 
-    int N_part = 100000;
+    int N_part = 1000;
     int N_step = 10;
     Kokkos::View<double**> part_coords("particle-coordinates",N_part,6);
 

@@ -1250,27 +1250,47 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
     }
 
     Kokkos::View<bool*> is_bdry("is_bdry", 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2);
+    Kokkos::View<double*[3]> bdry_normal("bdry_normal", 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2);
     Kokkos::View<bool*>::HostMirror h_is_bdry = Kokkos::create_mirror_view(is_bdry);
+    Kokkos::View<double*[3]>::HostMirror h_bdry_normal = Kokkos::create_mirror_view(bdry_normal);
 
     for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
         for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
             if (jsubmesh==1){
                 if (h_submesh_activity(isubmesh,jsubmesh)){
                     h_is_bdry(isubmesh-1) = true;
+                    h_bdry_normal(isubmesh-1,0) = 0.0;
+                    h_bdry_normal(isubmesh-1,1) = -1.0;
+                    h_bdry_normal(isubmesh-1,2) = 0.0;
                     if (isubmesh==1){
                         h_is_bdry(nsubmesh_x1) = true;
+                        h_bdry_normal(nsubmesh_x1,0) = -1.0;
+                        h_bdry_normal(nsubmesh_x1,1) = 0.0;
+                        h_bdry_normal(nsubmesh_x1,2) = 0.0;
                     }
                     if (isubmesh==nsubmesh_x1){
                         h_is_bdry(isubmesh-1+nsubmesh_x1+1) = true;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,0) = 1.0;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,1) = 0.0;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,2) = 0.0;
                     }
                 }
                 else{
                     h_is_bdry(isubmesh-1) = false;
+                    h_bdry_normal(isubmesh-1,0) = 0.0;
+                    h_bdry_normal(isubmesh-1,1) = 0.0;
+                    h_bdry_normal(isubmesh-1,2) = 0.0;
                     if (isubmesh==1){
                         h_is_bdry(nsubmesh_x1) = false;
+                        h_bdry_normal(nsubmesh_x1,0) = 0.0;
+                        h_bdry_normal(nsubmesh_x1,1) = 0.0;
+                        h_bdry_normal(nsubmesh_x1,2) = 0.0;
                     }
                     if (isubmesh==nsubmesh_x1){
                         h_is_bdry(isubmesh-1+nsubmesh_x1+1) = false;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,0) = 0.0;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,1) = 0.0;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,2) = 0.0;
                     }
                 }
 
@@ -1278,9 +1298,22 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                     int sum = h_submesh_activity(isubmesh-1,jsubmesh)+h_submesh_activity(isubmesh,jsubmesh);
                     if (sum == 1){
                         h_is_bdry(isubmesh-1+nsubmesh_x1) = true;
+                        if (h_submesh_activity(isubmesh,jsubmesh)){
+                            h_bdry_normal(isubmesh-1+nsubmesh_x1,0) = -1.0;
+                            h_bdry_normal(isubmesh-1+nsubmesh_x1,1) = 0.0;
+                            h_bdry_normal(isubmesh-1+nsubmesh_x1,2) = 0.0;
+                        }
+                        else{
+                            h_bdry_normal(isubmesh-1+nsubmesh_x1,0) = 1.0;
+                            h_bdry_normal(isubmesh-1+nsubmesh_x1,1) = 0.0;
+                            h_bdry_normal(isubmesh-1+nsubmesh_x1,2) = 0.0;
+                        }
                     }
                     else{
                         h_is_bdry(isubmesh-1+nsubmesh_x1) = false;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1,0) = 0.0;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1,1) = 0.0;
+                        h_bdry_normal(isubmesh-1+nsubmesh_x1,2) = 0.0;
                     }
                 }
             }
@@ -1289,35 +1322,73 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
                 int sum = h_submesh_activity(isubmesh,jsubmesh-1)+h_submesh_activity(isubmesh,jsubmesh);
                 if (sum == 1){
                     h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1) = true;
+                    if (h_submesh_activity(isubmesh,jsubmesh)){
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,1) = -1.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
+                    }
+                    else{
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 1.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
+                    }
                 }
                 else{
                     h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1) = false;
+                    h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
+                    h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 0.0;
+                    h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
                 }
 
                 if (isubmesh==1){
                     if (h_submesh_activity(isubmesh,jsubmesh)){
                         h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1) = true;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,0) = -1.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,1) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,2) = 0.0;
                     }
                     else{
                         h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1) = false;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,0) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,1) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,2) = 0.0;
                     }
                 }
                 else{
                     sum = h_submesh_activity(isubmesh-1,jsubmesh)+h_submesh_activity(isubmesh,jsubmesh);
                     if (sum == 1){
                         h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1) = true;
+                        if (h_submesh_activity(isubmesh,jsubmesh)){
+                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,0) = -1.0;
+                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,1) = 0.0;
+                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,2) = 0.0;
+                        }
+                        else{
+                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,0) = 1.0;
+                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,1) = 0.0;
+                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,2) = 0.0;
+                        }
                     }
                     else{
                         h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1) = false;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,0) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,1) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,2) = 0.0;
                     }
                 }
 
                 if (isubmesh==nsubmesh_x1){
                     if (h_submesh_activity(isubmesh,jsubmesh)){
                         h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1) = true;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,0) = 1.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,1) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,2) = 0.0;
                     }
                     else{
                         h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1) = false;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,0) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,1) = 0.0;
+                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,2) = 0.0;
                     }
                 }
             }
@@ -1325,15 +1396,22 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
             if (jsubmesh == nsubmesh_x2){
                 if (h_submesh_activity(isubmesh,jsubmesh)){
                     h_is_bdry((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1) = true;
+                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
+                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 1.0;
+                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
                 }
                 else{
                     h_is_bdry((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1) = false;
+                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
+                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 0.0;
+                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
                 }
             }
         }
     }
 
     Kokkos::deep_copy(is_bdry, h_is_bdry);
+    Kokkos::deep_copy(bdry_normal, h_bdry_normal);
 
     // for (int i=0; i<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; i++){
     //     if (h_is_bdry(i)){
@@ -1345,7 +1423,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, SubmeshDeviceViewPtr
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
                         submesh_activity, elemoffset_start, elemoffset_skip,
                         nodeoffset_start, nodeoffset_skip_bot, nodeoffset_skip_mid, nodeoffset_skip_top,
-                        is_bdry, Nel_total_2D, Nnp_total_2D, host_isactive);
+                        is_bdry, bdry_normal, Nel_total_2D, Nnp_total_2D, host_isactive);
     });
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
