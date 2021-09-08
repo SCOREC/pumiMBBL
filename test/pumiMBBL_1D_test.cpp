@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
     // }
 
 
-    int N_part = 100000;
+    int N_part = 1000;
     int N_step = 20;
     Kokkos::View<double**> part_coords("particle-coordinates",N_part,3);
 

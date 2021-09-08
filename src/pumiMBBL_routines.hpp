@@ -937,9 +937,7 @@ double get_global_x1_min_coord(MBBL pumi_obj){
  * \param[in] Object of the wrapper mesh structure
  */
 double get_global_x1_max_coord(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
-    int nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
+    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x1;
     return pumi_obj.host_submesh_x1[nsubmesh].xmax;
 }
 
@@ -958,9 +956,7 @@ double get_global_x2_min_coord(MBBL pumi_obj){
  * \param[in] Object of the wrapper mesh structure
  */
 double get_global_x2_max_coord(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
-    int nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
+    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x2;
     return pumi_obj.host_submesh_x2[nsubmesh].xmax;
 }
 
@@ -1157,27 +1153,19 @@ void print_mesh_skeleton(MBBL pumi_obj){
 }
 
 int get_total_mesh_elements(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
-    return h_pumi_mesh(0).Nel_total;
+    return pumi_obj.host_mesh->Nel_total;
 }
 
 int get_total_mesh_nodes(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
-    return h_pumi_mesh(0).Nnp_total;
+    return pumi_obj.host_mesh->Nnp_total;
 }
 
 int get_x1_elements(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
-    return h_pumi_mesh(0).Nel_tot_x1;
+    return pumi_obj.host_mesh->Nel_tot_x1;
 }
 
 int get_x2_elements(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
-    return h_pumi_mesh(0).Nel_tot_x2;
+    return pumi_obj.host_mesh->Nel_tot_x2;
 }
 } // namespace pumi
 
