@@ -1156,6 +1156,29 @@ void print_mesh_skeleton(MBBL pumi_obj){
     }
 }
 
+int get_total_mesh_elements(MBBL pumi_obj){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+    return h_pumi_mesh(0).Nel_total;
+}
+
+int get_total_mesh_nodes(MBBL pumi_obj){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+    return h_pumi_mesh(0).Nnp_total;
+}
+
+int get_x1_elements(MBBL pumi_obj){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+    return h_pumi_mesh(0).Nel_tot_x1;
+}
+
+int get_x2_elements(MBBL pumi_obj){
+    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
+    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+    return h_pumi_mesh(0).Nel_tot_x2;
+}
 } // namespace pumi
 
 #endif
