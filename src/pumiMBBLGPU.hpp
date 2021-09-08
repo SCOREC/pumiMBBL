@@ -423,28 +423,28 @@ public:
     int ndim; //!< dimensions of the domain
     int nsubmesh_x1; //!< number of blocks in x1-direction
     int nsubmesh_x2; //!< number of blocks in x2-direction
-    int nsubmesh_x3; //1< number of blocks in x3-direction
+    int nsubmesh_x3; //!< number of blocks in x3-direction
 
     Kokkos::View<bool**> isactive; //!< 2D bool-array defining the activity of blocks
     bool **host_isactive;
 
     // Kokkos::View<int**> nodeoffset;
-    Kokkos::View<int**> nodeoffset_start;
-    Kokkos::View<int**> nodeoffset_skip_bot;
-    Kokkos::View<int**> nodeoffset_skip_mid;
-    Kokkos::View<int**> nodeoffset_skip_top;
-    Kokkos::View<int**> elemoffset_start;
-    Kokkos::View<int*> elemoffset_skip;
+    Kokkos::View<int**> nodeoffset_start; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> nodeoffset_skip_top; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> elemoffset_start; //!< aux data structure to compute elemtent offset
+    Kokkos::View<int*> elemoffset_skip; //!< aux data structure to compute element offset
 
-    Kokkos::View<bool*> is_bdry;
-    Kokkos::View<double*[3]> bdry_normal;
+    Kokkos::View<bool*> is_bdry; //!< bool value stores if an edge is on boundary
+    Kokkos::View<double*[3]> bdry_normal; //!< boundary normal direction 
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
     int Nel_tot_x3; //!< Total number of elements in x3-direction
 
-    int Nel_total;
-    int Nnp_total;
+    int Nel_total; //!< Total active elements in domain
+    int Nnp_total; //!< Total active nodes in domain
 
     /**
     * @brief Default constructor.
