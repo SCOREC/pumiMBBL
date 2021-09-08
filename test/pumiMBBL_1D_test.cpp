@@ -51,8 +51,8 @@ int main( int argc, char* argv[] )
 
     std::srand((unsigned)(std::time(nullptr)));
 
-    double x1_min = pumi::get_global_left_coord(pumi_obj);
-    double x1_max = pumi::get_global_right_coord(pumi_obj);
+    double x1_min = pumi::get_global_x1_min_coord(pumi_obj);
+    double x1_max = pumi::get_global_x1_max_coord(pumi_obj);
     double L_x1 = x1_max-x1_min;
     double dist_factor = 100.0;
     int num_push = 0;

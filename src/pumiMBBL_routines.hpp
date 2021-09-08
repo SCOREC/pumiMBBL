@@ -167,6 +167,7 @@ double return_covolume(MBBL pumi_obj, int inode_x1){
 
 /**
  * @brief Returns the element size along a queried direction for a queried node/element
+ * Only when all blocks are active
  *
  * \param[in] Object of the wrapper mesh structure
  * \param[in] global node IDs along x1-direction
@@ -209,6 +210,14 @@ double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
     return covolume;
 }
 
+/**
+ * @brief Returns the element size along a queried direction for a queried node/element
+ *
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] global node IDs along x1-direction
+ * \param[in] global node IDs along x2-direction
+ * \return covolume for the requested node
+ */
 double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
@@ -357,6 +366,19 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
 
 }
 
+/**
+ * @brief Returns node info such as if node is in active domain, if node is on a boundary
+ * and boundary entity dimension (boundary vertex (dim=0) or edge (dim=1)) and entity tag
+ * of the boundary
+ *
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] global node IDs along x1-direction
+ * \param[in] global node IDs along x2-direction
+ * \param[out] boolean value if node is on boundary
+ * \param[out] boolean value if node is on active block
+ * \param[out] integer value of boundary tag
+ * \param[out] integer value for boundary dimension
+ */
 void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
@@ -900,28 +922,53 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 }
 
-double get_global_left_coord(MBBL pumi_obj){
+/**
+ * @brief Returns x1-coordinate of left end of the domain
+ *
+ * \param[in] Object of the wrapper mesh structure
+ */
+double get_global_x1_min_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x1[1].xmin;
 }
 
-double get_global_right_coord(MBBL pumi_obj){
+/**
+ * @brief Returns x1-coordinate of right end of the domain
+ *
+ * \param[in] Object of the wrapper mesh structure
+ */
+double get_global_x1_max_coord(MBBL pumi_obj){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
     int nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
     return pumi_obj.host_submesh_x1[nsubmesh].xmax;
 }
 
-double get_global_bottom_coord(MBBL pumi_obj){
+/**
+ * @brief Returns x2-coordinate of bottom end of the domain
+ *
+ * \param[in] Object of the wrapper mesh structure
+ */
+double get_global_x2_min_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x2[1].xmin;
 }
 
-double get_global_top_coord(MBBL pumi_obj){
+/**
+ * @brief Returns x2-coordinate of top end of the domain
+ *
+ * \param[in] Object of the wrapper mesh structure
+ */
+double get_global_x2_max_coord(MBBL pumi_obj){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
     int nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
     return pumi_obj.host_submesh_x2[nsubmesh].xmax;
 }
 
+/**
+ * @brief Prints the block skeleton (along with block edge tags and block vertex tags )
+ *
+ * \param[in] Object of the wrapper mesh structure
+ */
 void print_mesh_skeleton(MBBL pumi_obj){
     MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
     Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
