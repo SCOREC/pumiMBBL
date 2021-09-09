@@ -287,7 +287,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
             r = 1.0/r;
         }
 
-        if (isubmesh==0){
+        if (isubmesh==1){
             fprintf(mesh_coords_file, "%.16e\n", icoord);
         }
         fprintf(submesh_coords_file, "%.16e\n", icoord);
@@ -342,7 +342,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
             r = 1.0/r;
         }
 
-        if (isubmesh==0){
+        if (isubmesh==1){
             fprintf(mesh_coords_file, "%.16e\n", icoord);
         }
         fprintf(submesh_coords_file, "%.16e\n", icoord);
@@ -381,7 +381,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
             r = 1.0/r;
         }
 
-        if (isubmesh==0){
+        if (isubmesh==1){
             fprintf(mesh_coords_file, "%.16e\n", icoord);
         }
         fprintf(submesh_coords_file, "%.16e\n", icoord);
@@ -716,13 +716,13 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         xlength = 1000.0*total_length;
         DoubleViewPtr BLcoords;
         // padding submesh to min-side
-        xmax = 0.0;
+        xmax = pumi_inputs->domain_x1_min;
         xmin = xmax - xlength;
         Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[0] = tmp_obj_min;
         h_submesh(0) = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_min);
         // padding submesh to max-side
-        xmin = total_length;
+        xmin = pumi_inputs->domain_x1_min+total_length;
         xmax = xmin + xlength;
         Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[nsubmesh+1] = tmp_obj_max;
@@ -737,13 +737,13 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         xlength = 1000.0*total_length;
         DoubleViewPtr BLcoords;
         // padding submesh to min-side
-        xmax = 0.0;
+        xmax = pumi_inputs->domain_x2_min;
         xmin = xmax - xlength;
         Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[0] = tmp_obj_min;
         h_submesh(0) = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_min);
         // padding submesh to max-side
-        xmin = total_length;
+        xmin = pumi_inputs->domain_x2_min+total_length;
         xmax = xmin + xlength;
         Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
         submesh_host_copy[nsubmesh+1] = tmp_obj_max;
@@ -760,7 +760,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
 
             xlength = pumi_inputs->block_length_x1[isubmesh-1];
             if (isubmesh==1){
-                xmin = 0.0;
+                xmin = pumi_inputs->domain_x1_min;
             }
             else{
                 xmin = xmax;
@@ -777,7 +777,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
 
             xlength = pumi_inputs->block_length_x2[isubmesh-1];
             if (isubmesh==1){
-                xmin = 0.0;
+                xmin = pumi_inputs->domain_x2_min;
             }
             else{
                 xmin = xmax;

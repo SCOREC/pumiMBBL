@@ -56,6 +56,8 @@ struct Mesh_Inputs{
     // 2D params (input from commandline)
     int nsubmesh_x1; //!< number of x1-submesh blocks in the domain
     int nsubmesh_x2; //!< number of x2-submesh blocks in the domain
+    double domain_x1_min;
+    double domain_x2_min;
     bool isactive[MAX_SUBMESHES][MAX_SUBMESHES];
     std::vector<double> block_length_x1;//! Number of debye lenghts in a x1-submesh
     std::vector<double> block_length_x2;//! Number of debye lenghts in a x2-submesh

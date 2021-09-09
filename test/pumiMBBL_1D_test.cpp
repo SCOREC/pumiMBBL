@@ -7,17 +7,19 @@ int main( int argc, char* argv[] )
 {
   Kokkos::initialize( argc, argv );
   {
-      if (argc != 6)
+      if (argc != 7)
       {
           print_usage();
       }
 
     int nsubmesh_x1 = atoi( argv[1] );
+    double domain_x1_min = atof( argv[2] );
     int nsubmesh = nsubmesh_x1;
     pumi::Mesh_Inputs *pumi_inputs = pumi::inputs_allocate();
 
     pumi_inputs->ndim = 1; // Fixed pumi input
     pumi_inputs->nsubmesh_x1 = nsubmesh_x1;
+    pumi_inputs->domain_x1_min = domain_x1_min;
 
     parse_inputs(argc, argv, pumi_inputs);
 
@@ -144,7 +146,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     // reading submesh meshtypes
     char all_submesh_flag_x1[MAX_SUBMESHES*10];
     char each_submesh_flag_x1[MAX_SUBMESHES][10];
-    strcpy(all_submesh_flag_x1, argv[2]);
+    strcpy(all_submesh_flag_x1, argv[3]);
 
     char *tok = strtok(all_submesh_flag_x1, ",");
     int isubmesh=0;
@@ -162,7 +164,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh lengths
     char all_p1_submesh_x1[MAX_SUBMESHES*10];
     char each_p1_submesh_x1[MAX_SUBMESHES][10];
-    strcpy(all_p1_submesh_x1, argv[3]);
+    strcpy(all_p1_submesh_x1, argv[4]);
 
     tok = strtok(all_p1_submesh_x1, ",");
     isubmesh=0;
@@ -180,7 +182,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh max elemsize
     char all_p2max_submesh_x1[MAX_SUBMESHES*10];
     char each_p2max_submesh_x1[MAX_SUBMESHES][10];
-    strcpy(all_p2max_submesh_x1, argv[4]);
+    strcpy(all_p2max_submesh_x1, argv[5]);
 
     tok = strtok(all_p2max_submesh_x1, ",");
     isubmesh=0;
@@ -198,7 +200,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh min elemsize
     char all_p2min_submesh_x1[MAX_SUBMESHES*10];
     char each_p2min_submesh_x1[MAX_SUBMESHES][10];
-    strcpy(all_p2min_submesh_x1, argv[5]);
+    strcpy(all_p2min_submesh_x1, argv[6]);
 
     tok = strtok(all_p2min_submesh_x1, ",");
     isubmesh=0;
@@ -226,6 +228,7 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
 {
     printf("Printing the parsed commandline inputs\n\n");
     printf("Number of blocks in x1-direction = %d\n",pumi_inputs->nsubmesh_x1 );
+    printf("Domain min-side x1-coordinate    = %2.4f\n",pumi_inputs->domain_x1_min );
     for(int i=0; i<pumi_inputs->nsubmesh_x1; i++){
         printf("\n[X1-BLOCK #%d]\n",i+1 );
         std::cout << "\t type          = " << pumi_inputs->meshtype_x1[i] << "\n";
@@ -238,8 +241,9 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
 void print_usage()
 {
     printf("Execute the code with the following command line arguments -- \n\n" );
-    printf("\t ./install/bin/pumiMBBL1D_Demo N_x1 \"typeflag_i_x1\" \"block_length_x1\" \"Nel_i_x1\" \"min_elem_size_x1\" \n\n\n");
+    printf("\t ./install/bin/pumiMBBL1D_Demo N_x1 domain_x1_min \"typeflag_i_x1\" \"block_length_x1\" \"Nel_i_x1\" \"min_elem_size_x1\" \n\n\n");
     printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
+    printf("\t domain_x1_min \t\t Starting x1 coordinate of the domain");
     printf("\t \"typeflag_i_x1\" \t Active mesh type segment in i-th submesh along the x1-direction \n" );
     printf("\t \"block_length_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
     printf("\t \"max_elem_size_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
@@ -247,7 +251,7 @@ void print_usage()
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
     printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL1D_Demo 3 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \n\n");
+    printf("    ./install/bin/pumiMBBL1D_Demo 3 1.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \n\n");
     Kokkos::finalize();
     exit(0);
 }

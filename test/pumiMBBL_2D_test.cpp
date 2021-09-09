@@ -8,19 +8,23 @@ int main( int argc, char* argv[] )
 {
   Kokkos::initialize( argc, argv );
   {
-      if (argc != 12)
+      if (argc != 14)
       {
           print_usage();
       }
     pumi::check_is_pumi_working();
     int nsubmesh_x1 = atoi( argv[1] );
-    int nsubmesh_x2 = atoi( argv[6] );
+    double domain_x1_min = atof( argv[2] );
+    int nsubmesh_x2 = atoi( argv[7] );
+    double domain_x2_min = atof( argv[8] );
     // int nsubmesh = nsubmesh_x1+nsubmesh_x2;
     pumi::Mesh_Inputs *pumi_inputs = pumi::inputs_allocate();
 
     pumi_inputs->ndim = 2; // Fixed pumi input
     pumi_inputs->nsubmesh_x1 = nsubmesh_x1;
     pumi_inputs->nsubmesh_x2 = nsubmesh_x2;
+    pumi_inputs->domain_x1_min = domain_x1_min;
+    pumi_inputs->domain_x2_min = domain_x2_min;
 
     parse_inputs(argc, argv, pumi_inputs);
 
@@ -32,6 +36,7 @@ int main( int argc, char* argv[] )
     pumi::SubmeshHostViewPtr host_submesh_x2;
     pumi::Mesh_Options pumi_options;
     pumi_options.BL_storage_option = pumi::store_BL_coords_ON;
+    pumi_options.print_node_options = pumi::print_node_coords_ON;
 
     submesh_x1 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir, &host_submesh_x1);
     submesh_x2 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir, &host_submesh_x2);
@@ -486,7 +491,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     // reading submesh meshtypes
     char all_submesh_flag_x1[MAX_SUBMESHES*10];
     char each_submesh_flag_x1[MAX_SUBMESHES][10];
-    strcpy(all_submesh_flag_x1, argv[2]);
+    strcpy(all_submesh_flag_x1, argv[3]);
 
     char *tok = strtok(all_submesh_flag_x1, ",");
     int isubmesh=0;
@@ -504,7 +509,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh lengths
     char all_p1_submesh_x1[MAX_SUBMESHES*10];
     char each_p1_submesh_x1[MAX_SUBMESHES][10];
-    strcpy(all_p1_submesh_x1, argv[3]);
+    strcpy(all_p1_submesh_x1, argv[4]);
 
     tok = strtok(all_p1_submesh_x1, ",");
     isubmesh=0;
@@ -522,7 +527,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh max elemsize
     char all_p2max_submesh_x1[MAX_SUBMESHES*10];
     char each_p2max_submesh_x1[MAX_SUBMESHES][10];
-    strcpy(all_p2max_submesh_x1, argv[4]);
+    strcpy(all_p2max_submesh_x1, argv[5]);
 
     tok = strtok(all_p2max_submesh_x1, ",");
     isubmesh=0;
@@ -540,7 +545,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh min elemsize
     char all_p2min_submesh_x1[MAX_SUBMESHES*10];
     char each_p2min_submesh_x1[MAX_SUBMESHES][10];
-    strcpy(all_p2min_submesh_x1, argv[5]);
+    strcpy(all_p2min_submesh_x1, argv[6]);
 
     tok = strtok(all_p2min_submesh_x1, ",");
     isubmesh=0;
@@ -558,7 +563,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     // reading submesh meshtypes
     char all_submesh_flag_x2[MAX_SUBMESHES*10];
     char each_submesh_flag_x2[MAX_SUBMESHES][10];
-    strcpy(all_submesh_flag_x2, argv[7]);
+    strcpy(all_submesh_flag_x2, argv[9]);
 
     tok = strtok(all_submesh_flag_x2, ",");
     isubmesh=0;
@@ -576,7 +581,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh lengths
     char all_p1_submesh_x2[MAX_SUBMESHES*10];
     char each_p1_submesh_x2[MAX_SUBMESHES][10];
-    strcpy(all_p1_submesh_x2, argv[8]);
+    strcpy(all_p1_submesh_x2, argv[10]);
 
     tok = strtok(all_p1_submesh_x2, ",");
     isubmesh=0;
@@ -594,7 +599,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh max elemsize
     char all_p2max_submesh_x2[MAX_SUBMESHES*10];
     char each_p2max_submesh_x2[MAX_SUBMESHES][10];
-    strcpy(all_p2max_submesh_x2, argv[9]);
+    strcpy(all_p2max_submesh_x2, argv[11]);
 
     tok = strtok(all_p2max_submesh_x2, ",");
     isubmesh=0;
@@ -612,7 +617,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh min elemsize
     char all_p2min_submesh_x2[MAX_SUBMESHES*10];
     char each_p2min_submesh_x2[MAX_SUBMESHES][10];
-    strcpy(all_p2min_submesh_x2, argv[10]);
+    strcpy(all_p2min_submesh_x2, argv[12]);
 
     tok = strtok(all_p2min_submesh_x2, ",");
     isubmesh=0;
@@ -630,7 +635,7 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
     //reading submesh activity info
     char all_submesh_isactive[MAX_SUBMESHES*2];
     char each_submesh_isactive[MAX_SUBMESHES][2];
-    strcpy(all_submesh_isactive, argv[11]);
+    strcpy(all_submesh_isactive, argv[13]);
 
     tok = strtok(all_submesh_isactive, ",");
     isubmesh=0;
@@ -680,6 +685,7 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
 {
     printf("Printing the parsed commandline inputs\n\n");
     printf("Number of blocks in x1-direction = %d\n",pumi_inputs->nsubmesh_x1 );
+    printf("Domain min-side x1-coordinate    = %2.4f\n",pumi_inputs->domain_x1_min );
     for(int i=0; i<pumi_inputs->nsubmesh_x1; i++){
         printf("\n[X1-BLOCK #%d]\n",i+1 );
         std::cout << "\t type          = " << pumi_inputs->meshtype_x1[i] << "\n";
@@ -687,7 +693,10 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
         printf("\t max-elem-size = %2.4e\n",pumi_inputs->max_elem_size_x1[i] );
         printf("\t min-elem-size = %2.4e\n",pumi_inputs->min_elem_size_x1[i] );
     }
-    printf("\nNumber of blocks in x2-direction = %d\n",pumi_inputs->nsubmesh_x2 );
+    printf("\n");
+    printf("Number of blocks in x2-direction = %d\n",pumi_inputs->nsubmesh_x2 );
+    printf("Domain min-side x2-coordinate    = %2.4f\n",pumi_inputs->domain_x2_min );
+
     for(int i=0; i<pumi_inputs->nsubmesh_x2; i++){
         printf("\n[X2-BLOCK #%d]\n",i+1 );
         std::cout << "\t type          = " << pumi_inputs->meshtype_x2[i] << "\n";
@@ -700,14 +709,16 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs)
 void print_usage()
 {
     printf("Execute the code with the following command line arguments -- \n\n" );
-    printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 \"typeflag_i_x1\" \"block_length_x1\" \"Nel_i_x1\" \"min_elem_size_x1\" N_x2 \"typeflag_i_x2\" \"block_length_x2\" \"Nel_i_x2\" \"min_elem_size_x2\" \"block_isactive\"\n\n\n");
+    printf("\t ./install/bin/pumiMBBL2D_Demo N_x1 domain_x1_min \"typeflag_i_x1\" \"block_length_x1\" \"Nel_i_x1\" \"min_elem_size_x1\" N_x2 domain_x2_min \"typeflag_i_x2\" \"block_length_x2\" \"Nel_i_x2\" \"min_elem_size_x2\" \"block_isactive\"\n\n\n");
     printf("\t N_x1     \t\t Total Number of submeshes along the x1-direction \n");
+    printf("\t domain_x1_min \t\t Starting x1 coordinate of the domain");
     printf("\t \"typeflag_i_x1\" \t Active mesh type segment in i-th submesh along the x1-direction \n" );
     printf("\t \"block_length_x1\"  \t\t Number of Debye Lengths in i-th submesh along the x1-direction \n");
     printf("\t \"max_elem_size_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
     printf("\t \"min_elem_size_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
     printf("\t N_x2     \t\t Total Number of submeshes along the x2-direction \n");
+    printf("\t domain_x2_min \t\t Starting x2 coordinate of the domain");
     printf("\t \"typeflag_i_x2\" \t Active mesh type segment in i-th submesh along the x2-direction \n" );
     printf("\t \"block_length_x2\"  \t\t Number of Debye Lengths in i-th submesh along the x2-direction \n");
     printf("\t \"max_elem_size_x2\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x2-direction \n");
@@ -719,7 +730,7 @@ void print_usage()
     // printf("  E.g.#1 [On-HOST]\n\n");
     // printf("    ./pumi-test.host 3 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL2D_Demo 3 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 3 0.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 1.0 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
     Kokkos::finalize();
     exit(0);
 }
