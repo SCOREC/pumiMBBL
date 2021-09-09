@@ -36,7 +36,7 @@ int main( int argc, char* argv[] )
     pumi::SubmeshHostViewPtr host_submesh_x2;
     pumi::Mesh_Options pumi_options;
     pumi_options.BL_storage_option = pumi::store_BL_coords_ON;
-    pumi_options.print_node_options = pumi::print_node_coords_ON;
+    pumi_options.print_node_option = pumi::print_node_coords_ON;
 
     submesh_x1 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir, &host_submesh_x1);
     submesh_x2 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir, &host_submesh_x2);

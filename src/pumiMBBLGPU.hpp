@@ -90,11 +90,11 @@ enum print_node_coords{
 */
 struct Mesh_Options{
     store_BL_coords BL_storage_option;
-    print_node_coords print_node_options;
+    print_node_coords print_node_option;
     /*!
     * \brief Struct default constructor
     */
-    Mesh_Options():BL_storage_option(store_BL_coords_ON),print_node_options(print_node_coords_OFF){};
+    Mesh_Options():BL_storage_option(store_BL_coords_ON),print_node_option(print_node_coords_OFF){};
 };
 
 
