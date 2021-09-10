@@ -35,6 +35,7 @@ int main( int argc, char* argv[] )
 
     pumi::MBBL pumi_obj(mesh, submesh_x1, host_submesh_x1);
 
+    printf("Mesh volume = %2.2f\n",pumi::get_mesh_volume(pumi_obj) );
     pumi::inputs_deallocate(pumi_inputs);
 
     pumi::MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(mesh);

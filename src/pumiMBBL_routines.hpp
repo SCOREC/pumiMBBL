@@ -1167,6 +1167,29 @@ int get_x1_elements(MBBL pumi_obj){
 int get_x2_elements(MBBL pumi_obj){
     return pumi_obj.host_mesh->Nel_tot_x2;
 }
+
+double get_mesh_volume(MBBL pumi_obj){
+    if (pumi_obj.host_mesh->ndim==1){
+        double volume = pumi_obj.host_submesh_x1[pumi_obj.host_mesh->nsubmesh_x1].xmax - pumi_obj.host_submesh_x1[1].xmin;
+        return volume;
+    }
+    else if (pumi_obj.host_mesh->ndim==2){
+        double volume=0.0;
+        int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+        int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+        for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
+            for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
+                if (pumi_obj.host_mesh->host_isactive[isubmesh][jsubmesh]){
+                    volume += pumi_obj.host_submesh_x1[isubmesh].length * pumi_obj.host_submesh_x2[jsubmesh].length;
+                }
+            }
+        }
+        return volume;
+    }
+    else {
+        return 0.0;
+    }
+}
 } // namespace pumi
 
 #endif
