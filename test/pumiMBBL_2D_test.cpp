@@ -52,6 +52,15 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
+    // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
+    //     if (pumi::check_is_bdry(pumi_obj,iEdge)){
+    //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\t start=%d num=%d\n",iEdge,pumi::get_bdry_normal_component(pumi_obj,iEdge,pumi::x1_dir),
+    //                             pumi::get_bdry_normal_component(pumi_obj,iEdge,pumi::x2_dir),pumi::get_bdry_normal_component(pumi_obj,iEdge,pumi::x3_dir),
+    //                             pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_bdry(pumi_obj,iEdge));
+    //     }
+    //
+    // }
+
     // int k=0;
     // for (int i=0; i<=h_pumi_mesh(0).Nel_tot_x2; i++){
     //     for (int j=0; j<=h_pumi_mesh(0).Nel_tot_x1; j++){

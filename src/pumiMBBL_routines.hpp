@@ -1190,6 +1190,75 @@ double get_mesh_volume(MBBL pumi_obj){
         return 0.0;
     }
 }
+
+double get_bdry_normal_component(MBBL pumi_obj, unsigned int iEdge, unsigned int dir){
+    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2 && dir<3){
+        double nrml = pumi_obj.host_mesh->host_bdry_normal[iEdge][dir];
+        return nrml;
+    }
+    else{
+        std::cout << "Invalid edge ID or direction\n";
+        std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
+        std::cout << "Valid directions 0 (x1-dirxn) or 1 (x2-dirxn) or 2 (x3-dirxn)\n ";
+        exit(0);
+    }
+}
+
+int get_num_faces_on_bdry(MBBL pumi_obj, unsigned int iEdge){
+    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int Nx2p1 = 2*nsubmesh_x1+1;
+    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        int num = iEdge/Nx2p1;
+        int rem = iEdge-num*Nx2p1;
+        if (rem < nsubmesh_x1){
+            return pumi_obj.host_submesh_x1[rem+1].Nel;
+        }
+        else {
+            return pumi_obj.host_submesh_x2[num+1].Nel;
+        }
+    }
+    else{
+        std::cout << "Invalid edge ID\n";
+        std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
+        exit(0);
+    }
+}
+
+int get_starting_faceID_on_bdry(MBBL pumi_obj, unsigned int iEdge){
+    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        return pumi_obj.host_mesh->edge_to_face[iEdge];
+    }
+    else{
+        std::cout << "Invalid edge ID\n";
+        std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
+        exit(0);
+    }
+}
+
+bool check_is_bdry(MBBL pumi_obj, unsigned int iEdge){
+    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        return pumi_obj.host_mesh->host_is_bdry[iEdge];
+    }
+    else{
+        std::cout << "Invalid edge ID\n";
+        std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
+        exit(0);
+    }
+}
+
+int get_total_mesh_block_edges(MBBL pumi_obj){
+    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    return 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2;
+}
+
 } // namespace pumi
 
 #endif
