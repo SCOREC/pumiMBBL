@@ -250,7 +250,8 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     printf("\n\n");
 
     printf("Total active elements in 2D Mesh = %d\n",h_pumi_mesh(0).Nel_total);
-    printf("Total active nodes in 2D Mesh = %d\n",h_pumi_mesh(0).Nnp_total);
+    printf("Total active nodes in 2D Mesh    = %d\n",h_pumi_mesh(0).Nnp_total);
+    printf("Total boundary faces in 2D Mesh  = %d\n",h_pumi_mesh(0).Nbdry_faces );
 
 }
 
@@ -1264,6 +1265,13 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
     Kokkos::View<bool*>::HostMirror h_is_bdry = Kokkos::create_mirror_view(is_bdry);
     Kokkos::View<double*[3]>::HostMirror h_bdry_normal = Kokkos::create_mirror_view(bdry_normal);
 
+    bool *host_is_bdry = new bool[2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2];
+    double **host_bdry_normal = new double*[2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2];
+    for (int idim=0; idim<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; idim++){
+        host_bdry_normal[idim] = new double[3];
+    }
+    int *edge_to_face = new int[2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2];
+
     for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
         for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
             if (jsubmesh==1){
@@ -1423,6 +1431,31 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
     Kokkos::deep_copy(is_bdry, h_is_bdry);
     Kokkos::deep_copy(bdry_normal, h_bdry_normal);
 
+    int Nbdry_faces = 0;
+    for (int iedge=0; iedge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; iedge++){
+        int Nx2p1 = 2*nsubmesh_x1+1;
+        if (h_is_bdry(iedge)){
+            edge_to_face[iedge] = Nbdry_faces;
+            int num = iedge/Nx2p1;
+            int rem = iedge - num*Nx2p1;
+            if (rem < nsubmesh_x1){
+                Nbdry_faces += hc_submesh_x1[rem+1].Nel;
+                // printf("edge - %d -- Nel - %d - e2f=%d\n",iedge,hc_submesh_x1[rem+1].Nel,edge_to_face[iedge] );
+            }
+            else{
+                Nbdry_faces += hc_submesh_x2[num+1].Nel;
+                // printf("edge - %d -- Nel - %d - e2f=%d\n",iedge,hc_submesh_x2[num+1].Nel,edge_to_face[iedge] );
+            }
+        }
+        else{
+            edge_to_face[iedge] = -1;
+        }
+        host_is_bdry[iedge] = h_is_bdry(iedge);
+        host_bdry_normal[iedge][0] = h_bdry_normal(iedge,0);
+        host_bdry_normal[iedge][1] = h_bdry_normal(iedge,1);
+        host_bdry_normal[iedge][2] = h_bdry_normal(iedge,2);
+    }
+
     // for (int i=0; i<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; i++){
     //     if (h_is_bdry(i)){
     //         printf("Edge - %3d is boundary edge\n", i);
@@ -1433,7 +1466,8 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
                         submesh_activity, elemoffset_start, elemoffset_skip,
                         nodeoffset_start, nodeoffset_skip_bot, nodeoffset_skip_mid, nodeoffset_skip_top,
-                        is_bdry, bdry_normal, Nel_total_2D, Nnp_total_2D, host_isactive);
+                        is_bdry, bdry_normal, host_is_bdry, host_bdry_normal, Nbdry_faces, edge_to_face,
+                        Nel_total_2D, Nnp_total_2D, host_isactive);
     });
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);

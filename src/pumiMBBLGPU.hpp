@@ -448,7 +448,12 @@ public:
     Kokkos::View<int*> elemoffset_skip; //!< aux data structure to compute element offset
 
     Kokkos::View<bool*> is_bdry; //!< bool value stores if an edge is on boundary
+    bool* host_is_bdry;
     Kokkos::View<double*[3]> bdry_normal; //!< boundary normal direction
+    double** host_bdry_normal;
+
+    int Nbdry_faces; //!< int value storing number of boundary element faces
+    int *edge_to_face;
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
@@ -479,6 +484,7 @@ public:
              nsubmesh_x3 = 0;
              Nel_tot_x2 = 0;
              Nel_tot_x3 = 0;
+             Nbdry_faces = 2;
          };
      /**
      * @brief Constructor for 2D Mesh
@@ -504,6 +510,10 @@ public:
          Kokkos::View<int**> nodeoffset_skip_top_,
          Kokkos::View<bool*> is_bdry_,
          Kokkos::View<double*[3]> bdry_normal_,
+         bool* host_is_bdry_,
+         double** host_bdry_normal_,
+         int Nbdry_faces_,
+         int* edge_to_face_,
          int Nel_total_,
          int Nnp_total_,
          bool** host_isactive_):
@@ -521,6 +531,10 @@ public:
          nodeoffset_skip_top(nodeoffset_skip_top_),
          is_bdry(is_bdry_),
          bdry_normal(bdry_normal_),
+         host_is_bdry(host_is_bdry_),
+         host_bdry_normal(host_bdry_normal_),
+         Nbdry_faces(Nbdry_faces_),
+         edge_to_face(edge_to_face_),
          Nel_total(Nel_total_),
          Nnp_total(Nnp_total_),
          host_isactive(host_isactive_)
@@ -545,7 +559,11 @@ public:
              int Nel_tot_x2_,
              int Nel_total_,
              int Nnp_total_,
-             bool** host_isactive_):
+             bool** host_isactive_,
+             bool* host_is_bdry_,
+             double** host_bdry_normal_,
+             int Nbdry_faces_,
+             int* edge_to_face_):
              ndim(2),
              nsubmesh_x1(nsubmesh_x1_),
              Nel_tot_x1(Nel_tot_x1_),
@@ -553,7 +571,11 @@ public:
              Nel_tot_x2(Nel_tot_x2_),
              Nel_total(Nel_total_),
              Nnp_total(Nnp_total_),
-             host_isactive(host_isactive_)
+             host_isactive(host_isactive_),
+             host_is_bdry(host_is_bdry_),
+             host_bdry_normal(host_bdry_normal_),
+             Nbdry_faces(Nbdry_faces_),
+             edge_to_face(edge_to_face_)
              {
                  nsubmesh_x3 = 0;
                  Nel_tot_x3 = 0;
@@ -618,7 +640,8 @@ struct MBBL{
              MeshDeviceViewPtr::HostMirror h_mesh_ = Kokkos::create_mirror_view(mesh_);
              Kokkos::deep_copy(h_mesh_, mesh_);
              host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1,h_mesh_(0).nsubmesh_x2,h_mesh_(0).Nel_tot_x2,
-                                    h_mesh_(0).Nel_total,h_mesh_(0).Nnp_total,h_mesh_(0).host_isactive);
+                                    h_mesh_(0).Nel_total,h_mesh_(0).Nnp_total,h_mesh_(0).host_isactive,h_mesh_(0).host_is_bdry,
+                                    h_mesh_(0).host_bdry_normal,h_mesh_(0).Nbdry_faces,h_mesh_(0).edge_to_face);
          };
 };
 
