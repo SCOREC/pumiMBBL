@@ -1514,8 +1514,18 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
 
 }
 
-void check_is_pumi_working(){
-    printf("Yes, pumiMBBL-GPU is working\n\n");
+KOKKOS_INLINE_FUNCTION
+void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
+    *jsub = submeshID/pumi_obj.mesh(0).nsubmesh_x1 + 1;
+    *isub = submeshID - pumi_obj.mesh(0).nsubmesh_x1*(*jsub-1) + 1;
+    *jcell = cellID/pumi_obj.submesh_x1(*isub)()->Nel;
+    *icell = cellID - pumi_obj.submesh_x1(*isub)()->Nel*(*jcell);
+}
+
+KOKKOS_INLINE_FUNCTION
+void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
+    *submeshID = (isub-1) + (jsub-1)*pumi_obj.mesh(0).nsubmesh_x1;
+    *cellID = icell + jcell*pumi_obj.submesh_x1(isub)()->Nel;
 }
 
 } // namespace pumi

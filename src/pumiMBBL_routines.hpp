@@ -18,6 +18,10 @@ enum elemsize_index_offset{
     elem_on_min_side_offset = -1, //!< offset for node ID input and querying element to the min side
 };
 
+void check_is_pumi_working(){
+    printf("Yes, pumiMBBL-GPU is working\n\n");
+}
+
 /**
  * @brief Returns the grading ratio along a queried direction about a queried node
  *
