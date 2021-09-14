@@ -996,8 +996,20 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
     Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1+2, nsubmesh_x2+2);
 
     int **nodeoffset = new int*[nsubmesh_x1+2];
+    int **host_elemoffset_start = new int*[nsubmesh_x1+2];
+    int *host_elemoffset_skip = new int[nsubmesh_x2+2];
+    int **host_nodeoffset_start = new int*[nsubmesh_x1+2];
+    int **host_nodeoffset_skip_bot = new int*[nsubmesh_x1+2];
+    int **host_nodeoffset_skip_mid = new int*[nsubmesh_x1+2];
+    int **host_nodeoffset_skip_top = new int*[nsubmesh_x1+2];
+
     for (int i=0; i<nsubmesh_x1+2; i++){
         nodeoffset[i] = new int[Nel_tot_x2+1];
+        host_elemoffset_start[i] = new int[nsubmesh_x2+2];
+        host_nodeoffset_start[i] = new int[nsubmesh_x2+2];
+        host_nodeoffset_skip_bot[i] = new int[nsubmesh_x2+2];
+        host_nodeoffset_skip_mid[i] = new int[nsubmesh_x2+2];
+        host_nodeoffset_skip_top[i] = new int[nsubmesh_x2+2];
     }
 
     if (!is_fullmesh){
@@ -1220,6 +1232,16 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
                 }
             }
         }
+        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
+            host_elemoffset_skip[jsubmesh] = h_elemoffset_skip(jsubmesh);
+            for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++){
+                host_elemoffset_start[isubmesh][jsubmesh] = h_elemoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_start[isubmesh][jsubmesh] = h_nodeoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_skip_bot[isubmesh][jsubmesh] = h_nodeoffset_skip_bot(isubmesh,jsubmesh);
+                host_nodeoffset_skip_mid[isubmesh][jsubmesh] = h_nodeoffset_skip_mid(isubmesh,jsubmesh);
+                host_nodeoffset_skip_top[isubmesh][jsubmesh] = h_nodeoffset_skip_top(isubmesh,jsubmesh);
+            }
+        }
         // printf("Full Mesh = %d\n", (Nel_tot_x1+1)*(Nel_tot_x2+1));
         // printf("Actual Mesh = %d\n", Nnp_total_2D);
         Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
@@ -1248,6 +1270,17 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
                 h_nodeoffset_skip_bot(isubmesh,jsubmesh) = 0;
                 h_nodeoffset_skip_mid(isubmesh,jsubmesh) = 0;
                 h_nodeoffset_skip_top(isubmesh,jsubmesh) = 0;
+            }
+        }
+
+        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
+            host_elemoffset_skip[jsubmesh] = h_elemoffset_skip(jsubmesh);
+            for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++){
+                host_elemoffset_start[isubmesh][jsubmesh] = h_elemoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_start[isubmesh][jsubmesh] = h_nodeoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_skip_bot[isubmesh][jsubmesh] = h_nodeoffset_skip_bot(isubmesh,jsubmesh);
+                host_nodeoffset_skip_mid[isubmesh][jsubmesh] = h_nodeoffset_skip_mid(isubmesh,jsubmesh);
+                host_nodeoffset_skip_top[isubmesh][jsubmesh] = h_nodeoffset_skip_top(isubmesh,jsubmesh);
             }
         }
 
@@ -1466,8 +1499,9 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
                         submesh_activity, elemoffset_start, elemoffset_skip,
                         nodeoffset_start, nodeoffset_skip_bot, nodeoffset_skip_mid, nodeoffset_skip_top,
-                        is_bdry, bdry_normal, host_is_bdry, host_bdry_normal, Nbdry_faces, edge_to_face,
-                        Nel_total_2D, Nnp_total_2D, host_isactive);
+                        host_elemoffset_start, host_elemoffset_skip, host_nodeoffset_start, host_nodeoffset_skip_bot,
+                        host_nodeoffset_skip_mid, host_nodeoffset_skip_top, is_bdry, bdry_normal, host_is_bdry,
+                        host_bdry_normal, Nbdry_faces, edge_to_face, Nel_total_2D, Nnp_total_2D, host_isactive);
     });
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);

@@ -441,11 +441,17 @@ public:
 
     // Kokkos::View<int**> nodeoffset;
     Kokkos::View<int**> nodeoffset_start; //!< aux data structure to compute nodeoffset
+    int** host_nodeoffset_start;
     Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
+    int** host_nodeoffset_skip_bot;
     Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset
+    int** host_nodeoffset_skip_mid;
     Kokkos::View<int**> nodeoffset_skip_top; //!< aux data structure to compute nodeoffset
+    int** host_nodeoffset_skip_top;
     Kokkos::View<int**> elemoffset_start; //!< aux data structure to compute elemtent offset
+    int** host_elemoffset_start;
     Kokkos::View<int*> elemoffset_skip; //!< aux data structure to compute element offset
+    int* host_elemoffset_skip;
 
     Kokkos::View<bool*> is_bdry; //!< bool value stores if an edge is on boundary
     bool* host_is_bdry;
@@ -508,6 +514,12 @@ public:
          Kokkos::View<int**> nodeoffset_skip_bot_,
          Kokkos::View<int**> nodeoffset_skip_mid_,
          Kokkos::View<int**> nodeoffset_skip_top_,
+         int** host_elemoffset_start_,
+         int* host_elemoffset_skip_,
+         int** host_nodeoffset_start_,
+         int** host_nodeoffset_skip_bot_,
+         int** host_nodeoffset_skip_mid_,
+         int** host_nodeoffset_skip_top_,
          Kokkos::View<bool*> is_bdry_,
          Kokkos::View<double*[3]> bdry_normal_,
          bool* host_is_bdry_,
@@ -529,6 +541,12 @@ public:
          nodeoffset_skip_bot(nodeoffset_skip_bot_),
          nodeoffset_skip_mid(nodeoffset_skip_mid_),
          nodeoffset_skip_top(nodeoffset_skip_top_),
+         host_elemoffset_start(host_elemoffset_start_),
+         host_elemoffset_skip(host_elemoffset_skip_),
+         host_nodeoffset_start(host_nodeoffset_start_),
+         host_nodeoffset_skip_bot(host_nodeoffset_skip_bot_),
+         host_nodeoffset_skip_mid(host_nodeoffset_skip_mid_),
+         host_nodeoffset_skip_top(host_nodeoffset_skip_top_),
          is_bdry(is_bdry_),
          bdry_normal(bdry_normal_),
          host_is_bdry(host_is_bdry_),
@@ -563,7 +581,13 @@ public:
              bool* host_is_bdry_,
              double** host_bdry_normal_,
              int Nbdry_faces_,
-             int* edge_to_face_):
+             int* edge_to_face_,
+             int** host_elemoffset_start_,
+             int* host_elemoffset_skip_,
+             int** host_nodeoffset_start_,
+             int** host_nodeoffset_skip_bot_,
+             int** host_nodeoffset_skip_mid_,
+             int** host_nodeoffset_skip_top_):
              ndim(2),
              nsubmesh_x1(nsubmesh_x1_),
              Nel_tot_x1(Nel_tot_x1_),
@@ -575,7 +599,13 @@ public:
              host_is_bdry(host_is_bdry_),
              host_bdry_normal(host_bdry_normal_),
              Nbdry_faces(Nbdry_faces_),
-             edge_to_face(edge_to_face_)
+             edge_to_face(edge_to_face_),
+             host_elemoffset_start(host_elemoffset_start_),
+             host_elemoffset_skip(host_elemoffset_skip_),
+             host_nodeoffset_start(host_nodeoffset_start_),
+             host_nodeoffset_skip_bot(host_nodeoffset_skip_bot_),
+             host_nodeoffset_skip_mid(host_nodeoffset_skip_mid_),
+             host_nodeoffset_skip_top(host_nodeoffset_skip_top_)
              {
                  nsubmesh_x3 = 0;
                  Nel_tot_x3 = 0;
@@ -641,7 +671,9 @@ struct MBBL{
              Kokkos::deep_copy(h_mesh_, mesh_);
              host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1,h_mesh_(0).nsubmesh_x2,h_mesh_(0).Nel_tot_x2,
                                     h_mesh_(0).Nel_total,h_mesh_(0).Nnp_total,h_mesh_(0).host_isactive,h_mesh_(0).host_is_bdry,
-                                    h_mesh_(0).host_bdry_normal,h_mesh_(0).Nbdry_faces,h_mesh_(0).edge_to_face);
+                                    h_mesh_(0).host_bdry_normal,h_mesh_(0).Nbdry_faces,h_mesh_(0).edge_to_face, h_mesh_(0).host_elemoffset_start,
+                                    h_mesh_(0).host_elemoffset_skip,h_mesh_(0).host_nodeoffset_start,h_mesh_(0).host_nodeoffset_skip_bot,
+                                    h_mesh_(0).host_nodeoffset_skip_mid,h_mesh_(0).host_nodeoffset_skip_top);
          };
 };
 

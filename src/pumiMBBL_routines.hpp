@@ -1259,6 +1259,114 @@ int get_total_mesh_block_edges(MBBL pumi_obj){
     return 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2;
 }
 
+int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
+    int isubmesh, jsubmesh;
+    jsubmesh = submeshID/pumi_obj.host_mesh->nsubmesh_x1;
+    isubmesh = submeshID - jsubmesh*pumi_obj.host_mesh->nsubmesh_x1;
+
+    isubmesh++;
+    jsubmesh++;
+
+    int Jnp;
+    Jnp = fullmesh_node_id/(pumi_obj.host_mesh->Nel_tot_x1+1);
+
+
+    int nodeID = fullmesh_node_id;
+    int jnp = Jnp - pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
+    // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
+    int nodeoffset;
+    nodeoffset = pumi_obj.host_mesh->host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->host_nodeoffset_skip_bot[isubmesh][jsubmesh]
+                    +(jnp-1)*pumi_obj.host_mesh->host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    if (jnp==0){
+        nodeoffset = pumi_obj.host_mesh->host_nodeoffset_start[isubmesh][jsubmesh];
+    }
+    if (jnp==pumi_obj.host_submesh_x2[jsubmesh].Nel){
+        nodeoffset +=  (pumi_obj.host_mesh->host_nodeoffset_skip_top[isubmesh][jsubmesh]-pumi_obj.host_mesh->host_nodeoffset_skip_mid[isubmesh][jsubmesh]);
+    }
+    return nodeID-nodeoffset;
+}
+
+void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset, int *submeshID){
+    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int Nx2p1 = 2*nsubmesh_x1+1;
+    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        if (check_is_bdry(pumi_obj,iEdge)){
+            int num = iEdge/Nx2p1;
+            int rem = iEdge-num*Nx2p1;
+            int isubmesh, jsubmesh;
+            if (rem < nsubmesh_x1){
+                *next_offset = 1;
+                isubmesh = rem;
+                jsubmesh = num;
+                if (jsubmesh >= nsubmesh_x2){
+                    jsubmesh = nsubmesh_x2-1;
+                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1].Nel_cumulative;
+                    int Jnp = pumi_obj.host_mesh->Nel_tot_x2;
+                    *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                    *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
+                    return;
+                }
+                else{
+                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1].Nel_cumulative;
+                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1].Nel_cumulative;
+                    if (pumi_obj.host_mesh->host_isactive[isubmesh+1][jsubmesh+1]){
+                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
+                        return;
+                    }
+                    else{
+                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                        jsubmesh--;
+                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
+                        return;
+                    }
+                }
+            }
+            else {
+                *next_offset = pumi_obj.host_mesh->Nel_tot_x1+1;
+                jsubmesh = num;
+                isubmesh = rem-nsubmesh_x2;
+                if (isubmesh >= nsubmesh_x1){
+                    isubmesh = nsubmesh_x1-1;
+                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1].Nel_cumulative;
+                    int Inp = pumi_obj.host_mesh->Nel_tot_x1;
+                    *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                    *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
+                    return;
+                }
+                else{
+                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1].Nel_cumulative;
+                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1].Nel_cumulative;
+                    if (pumi_obj.host_mesh->host_isactive[isubmesh+1][jsubmesh+1]){
+                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
+                        return;
+                    }
+                    else{
+                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                        isubmesh--;
+                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
+                        return;
+                    }
+                }
+            }
+        }
+        else{
+            *Knp=-1;
+            *next_offset=-1;
+            *submeshID=-1;
+            return;
+        }
+
+    }
+    else{
+        std::cout << "Invalid edge ID\n";
+        std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
+        exit(0);
+    }
+}
+
 } // namespace pumi
 
 #endif

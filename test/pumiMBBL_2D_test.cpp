@@ -61,6 +61,19 @@ int main( int argc, char* argv[] )
     //
     // }
 
+    // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
+    //     if (pumi::check_is_bdry(pumi_obj,iEdge)){
+    //         int Knp, subID, offset;
+    //         pumi::get_edge_info(pumi_obj, iEdge, &Knp, &offset, &subID);
+    //         int Nnp = pumi::get_num_faces_on_bdry(pumi_obj, iEdge)+1;
+    //         for (int inp=0; inp<Nnp; inp++){
+    //             int Inp = Knp + inp*offset;
+    //             int global_node_ID = pumi::get_global_nodeID(pumi_obj, subID, Inp);
+    //             printf("Bdry-%2d \t nodeID=%3d\n",iEdge,global_node_ID);
+    //         }
+    //     }
+    // }
+
     // int k=0;
     // for (int i=0; i<=h_pumi_mesh(0).Nel_tot_x2; i++){
     //     for (int j=0; j<=h_pumi_mesh(0).Nel_tot_x1; j++){
