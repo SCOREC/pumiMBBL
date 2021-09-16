@@ -205,7 +205,7 @@ int main( int argc, char* argv[] )
             part_coords(ipart,3) = cellID;
         });
         Kokkos::deep_copy(h_part_coords, part_coords);
-        write2file(h_part_coords, N_part, 0);
+        // write2file(h_part_coords, N_part, 0);
 
         Kokkos::Profiling::pushRegion("push_test_0");
         for (int istep=0; istep<N_step; istep++){
@@ -263,7 +263,7 @@ int main( int argc, char* argv[] )
                 }
             });
             Kokkos::deep_copy(h_part_coords, part_coords);
-            write2file(h_part_coords, N_part, istep+1);
+            // write2file(h_part_coords, N_part, istep+1);
         }
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-0 = %d\n",num_push );
@@ -317,7 +317,7 @@ int main( int argc, char* argv[] )
             part_coords(ipart,3) = cellID;
         });
         Kokkos::deep_copy(h_part_coords, part_coords);
-        write2file(h_part_coords, N_part, N_step+1);
+        // write2file(h_part_coords, N_part, N_step+1);
 
         num_push = 0;
         Kokkos::Profiling::pushRegion("push_test_1");
@@ -378,7 +378,7 @@ int main( int argc, char* argv[] )
             });
             Kokkos::deep_copy(h_part_coords, part_coords);
 
-            write2file(h_part_coords, N_part, istep+2+N_step);
+            // write2file(h_part_coords, N_part, istep+2+N_step);
         }
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-1 = %d\n",num_push );
