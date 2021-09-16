@@ -1,22 +1,7 @@
-#ifndef pumiMBBL_routines_hpp
-#define pumiMBBL_routines_hpp
-
 #include "pumiMBBLGPU.hpp"
 
 namespace pumi {
 ///////Field-related data structures and routines //////////////////////////////////////////////
-
-/*!
-* \brief enum type for element index offsets
-*
-* To be used while querying element size using
-* either element ID or associated node ID
-*/
-enum elemsize_index_offset{
-    elem_input_offset       =  0, //!< zero offset for direct element ID input
-    elem_on_max_side_offset =  0, //!< offset for node ID input and querying element to the max side
-    elem_on_min_side_offset = -1, //!< offset for node ID input and querying element to the min side
-};
 
 void check_is_pumi_working(){
     printf("Yes, pumiMBBL-GPU is working\n\n");
@@ -1372,5 +1357,3 @@ void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset
 }
 
 } // namespace pumi
-
-#endif

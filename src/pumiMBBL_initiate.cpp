@@ -1,6 +1,3 @@
-#ifndef pumiMBBL_initiate_hpp
-#define pumiMBBL_initiate_hpp
-
 #include "pumiMBBLGPU.hpp"
 
 namespace pumi {
@@ -1556,5 +1553,3 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
 
 
 } // namespace pumi
-
-#endif
