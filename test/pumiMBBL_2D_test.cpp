@@ -157,38 +157,9 @@ int main( int argc, char* argv[] )
     if (test0){
         printf("push-test-0\n");
         for (int ipart=0; ipart<N_part; ipart++){
-            bool part_set = false;
-            while (!part_set){
-                double rand_x1 = (double) rand()/RAND_MAX;
-                double rand_x2 = (double) rand()/RAND_MAX;
-
-                double q1 = x1_min + L_x1*rand_x1;
-                double q2 = x2_min + L_x2*rand_x2;
-
-                int isub=0;
-                int jsub=0;
-
-                for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
-                    if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
-                        isub = i;
-                        break;
-                    }
-                }
-                for (int j=1; j<=h_pumi_mesh(0).nsubmesh_x2; j++){
-                    if (pumi_obj.host_submesh_x2[j].xmin < q2 && pumi_obj.host_submesh_x2[j].xmax > q2){
-                        jsub = j;
-                        break;
-                    }
-                }
-
-                if (h_pumi_mesh(0).host_isactive[isub][jsub]){
-                    h_part_coords(ipart,0) = q1;
-                    h_part_coords(ipart,1) = q2;
-                    // h_part_activity(ipart) = true;
-                    part_set = true;
-                }
-            }
-
+            std::vector<double> q = pumi::get_rand_point_in_mesh(pumi_obj);
+            h_part_coords(ipart,0) = q[0];
+            h_part_coords(ipart,1) = q[1];
         }
 
         Kokkos::deep_copy(part_coords, h_part_coords);
@@ -271,37 +242,9 @@ int main( int argc, char* argv[] )
     if (test1){
         printf("push-test-1\n");
         for (int ipart=0; ipart<N_part; ipart++){
-            bool part_set = false;
-            while (!part_set){
-                double rand_x1 = (double) rand()/RAND_MAX;
-                double rand_x2 = (double) rand()/RAND_MAX;
-
-                double q1 = x1_min + L_x1*rand_x1;
-                double q2 = x2_min + L_x2*rand_x2;
-
-                int isub=0;
-                int jsub=0;
-
-                for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
-                    if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
-                        isub = i;
-                        break;
-                    }
-                }
-                for (int j=1; j<=h_pumi_mesh(0).nsubmesh_x2; j++){
-                    if (pumi_obj.host_submesh_x2[j].xmin < q2 && pumi_obj.host_submesh_x2[j].xmax > q2){
-                        jsub = j;
-                        break;
-                    }
-                }
-
-                if (h_pumi_mesh(0).host_isactive[isub][jsub]){
-                    h_part_coords(ipart,0) = q1;
-                    h_part_coords(ipart,1) = q2;
-                    part_set = true;
-                }
-            }
-
+            std::vector<double> q = pumi::get_rand_point_in_mesh(pumi_obj);
+            h_part_coords(ipart,0) = q[0];
+            h_part_coords(ipart,1) = q[1];
         }
 
         Kokkos::deep_copy(part_coords, h_part_coords);
@@ -386,37 +329,9 @@ int main( int argc, char* argv[] )
     if (test2){
         printf("push-test-2\n");
         for (int ipart=0; ipart<N_part; ipart++){
-            bool part_set = false;
-            while (!part_set){
-                double rand_x1 = (double) rand()/RAND_MAX;
-                double rand_x2 = (double) rand()/RAND_MAX;
-
-                double q1 = x1_min + L_x1*rand_x1;
-                double q2 = x2_min + L_x2*rand_x2;
-
-                int isub=0;
-                int jsub=0;
-
-                for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
-                    if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
-                        isub = i;
-                        break;
-                    }
-                }
-                for (int j=1; j<=h_pumi_mesh(0).nsubmesh_x2; j++){
-                    if (pumi_obj.host_submesh_x2[j].xmin < q2 && pumi_obj.host_submesh_x2[j].xmax > q2){
-                        jsub = j;
-                        break;
-                    }
-                }
-
-                if (h_pumi_mesh(0).host_isactive[isub][jsub]){
-                    h_part_coords(ipart,0) = q1;
-                    h_part_coords(ipart,1) = q2;
-                    part_set = true;
-                }
-            }
-
+            std::vector<double> q = pumi::get_rand_point_in_mesh(pumi_obj);
+            h_part_coords(ipart,0) = q[0];
+            h_part_coords(ipart,1) = q[1];
         }
 
         Kokkos::deep_copy(part_coords, h_part_coords);

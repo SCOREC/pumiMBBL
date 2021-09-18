@@ -1359,4 +1359,52 @@ void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset
     }
 }
 
+std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
+    if (pumi_obj.host_mesh->ndim == 1){
+        double rand_x1 = (double) rand()/RAND_MAX;
+        double x1_min = get_global_x1_min_coord(pumi_obj);
+        double x1_max = get_global_x1_max_coord(pumi_obj);
+        double q1 = x1_min + (x1_max-x1_min)*rand_x1;
+        std::vector<double> q = {q1,0.0,0.0};
+        return q;
+    }
+    else if (pumi_obj.host_mesh->ndim == 2){
+        bool part_set = false;
+        double x1_min = get_global_x1_min_coord(pumi_obj);
+        double x1_max = get_global_x1_max_coord(pumi_obj);
+        double x2_min = get_global_x2_min_coord(pumi_obj);
+        double x2_max = get_global_x2_max_coord(pumi_obj);
+        double q1, q2;
+        while (!part_set){
+            double rand_x1 = (double) rand()/RAND_MAX;
+            double rand_x2 = (double) rand()/RAND_MAX;
+            q1 = x1_min + (x1_max-x1_min)*rand_x1;
+            q2 = x2_min + (x2_max-x2_min)*rand_x2;
+
+            int isub=0;
+            int jsub=0;
+
+            for (int i=1; i<=pumi_obj.host_mesh->nsubmesh_x1; i++){
+                if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
+                    isub = i;
+                    break;
+                }
+            }
+            for (int j=1; j<=pumi_obj.host_mesh->nsubmesh_x2; j++){
+                if (pumi_obj.host_submesh_x2[j].xmin < q2 && pumi_obj.host_submesh_x2[j].xmax > q2){
+                    jsub = j;
+                    break;
+                }
+            }
+            if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
+                part_set = true;
+            }
+        }
+        std::vector<double> q = {q1,q2,0.0};
+        return q;
+    }
+    std::vector<double> q = {-999.0,-999.0,-999.0};
+    return;
+}
+
 } // namespace pumi

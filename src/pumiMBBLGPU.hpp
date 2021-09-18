@@ -791,6 +791,7 @@ bool check_is_bdry(MBBL pumi_obj, unsigned int iEdge);
 int get_total_mesh_block_edges(MBBL pumi_obj);
 int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id);
 void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset, int *submeshID);
+std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj);
 } // namespace pumi
 #include "pumiMBBLGPU_impl.hpp"
 #endif
