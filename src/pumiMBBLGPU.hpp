@@ -784,7 +784,7 @@ int get_total_mesh_nodes(MBBL pumi_obj);
 int get_x1_elements(MBBL pumi_obj);
 int get_x2_elements(MBBL pumi_obj);
 double get_mesh_volume(MBBL pumi_obj);
-double get_bdry_normal_component(MBBL pumi_obj, unsigned int iEdge, unsigned int dir);
+std::vector<double> get_bdry_normal(MBBL pumi_obj, unsigned int iEdge);
 int get_num_faces_on_bdry(MBBL pumi_obj, unsigned int iEdge);
 int get_starting_faceID_on_bdry(MBBL pumi_obj, unsigned int iEdge);
 bool check_is_bdry(MBBL pumi_obj, unsigned int iEdge);
