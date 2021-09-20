@@ -1407,4 +1407,37 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
     return;
 }
 
+bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
+    if (pumi_obj.host_mesh->ndim == 1){
+        double x1_min = get_global_x1_min_coord(pumi_obj);
+        double x1_max = get_global_x1_max_coord(pumi_obj);
+        if (q[0]>x1_min && q[0]<x1_max){
+            return true;
+        }
+        return false;
+    }
+    else if (pumi_obj.host_mesh->ndim == 2){
+        int isub=0;
+        int jsub=0;
+
+        for (int i=1; i<=pumi_obj.host_mesh->nsubmesh_x1; i++){
+            if (pumi_obj.host_submesh_x1[i].xmin < q[0] && pumi_obj.host_submesh_x1[i].xmax > q[0]){
+                isub = i;
+                break;
+            }
+        }
+        for (int j=1; j<=pumi_obj.host_mesh->nsubmesh_x2; j++){
+            if (pumi_obj.host_submesh_x2[j].xmin < q[1] && pumi_obj.host_submesh_x2[j].xmax > q[1]){
+                jsub = j;
+                break;
+            }
+        }
+        if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
 } // namespace pumi
