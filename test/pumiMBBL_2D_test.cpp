@@ -136,6 +136,25 @@ int main( int argc, char* argv[] )
     int N_step = 10;
     Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
 
+    // int Nblk = pumi::get_total_submesh_blocks(pumi_obj);
+    // for (int isubmesh=0; isubmesh<Nblk; isubmesh++){
+    //     int num_elems = pumi::get_total_elements_in_block(pumi_obj,isubmesh);
+    //     if (pumi::is_block_active(pumi_obj,isubmesh)){
+    //         Kokkos::parallel_for("node-ID-test",1,KOKKOS_LAMBDA(const int){
+    //             for (int ielem=0; ielem<num_elems; ielem++){
+    //                 int isub, jsub, icell, jcell;
+    //                 pumi::get_directional_submeshID_and_cellID(pumi_obj, isubmesh, ielem, &isub, &icell, &jsub, &jcell);
+    //                 int kcell_x1 = pumi::get_x1_cellID(pumi_obj, isub, icell);
+    //                 int kcell_x2 = pumi::get_x2_cellID(pumi_obj, jsub, jcell);
+    //                 int node_lb,node_lt,global_cellID;
+    //                 pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2,
+    //                 &global_cellID,&node_lb,&node_lt);
+    //                 printf("cellID=%4d n1=%4d n2=%4d n3=%4d n4=%4d\n",global_cellID, node_lb, node_lb+1, node_lt, node_lt+1 );
+    //             }
+    //         });
+    //     }
+    // }
+
     // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
     //     printf("\nBDRY-TEST#2\n");
     //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
