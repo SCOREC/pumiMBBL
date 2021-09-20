@@ -45,7 +45,21 @@ int main( int argc, char* argv[] )
     //     double cv = pumi::return_covolume(pumi_obj, j);
     //     printf("cv[%3d] = %2.4f \n", j, cv);
     // }
-
+    // double integral_tot = 0.0;
+    // int Nx = pumi::get_num_x1_submesh(pumi_obj);
+    // for (int isubmesh=0; isubmesh<Nx; isubmesh++){
+    //     int num_elems = pumi::get_num_x1_elems_in_submesh(pumi_obj,isubmesh+1);//submeshID plus one because of padding
+    //     printf("isub=%d Nel=%d\n",isubmesh,num_elems );
+    //     double integral = 0.0;
+    //     Kokkos::parallel_reduce("elem_size_test",
+    //                             num_elems,
+    //                             KOKKOS_LAMBDA (const int ielem, double& update) {
+    //         update += pumi::get_x1_elem_size_in_submesh(pumi_obj,isubmesh+1,ielem);
+    //     }, integral);
+    //     printf("length=%2.4f\n",integral );
+    //     integral_tot += integral;
+    // }
+    // printf("domain size is %2.4f\n",integral_tot );
 
     int N_part = 1000;
     int N_step = 20;
