@@ -2,6 +2,8 @@ set(HEADERS
   pumiMBBLGPU.hpp
   pumiMBBLGPU_impl.hpp
   pumiMBBL_utils.hpp
+  pumiMBBL_routines.hpp
+  pumiMBBL_initiate.hpp
 )
 
 set(SOURCES
