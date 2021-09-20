@@ -1181,6 +1181,29 @@ int get_total_x2_elements(MBBL pumi_obj){
     return pumi_obj.host_mesh->Nel_tot_x2;
 }
 
+int get_total_submesh_blocks(MBBL pumi_obj){
+    if (pumi_obj.host_mesh->ndim==1){
+        return pumi_obj.host_mesh->nsubmesh_x1;
+    }
+    else if (pumi_obj.host_mesh->ndim==2){
+        return pumi_obj.host_mesh->nsubmesh_x1*pumi_obj.host_mesh->nsubmesh_x2;
+    }
+    return 0;
+}
+
+int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
+    if (pumi_obj.host_mesh->ndim==1){
+        return pumi_obj.host_submesh_x1[flattened_submesh_ID].Nel;
+    }
+    else if (pumi_obj.host_mesh->ndim==2){
+        int jsub = flattened_submesh_ID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
+        int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1 + 1;
+        int Nel = pumi_obj.host_submesh_x1[isub].Nel * pumi_obj.host_submesh_x2[jsub].Nel;
+        return Nel;
+    }
+    return 0;
+}
+
 double get_mesh_volume(MBBL pumi_obj){
     if (pumi_obj.host_mesh->ndim==1){
         double volume = pumi_obj.host_submesh_x1[pumi_obj.host_mesh->nsubmesh_x1].xmax - pumi_obj.host_submesh_x1[1].xmin;
@@ -1256,7 +1279,7 @@ int get_starting_faceID_on_bdry(MBBL pumi_obj, unsigned int iEdge){
     }
 }
 
-bool check_is_bdry(MBBL pumi_obj, unsigned int iEdge){
+bool is_edge_bdry(MBBL pumi_obj, unsigned int iEdge){
     int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
     if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
@@ -1267,6 +1290,16 @@ bool check_is_bdry(MBBL pumi_obj, unsigned int iEdge){
         std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
         exit(0);
     }
+}
+
+bool is_block_active(MBBL pumi_obj, int isub, int jsub){
+    return pumi_obj.host_mesh->host_isactive[isub][jsub];
+}
+
+bool is_block_active(MBBL pumi_obj, int flattened_submesh_ID){
+    int jsub = flattened_submesh_ID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
+    int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1 + 1;
+    return pumi_obj.host_mesh->host_isactive[isub][jsub];
 }
 
 int get_total_mesh_block_edges(MBBL pumi_obj){
@@ -1307,7 +1340,7 @@ void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
     if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        if (check_is_bdry(pumi_obj,iEdge)){
+        if (is_edge_bdry(pumi_obj,iEdge)){
             int num = iEdge/Nx2p1;
             int rem = iEdge-num*Nx2p1;
             int isubmesh, jsubmesh;
