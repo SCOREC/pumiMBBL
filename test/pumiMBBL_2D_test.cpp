@@ -52,17 +52,17 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
-    for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
-        if (pumi::check_is_bdry(pumi_obj,iEdge)){
-            std::vector<double> bn = pumi::get_bdry_normal(pumi_obj, iEdge);
-            printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\t start=%d num=%d\n",iEdge,bn[0],bn[1],bn[2],
-                        pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_bdry(pumi_obj,iEdge));
-        }
-
-    }
+    // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
+    //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
+    //         std::vector<double> bn = pumi::get_bdry_normal(pumi_obj, iEdge);
+    //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\t start=%d num=%d\n",iEdge,bn[0],bn[1],bn[2],
+    //                     pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_bdry(pumi_obj,iEdge));
+    //     }
+    //
+    // }
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
-    //     if (pumi::check_is_bdry(pumi_obj,iEdge)){
+    //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
     //         int Knp, subID, offset;
     //         pumi::get_edge_info(pumi_obj, iEdge, &Knp, &offset, &subID);
     //         int Nnp = pumi::get_num_faces_on_bdry(pumi_obj, iEdge)+1;
@@ -111,6 +111,26 @@ int main( int argc, char* argv[] )
     //         }
     //     }
     // });
+
+    // double integral_tot = 0.0;
+    // int Nblk = pumi::get_total_submesh_blocks(pumi_obj);
+    // for (int isubmesh=0; isubmesh<Nblk; isubmesh++){
+    //     int num_elems = pumi::get_total_elements_in_block(pumi_obj,isubmesh);
+    //     printf("subID=%d Nel=%d\n",isubmesh,num_elems );
+    //     if (pumi::is_block_active(pumi_obj,isubmesh)){
+    //         double integral = 0.0;
+    //         Kokkos::parallel_reduce("elem_size_test",
+    //                                 num_elems,
+    //                                 KOKKOS_LAMBDA (const int ielem, double& update) {
+    //             int isub, jsub, icell, jcell;
+    //             pumi::get_directional_submeshID_and_cellID(pumi_obj, isubmesh, ielem, &isub, &icell, &jsub, &jcell);
+    //             update += pumi::get_x1_elem_size_in_submesh(pumi_obj,isub,icell)*pumi::get_x2_elem_size_in_submesh(pumi_obj,jsub,jcell);
+    //         }, integral);
+    //         printf("Area=%2.4f\n",integral );
+    //         integral_tot += integral;
+    //     }
+    // }
+    // printf("domain area is %2.4f\n",integral_tot );
 
     int N_part = 15000;
     int N_step = 10;
