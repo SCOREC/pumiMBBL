@@ -736,6 +736,12 @@ KOKKOS_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell);
 
 KOKKOS_FUNCTION
+int get_x1_cellID(MBBL pumi_obj, int isub, int icell);
+
+KOKKOS_FUNCTION
+int get_x2_cellID(MBBL pumi_obj, int isub, int icell);
+
+KOKKOS_FUNCTION
 void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID);
 
 KOKKOS_FUNCTION
