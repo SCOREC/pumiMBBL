@@ -46,58 +46,6 @@ enum Meshtype{
     maxBL      = 0x04, //!< geometrically graded BL mesh biased towards the max-size (i.e right-side or top-side)
 };
 
-/**
- * @brief Mesh input struct
- *
- * Object of this class will be passed mesh_initialize API to initiate the mesh
- */
-struct Mesh_Inputs{
-    int ndim; //!< number of physical dimensions of the problem space
-    // 2D params (input from commandline)
-    int nsubmesh_x1; //!< number of x1-submesh blocks in the domain
-    int nsubmesh_x2; //!< number of x2-submesh blocks in the domain
-    double domain_x1_min;
-    double domain_x2_min;
-    bool isactive[MAX_SUBMESHES][MAX_SUBMESHES];
-    std::vector<double> block_length_x1;//! Number of debye lenghts in a x1-submesh
-    std::vector<double> block_length_x2;//! Number of debye lenghts in a x2-submesh
-    std::vector<double> max_elem_size_x1;//!< Maximum size cells in Debye Length (along x1-direction)
-    std::vector<double> max_elem_size_x2;//!< Maximum size cells in Debye Length (along x2-direction)
-    std::vector<double> min_elem_size_x1;//!< Minimum size cells in Debye Length (along x1-direction)
-    std::vector<double> min_elem_size_x2;//!< Minimum size cells in Debye Length (along x2-direction)
-    std::vector<std::string> meshtype_x1; //!< Type of mesh as string (uniform/minBL/maxBL)
-    std::vector<std::string> meshtype_x2; //!< Type of mesh as string (uniform/minBL/maxBL)
-};
-
-/*!
-* \brief enum type for option to store BL coords
-*/
-enum store_BL_coords{
-    store_BL_coords_OFF = 0, //!< option to disable storing explicit node coords for BL blocks
-    store_BL_coords_ON  = 1, //!< option to enable storing explicit node coords for BL blocks
-};
-
-/*!
-* \brief enum type for printing node coordinates to terminal
-*/
-enum print_node_coords{
-    print_node_coords_OFF = 0, //!< option to disable printing node coords
-    print_node_coords_ON  = 1, //!< option to enable printing node coords
-};
-
-/*!
-* \brief struct of mesh options
-*/
-struct Mesh_Options{
-    store_BL_coords BL_storage_option;
-    print_node_coords print_node_option;
-    /*!
-    * \brief Struct default constructor
-    */
-    Mesh_Options():BL_storage_option(store_BL_coords_ON),print_node_option(print_node_coords_OFF){};
-};
-
-
 ///////// PUMI-MBBL-GPU Data-Structures ////////////////////////////////////////////////////
 
 using DoubleViewPtr = Kokkos::View<double*>;
@@ -750,71 +698,8 @@ double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 KOKKOS_FUNCTION
 double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 
-///////// Mesh-Initiate Function declarations ///////////////////////////////////////
-
-unsigned int get_submesh_type(std::string meshtype_string);
-double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel);
-Mesh_Inputs* inputs_allocate();
-void inputs_deallocate(Mesh_Inputs* pumi_inputs);
-void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1);
-void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2);
-void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Options pumi_options);
-void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2, Mesh_Options pumi_options);
-bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1);
-bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2);
-SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir, SubmeshHostViewPtr* hc_submesh);
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1);
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1,
-                            SubmeshDeviceViewPtr submesh_x2, SubmeshHostViewPtr hc_submesh_x2);
-
-///////Field-related data structures and routines //////////////////////////////////////////////
-/*!
-* \brief enum type for element index offsets
-*
-* To be used while querying element size using
-* either element ID or associated node ID
-*/
-enum elemsize_index_offset{
-    elem_input_offset       =  0, //!< zero offset for direct element ID input
-    elem_on_max_side_offset =  0, //!< offset for node ID input and querying element to the max side
-    elem_on_min_side_offset = -1, //!< offset for node ID input and querying element to the min side
-};
-
-void check_is_pumi_working();
-double return_gradingratio(MBBL pumi_obj, int dir, int node);double return_elemsize(MBBL pumi_obj, int dir, int index, int offset);
-double return_covolume(MBBL pumi_obj, int inode_x1);
-double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2);
-double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2);
-void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim);
-double get_global_x1_min_coord(MBBL pumi_obj);
-double get_global_x1_max_coord(MBBL pumi_obj);
-double get_global_x2_min_coord(MBBL pumi_obj);
-double get_global_x2_max_coord(MBBL pumi_obj);
-void print_mesh_skeleton(MBBL pumi_obj);
-int get_total_mesh_elements(MBBL pumi_obj);
-int get_total_mesh_nodes(MBBL pumi_obj);
-int get_num_x1_submesh(MBBL pumi_obj);
-int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh);
-int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh);
-int get_num_x2_submesh(MBBL pumi_obj);
-int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh);
-int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh);
-int get_total_x1_elements(MBBL pumi_obj);
-int get_total_x2_elements(MBBL pumi_obj);
-int get_total_submesh_blocks(MBBL pumi_obj);
-int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID);
-double get_mesh_volume(MBBL pumi_obj);
-std::vector<double> get_bdry_normal(MBBL pumi_obj, unsigned int iEdge);
-int get_num_faces_on_bdry(MBBL pumi_obj, unsigned int iEdge);
-int get_starting_faceID_on_bdry(MBBL pumi_obj, unsigned int iEdge);
-bool is_block_active(MBBL pumi_obj, int isub, int jsub);
-bool is_block_active(MBBL pumi_obj, int flattened_submesh_ID);
-bool is_edge_bdry(MBBL pumi_obj, unsigned int iEdge);
-int get_total_mesh_block_edges(MBBL pumi_obj);
-int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id);
-void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset, int *submeshID);
-std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj);
-bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q);
 } // namespace pumi
+#include "pumiMBBL_initiate.hpp"
+#include "pumiMBBL_routines.hpp"
 #include "pumiMBBLGPU_impl.hpp"
 #endif
