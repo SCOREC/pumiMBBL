@@ -738,6 +738,12 @@ void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cell
 KOKKOS_FUNCTION
 void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID);
 
+KOKKOS_FUNCTION
+double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
+
+KOKKOS_FUNCTION
+double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
+
 ///////// Mesh-Initiate Function declarations ///////////////////////////////////////
 
 unsigned int get_submesh_type(std::string meshtype_string);
@@ -781,8 +787,14 @@ double get_global_x2_max_coord(MBBL pumi_obj);
 void print_mesh_skeleton(MBBL pumi_obj);
 int get_total_mesh_elements(MBBL pumi_obj);
 int get_total_mesh_nodes(MBBL pumi_obj);
-int get_x1_elements(MBBL pumi_obj);
-int get_x2_elements(MBBL pumi_obj);
+int get_num_x1_submesh(MBBL pumi_obj);
+int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh);
+int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh);
+int get_num_x2_submesh(MBBL pumi_obj);
+int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh);
+int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh);
+int get_total_x1_elements(MBBL pumi_obj);
+int get_total_x2_elements(MBBL pumi_obj);
 double get_mesh_volume(MBBL pumi_obj);
 std::vector<double> get_bdry_normal(MBBL pumi_obj, unsigned int iEdge);
 int get_num_faces_on_bdry(MBBL pumi_obj, unsigned int iEdge);

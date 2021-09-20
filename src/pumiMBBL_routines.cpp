@@ -1141,6 +1141,30 @@ void print_mesh_skeleton(MBBL pumi_obj){
     }
 }
 
+int get_num_x1_submesh(MBBL pumi_obj){
+    return pumi_obj.host_mesh->nsubmesh_x1;
+}
+
+int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.host_submesh_x1[isubmesh].Nel;
+}
+
+int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+}
+
+int get_num_x2_submesh(MBBL pumi_obj){
+    return pumi_obj.host_mesh->nsubmesh_x2;
+}
+
+int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.host_submesh_x2[isubmesh].Nel;
+}
+
+int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.host_submesh_x2[isubmesh].Nel_cumulative;
+}
+
 int get_total_mesh_elements(MBBL pumi_obj){
     return pumi_obj.host_mesh->Nel_total;
 }
@@ -1149,11 +1173,11 @@ int get_total_mesh_nodes(MBBL pumi_obj){
     return pumi_obj.host_mesh->Nnp_total;
 }
 
-int get_x1_elements(MBBL pumi_obj){
+int get_total_x1_elements(MBBL pumi_obj){
     return pumi_obj.host_mesh->Nel_tot_x1;
 }
 
-int get_x2_elements(MBBL pumi_obj){
+int get_total_x2_elements(MBBL pumi_obj){
     return pumi_obj.host_mesh->Nel_tot_x2;
 }
 
