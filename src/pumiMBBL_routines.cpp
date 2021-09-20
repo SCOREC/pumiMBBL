@@ -1461,7 +1461,7 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
         return q;
     }
     std::vector<double> q = {-999.0,-999.0,-999.0};
-    return;
+    return q;
 }
 
 bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){

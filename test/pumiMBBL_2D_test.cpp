@@ -315,6 +315,7 @@ int main( int argc, char* argv[] )
                         int isub, jsub, icell, jcell, kcell_x1, kcell_x2, bdry_hit, submeshID, cellID;
                         bool in_domain;
                         int global_cell, topleft_node, bottomleft_node;
+                        double fraction_done;
                         double q1 = part_coords(ipart,0);
                         double q2 = part_coords(ipart,1);
                         submeshID = part_coords(ipart,2);
@@ -335,7 +336,7 @@ int main( int argc, char* argv[] )
 
 
 
-                        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+                        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit, &fraction_done);
                         // part_activity(ipart) = in_domain;
                         if (!in_domain){
                             submeshID=-1;
@@ -402,6 +403,7 @@ int main( int argc, char* argv[] )
                         int isub, jsub, icell, jcell, kcell_x1, kcell_x2, bdry_hit, submeshID, cellID;
                         bool in_domain;
                         int global_cell, topleft_node, bottomleft_node;
+                        double fraction_done;
                         double q1 = part_coords(ipart,0);
                         double q2 = part_coords(ipart,1);
                         submeshID = part_coords(ipart,2);
@@ -422,7 +424,7 @@ int main( int argc, char* argv[] )
 
 
 
-                        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit);
+                        pumi::push_particle_v2(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit, &fraction_done);
                         // part_activity(ipart) = in_domain;
                         if (!in_domain){
                             submeshID=-1;

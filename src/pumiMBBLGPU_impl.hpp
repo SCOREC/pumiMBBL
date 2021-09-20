@@ -373,7 +373,7 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
 
 KOKKOS_INLINE_FUNCTION
 void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit){
+                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit, double *fraction_done){
 
     double q1_new = q1+dq1;
     double q2_new = q2+dq2;
@@ -392,6 +392,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
         // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
         *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
         *bdry_hit = -1;
+        *fraction_done = 1.0;
         return;
     }
     else{
@@ -419,6 +420,14 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                         *icell=-1;
                         *jsubmesh=-1;
                         *jcell=-1;
+                        int num = *bdry_hit/Nxx;
+                        int rem = *bdry_hit - num*Nxx;
+                        if (rem < Nx){
+                            *fraction_done = fabs(del2/dq2);
+                        }
+                        else{
+                            *fraction_done = fabs(del1/dq1);
+                        }
                         return;
                     }
                     else{
@@ -431,6 +440,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
+                            *fraction_done = 1.0;
                             located = true;
                             return;
                         }
@@ -470,6 +480,14 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                         *icell=-1;
                         *jsubmesh=-1;
                         *jcell=-1;
+                        int num = *bdry_hit/Nxx;
+                        int rem = *bdry_hit - num*Nxx;
+                        if (rem < Nx){
+                            *fraction_done = fabs(del2/dq2);
+                        }
+                        else{
+                            *fraction_done = fabs(del1/dq1);
+                        }
                         return;
                     }
                     else{
@@ -483,6 +501,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             located = true;
+                            *fraction_done = 1.0;
                             return;
                         }
                         else{
@@ -521,6 +540,14 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                         *icell=-1;
                         *jsubmesh=-1;
                         *jcell=-1;
+                        int num = *bdry_hit/Nxx;
+                        int rem = *bdry_hit - num*Nxx;
+                        if (rem < Nx){
+                            *fraction_done = fabs(del2/dq2);
+                        }
+                        else{
+                            *fraction_done = fabs(del1/dq1);
+                        }
                         return;
                     }
                     else{
@@ -534,6 +561,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             located = true;
+                            *fraction_done = 1.0;
                             return;
                         }
                         else{
@@ -572,6 +600,14 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                         *icell=-1;
                         *jsubmesh=-1;
                         *jcell=-1;
+                        int num = *bdry_hit/Nxx;
+                        int rem = *bdry_hit - num*Nxx;
+                        if (rem < Nx){
+                            *fraction_done = fabs(del2/dq2);
+                        }
+                        else{
+                            *fraction_done = fabs(del1/dq1);
+                        }
                         return;
                     }
                     else{
@@ -585,6 +621,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             located = true;
+                            *fraction_done = 1.0;
                             return;
                         }
                         else{
@@ -610,7 +647,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
 
 KOKKOS_INLINE_FUNCTION
 void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit){
+                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit, double *fraction_done){
 
     double q1_new = q1+dq1;
     double q2_new = q2+dq2;
@@ -663,14 +700,15 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
 
     switch (case_id) {
         case 0:
-        // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
-        *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
-        // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
-        *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
+            // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
+            *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
+            // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
+            *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *isubmesh = isub;
             *jsubmesh = jsub;
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 1:
@@ -679,6 +717,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             while (i<num_x1_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    *fraction_done = fabs((pumi_obj.submesh_x1(isub_tmp)()->xmax-q1)/dq1);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -699,6 +738,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *bdry_hit = -1;
             *in_domain = true;
+            *fraction_done = 1.0;
             return;
 
         case 2:
@@ -707,6 +747,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             while (i<num_x1_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    *fraction_done = fabs((q1-pumi_obj.submesh_x1(isub_tmp)()->xmin)/dq1);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -727,6 +768,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 3:
@@ -735,6 +777,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             while (i<num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    *fraction_done = fabs((pumi_obj.submesh_x2(jsub_tmp)()->xmax-q2)/dq2);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -755,6 +798,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 4:
@@ -780,6 +824,14 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     *jsubmesh = -1;
                     *icell = -1;
                     *jcell = -1;
+                    int num = *bdry_hit/Nxx;
+                    int rem = *bdry_hit - num*Nxx;
+                    if (rem < Nx){
+                        *fraction_done = fabs(del2/dq2);
+                    }
+                    else{
+                        *fraction_done = fabs(del1/dq1);
+                    }
                     return;
                 }
                 else{
@@ -803,6 +855,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 5:
@@ -828,6 +881,14 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     *jsubmesh = -1;
                     *icell = -1;
                     *jcell = -1;
+                    int num = *bdry_hit/Nxx;
+                    int rem = *bdry_hit - num*Nxx;
+                    if (rem < Nx){
+                        *fraction_done = fabs(del2/dq2);
+                    }
+                    else{
+                        *fraction_done = fabs(del1/dq1);
+                    }
                     return;
                 }
                 else{
@@ -851,6 +912,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 6:
@@ -859,6 +921,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             while (i<num_x2_crossed){
                 i++;
                 if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    *fraction_done = fabs((q2-pumi_obj.submesh_x2(jsub_tmp)()->xmin)/dq2);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -879,6 +942,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 7:
@@ -903,6 +967,14 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     *jsubmesh = -1;
                     *icell = -1;
                     *jcell = -1;
+                    int num = *bdry_hit/Nxx;
+                    int rem = *bdry_hit - num*Nxx;
+                    if (rem < Nx){
+                        *fraction_done = fabs(del2/dq2);
+                    }
+                    else{
+                        *fraction_done = fabs(del1/dq1);
+                    }
                     return;
                 }
                 else{
@@ -925,6 +997,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
         case 8:
@@ -950,6 +1023,14 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
                     *jsubmesh = -1;
                     *icell = -1;
                     *jcell = -1;
+                    int num = *bdry_hit/Nxx;
+                    int rem = *bdry_hit - num*Nxx;
+                    if (rem < Nx){
+                        *fraction_done = fabs(del2/dq2);
+                    }
+                    else{
+                        *fraction_done = fabs(del1/dq1);
+                    }
                     return;
                 }
                 else{
@@ -973,6 +1054,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
             *in_domain = true;
             *bdry_hit = -1;
+            *fraction_done = 1.0;
             return;
 
     }
