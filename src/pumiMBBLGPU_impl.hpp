@@ -63,6 +63,16 @@ void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int 
 }
 
 KOKKOS_INLINE_FUNCTION
+double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
+    return elem_size(pumi_obj.submesh_x1(isub),icell);
+}
+
+KOKKOS_INLINE_FUNCTION
+double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
+    return elem_size(pumi_obj.submesh_x2(isub),icell);
+}
+
+KOKKOS_INLINE_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
     *jsub = submeshID/pumi_obj.mesh(0).nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.mesh(0).nsubmesh_x1*(*jsub-1) + 1;
