@@ -14,6 +14,8 @@ int locate_cell(DevicePointer<Submesh> submesh, double q) {
             return static_cast<MinBL_Submesh*>(submesh())->locate_cell(q);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->locate_cell(q);
+        case (unassigned) :
+            return -1;
     }
     return -1;
 }
@@ -27,6 +29,8 @@ int update_cell(DevicePointer<Submesh> submesh, double q, int icell) {
             return static_cast<MinBL_Submesh*>(submesh())->update_cell(q,icell);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->update_cell(q,icell);
+        case (unassigned) :
+            return -1;
     }
     return -1;
 }
@@ -40,8 +44,10 @@ double elem_size(DevicePointer<Submesh> submesh, int icell){
             return static_cast<MinBL_Submesh*>(submesh())->elem_size(icell);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->elem_size(icell);
+        case (unassigned) :
+            return -999.0;
     }
-    return -1;
+    return -999.0;
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -55,6 +61,10 @@ void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int 
             return;
         case (maxBL) :
             static_cast<MaxBL_Submesh*>(submesh())->calc_weights(q,local_cell,global_cell,Wgh2);
+            return;
+        case (unassigned) :
+            *global_cell = -1;
+            *Wgh2 = -999.0;
             return;
     }
     *global_cell = -1;
