@@ -3,6 +3,14 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs);
 void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
 
+// void print_partdata(Kokkos::View<pumi::ParticleData*> pd, int Npart){
+//     Kokkos::View<pumi::ParticleData*>::HostMirror h_pd = Kokkos::create_mirror_view(pd);
+//     Kokkos::deep_copy(h_pd,pd);
+//     for (int ipart=0; ipart<Npart; ipart++){
+//         printf("Particle-%3d - q=%2.4f - sub=%2d - cell=%3d \n",ipart, h_pd(ipart).x1, h_pd(ipart).submeshID, h_pd(ipart).cellID );
+//     }
+// }
+
 int main( int argc, char* argv[] )
 {
   Kokkos::initialize( argc, argv );
@@ -61,9 +69,9 @@ int main( int argc, char* argv[] )
     // }
     // printf("domain size is %2.4f\n",integral_tot );
 
-    int N_part = 1000;
+    int N_part = 100;
     int N_step = 20;
-    Kokkos::View<double**> part_coords("particle-coordinates",N_part,3);
+    Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part);
 
     bool test0 = true;
 
@@ -74,8 +82,7 @@ int main( int argc, char* argv[] )
     double L_x1 = x1_max-x1_min;
     double dist_factor = 100.0;
     int num_push = 0;
-    Kokkos::View<double**>::HostMirror h_part_coords = Kokkos::create_mirror_view(part_coords);
-
+    Kokkos::View<pumi::ParticleData*>::HostMirror h_Partdata = Kokkos::create_mirror_view(Partdata);
     if (test0){
         printf("push-test-0\n");
         for (int ipart=0; ipart<N_part; ipart++){
@@ -85,38 +92,39 @@ int main( int argc, char* argv[] )
 
                 double q1 = x1_min + L_x1*rand_x1;
 
-                h_part_coords(ipart,0) = q1;
+                h_Partdata(ipart) = pumi::ParticleData(q1,0.0);
                 part_set = true;
             }
 
         }
 
-        Kokkos::deep_copy(part_coords, h_part_coords);
+        Kokkos::deep_copy(Partdata, h_Partdata);
 
 
         Kokkos::parallel_for("particle-locate-0", N_part, KOKKOS_LAMBDA (int ipart) {
             int isub, icell;
-            double q1 = part_coords(ipart,0);
+            double q1 = Partdata(ipart).x1;
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-            part_coords(ipart,1) = isub;
-            part_coords(ipart,2) = icell;
+            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell);
         });
-        Kokkos::deep_copy(h_part_coords, part_coords);
+        Kokkos::deep_copy(h_Partdata,Partdata);
+        // print_partdata(Partdata, N_part);
 
         Kokkos::Profiling::pushRegion("push_test_0");
         for (int istep=0; istep<N_step; istep++){
             for (int p=0; p<N_part; p++){
-                int part_active = h_part_coords(p,1);
+                int part_active = h_Partdata(p).submeshID;
                 num_push += (part_active+1 != 0);
             }
             Kokkos::parallel_for("particle-push-test-0", 1, KOKKOS_LAMBDA (const int) {
                 for (int ipart=0; ipart<N_part; ipart++){
-                    int part_active = part_coords(ipart,1);
+                    // int part_active = part_coords(ipart,1);
+                    int part_active = Partdata(ipart).submeshID;
                     if (part_active+1){
                         int isub, icell, kcell_x1;
-                        double q1 = part_coords(ipart,0);
-                        isub = part_coords(ipart,1);
-                        icell = part_coords(ipart,2);
+                        double q1 = Partdata(ipart).x1;
+                        isub = Partdata(ipart).submeshID;
+                        icell = Partdata(ipart).cellID;
 
                         double Wgh2_x1, Wgh1_x1;
                         pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
@@ -136,17 +144,17 @@ int main( int argc, char* argv[] )
                             Wgh1_x1 = 1.0-Wgh2_x1;
                         }
 
-                        part_coords(ipart,1) = isub;
-                        part_coords(ipart,2) = icell;
-                        part_coords(ipart,0) = q1;
+                        Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell);
                     }
                 }
             });
-            Kokkos::deep_copy(h_part_coords, part_coords);
+            Kokkos::deep_copy(h_Partdata,Partdata);
         }
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-0 = %d\n",num_push );
     }
+
+    // print_partdata(Partdata, N_part);
 
   }
   Kokkos::finalize();
