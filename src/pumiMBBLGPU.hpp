@@ -698,6 +698,25 @@ double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 KOKKOS_FUNCTION
 double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 
+//For 1D and 2D tests ONLY -- NOT TO BE USED IN HPIC2
+class ParticleData{
+public:
+    double x1;
+    double x2;
+    int cellID;
+    int submeshID;
+
+    ParticleData(){};
+
+    ParticleData(double x1_,double x2_):
+                x1(x1_),x2(x2_){};
+
+    KOKKOS_INLINE_FUNCTION
+    ParticleData(double x1_, double x2_, int submeshID_, int cellID_):
+                x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_){};
+
+};
+
 } // namespace pumi
 #include "pumiMBBL_initiate.hpp"
 #include "pumiMBBL_routines.hpp"
