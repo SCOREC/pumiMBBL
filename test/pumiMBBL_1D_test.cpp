@@ -36,7 +36,7 @@ int main( int argc, char* argv[] )
     pumi::SubmeshHostViewPtr host_submesh_x1;
     pumi::Mesh_Options pumi_options;
     pumi_options.BL_storage_option = pumi::store_BL_coords_ON;
-    pumi_options.print_node_option = pumi::print_node_coords_ON;
+    pumi_options.print_node_option = pumi::print_node_coords_OFF;
 
     submesh_x1 = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir, &host_submesh_x1);
     mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, submesh_x1, host_submesh_x1);
@@ -45,9 +45,6 @@ int main( int argc, char* argv[] )
 
     printf("Mesh volume = %2.2f\n",pumi::get_mesh_volume(pumi_obj) );
     pumi::inputs_deallocate(pumi_inputs);
-
-    pumi::MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(mesh);
-    Kokkos::deep_copy(h_pumi_mesh, mesh);
 
     // for (int j=0; j<=h_pumi_mesh(0).Nel_tot_x1; j++){
     //     double cv = pumi::return_covolume(pumi_obj, j);

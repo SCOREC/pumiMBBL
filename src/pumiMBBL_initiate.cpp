@@ -248,7 +248,7 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
 
     printf("Total active elements in 2D Mesh = %d\n",h_pumi_mesh(0).Nel_total);
     printf("Total active nodes in 2D Mesh    = %d\n",h_pumi_mesh(0).Nnp_total);
-    printf("Total boundary faces in 2D Mesh  = %d\n",h_pumi_mesh(0).Nbdry_faces );
+    printf("Total boundary faces in 2D Mesh  = %d\n",h_pumi_mesh(0).bdry.Nbdry_faces );
 
 }
 
@@ -885,24 +885,17 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
  * \param[in] Copy of x1-submesh object pointer on CPU
  * \return Final mesh object pointer
  */
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1){
+MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1){
     MeshDeviceViewPtr pumi_mesh("1D-meshobj",1);
 
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int Nel_tot_x1;
 
-    // Kokkos::View<int*> Nel_total_x1("total-x1-elems",1);
-    // Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
-    //
-    // Kokkos::parallel_for("1D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
-    //     Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
-    // });
-    // Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
-    // Nel_tot_x1 = h_Nel_total_x1(0);
     Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1].Nel + hc_submesh_x1[nsubmesh_x1].Nel_cumulative;
+    MeshBdry bdry = MeshBdry(nsubmesh_x1);
 
     Kokkos::parallel_for("1D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
-        pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1);
+        pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, bdry);
     });
     print_mesh_params(pumi_mesh, hc_submesh_x1);
 
@@ -928,32 +921,18 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
  * \param[in] Copy of x2-submesh object pointer on CPU
  * \return Final mesh object pointer
  */
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1,
-                            SubmeshDeviceViewPtr submesh_x2, SubmeshHostViewPtr hc_submesh_x2){
+MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1,
+                            SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x2){
     MeshDeviceViewPtr pumi_mesh("2D-meshobj",1);
 
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int nsubmesh_x2 = pumi_inputs->nsubmesh_x2;
-    int Nel_tot_x1, Nel_tot_x2, Nel_total_2D, Nnp_total_2D;
+    int Nel_tot_x1, Nel_tot_x2;
 
-    // Kokkos::View<int*> Nel_total_x1("total-x1-elems",1);
-    // Kokkos::View<int*>::HostMirror h_Nel_total_x1 = Kokkos::create_mirror_view(Nel_total_x1);
-    // Kokkos::View<int*> Nel_total_x2("total-x2-elems",1);
-    // Kokkos::View<int*>::HostMirror h_Nel_total_x2 = Kokkos::create_mirror_view(Nel_total_x2);
-    // Kokkos::parallel_for("2D-total-nel-init", 1, KOKKOS_LAMBDA (const int) {
-    //     Nel_total_x1(0) = submesh_x1(nsubmesh_x1)()->Nel + submesh_x1(nsubmesh_x1)()->Nel_cumulative;
-    //     Nel_total_x2(0) = submesh_x2(nsubmesh_x2)()->Nel + submesh_x2(nsubmesh_x2)()->Nel_cumulative;
-    // });
-    // Kokkos::deep_copy(h_Nel_total_x1,Nel_total_x1);
-    // Kokkos::deep_copy(h_Nel_total_x2,Nel_total_x2);
-    // Nel_tot_x1 = h_Nel_total_x1(0);
-    // Nel_tot_x2 = h_Nel_total_x2(0);
     Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1].Nel + hc_submesh_x1[nsubmesh_x1].Nel_cumulative;
     Nel_tot_x2 = hc_submesh_x2[nsubmesh_x2].Nel + hc_submesh_x2[nsubmesh_x2].Nel_cumulative;
-    Nel_total_2D = Nel_tot_x1*Nel_tot_x2;
-    Nnp_total_2D = (Nel_tot_x1+1)*(Nel_tot_x2+1);
 
-    Kokkos::View<bool**> submesh_activity("submesh-isactive",nsubmesh_x1+2,nsubmesh_x2+2);
+    Kokkos::View<bool**> isactive("isactive",nsubmesh_x1+2,nsubmesh_x2+2);
     bool** host_isactive = new bool*[nsubmesh_x1+2];
     for (int i=0; i<nsubmesh_x1+2; i++){
         host_isactive[i] = new bool[nsubmesh_x2+2];
@@ -969,543 +948,25 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
         }
     }
 
-    Kokkos::View<bool**>::HostMirror h_submesh_activity = Kokkos::create_mirror_view(submesh_activity);
+    Kokkos::View<bool**>::HostMirror h_isactive = Kokkos::create_mirror_view(isactive);
     for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++ ){
         for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
             if (isubmesh==0 || isubmesh==nsubmesh_x1+1 || jsubmesh==0 || jsubmesh==nsubmesh_x2+1){
-                h_submesh_activity(isubmesh,jsubmesh) = false;
+                h_isactive(isubmesh,jsubmesh) = false;
             }
             else{
-                h_submesh_activity(isubmesh,jsubmesh) = pumi_inputs->isactive[isubmesh-1][jsubmesh-1];
+                h_isactive(isubmesh,jsubmesh) = pumi_inputs->isactive[isubmesh-1][jsubmesh-1];
             }
         }
     }
-    Kokkos::deep_copy(submesh_activity, h_submesh_activity);
+    Kokkos::deep_copy(isactive, h_isactive);
 
-    bool is_fullmesh = true;
-    for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++ ){
-        for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
-            if (!(h_submesh_activity(isubmesh, jsubmesh))){
-                is_fullmesh = false;
-            }
-        }
-    }
-
-    Kokkos::View<int**> elemoffset_start("elemoffset_start", nsubmesh_x1+2, nsubmesh_x2+2);
-    Kokkos::View<int*> elemoffset_skip("elemoffset_skip", nsubmesh_x2+2);
-    // Kokkos::View<int**> nodeoffset("nodeoffset", nsubmesh_x1+2, Nel_tot_x2+1);
-    Kokkos::View<int**> nodeoffset_start("nodeoffset_start", nsubmesh_x1+2, nsubmesh_x2+2);
-    Kokkos::View<int**> nodeoffset_skip_bot("nodeoffset_skip_bot", nsubmesh_x1+2, nsubmesh_x2+2);
-    Kokkos::View<int**> nodeoffset_skip_mid("nodeoffset_skip_mid", nsubmesh_x1+2, nsubmesh_x2+2);
-    Kokkos::View<int**> nodeoffset_skip_top("nodeoffset_skip_top", nsubmesh_x1+2, nsubmesh_x2+2);
-
-    int **nodeoffset = new int*[nsubmesh_x1+2];
-    int **host_elemoffset_start = new int*[nsubmesh_x1+2];
-    int *host_elemoffset_skip = new int[nsubmesh_x2+2];
-    int **host_nodeoffset_start = new int*[nsubmesh_x1+2];
-    int **host_nodeoffset_skip_bot = new int*[nsubmesh_x1+2];
-    int **host_nodeoffset_skip_mid = new int*[nsubmesh_x1+2];
-    int **host_nodeoffset_skip_top = new int*[nsubmesh_x1+2];
-
-    for (int i=0; i<nsubmesh_x1+2; i++){
-        nodeoffset[i] = new int[Nel_tot_x2+1];
-        host_elemoffset_start[i] = new int[nsubmesh_x2+2];
-        host_nodeoffset_start[i] = new int[nsubmesh_x2+2];
-        host_nodeoffset_skip_bot[i] = new int[nsubmesh_x2+2];
-        host_nodeoffset_skip_mid[i] = new int[nsubmesh_x2+2];
-        host_nodeoffset_skip_top[i] = new int[nsubmesh_x2+2];
-    }
-
-    if (!is_fullmesh){
-        Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
-        Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
-        // Kokkos::View<int**>::HostMirror h_nodeoffset = Kokkos::create_mirror_view(nodeoffset);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_start = Kokkos::create_mirror_view(nodeoffset_start);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_bot = Kokkos::create_mirror_view(nodeoffset_skip_bot);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
-
-        // elemoffsets
-        int elemstart_init, elemskip;
-        int elemstart = 0;
-
-        for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
-            elemstart_init = elemstart;
-
-            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-                if(h_submesh_activity(isubmesh, jsubmesh)){
-                    h_elemoffset_start(isubmesh,jsubmesh) = elemstart;
-                }
-                else{
-                    elemstart +=  hc_submesh_x1[isubmesh].Nel;
-                    h_elemoffset_start(isubmesh,jsubmesh) = -1;
-                }
-            }
-            elemskip = elemstart-elemstart_init;
-            h_elemoffset_skip(jsubmesh) = elemskip;
-            elemstart = elemstart_init + elemskip*hc_submesh_x2[jsubmesh].Nel;
-        }
-        Nel_total_2D -= elemstart;
-        // printf("Full Mesh = %d\n", Nel_tot_x1*Nel_tot_x2);
-        // printf("Actual Mesh = %d\n", Nel_total_2D);
-
-        // nodeoffsets
-        int jnp;
-        int jsubmesh = 1;
-        int nodestart = 0;
-        for (jnp=0; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
-            int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
-            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-                if(h_submesh_activity(isubmesh, jsubmesh)){
-                    nodeoffset[isubmesh][Jnp] = nodestart;
-                }
-                else{
-                    nodeoffset[isubmesh][Jnp] = -1;
-                    if (isubmesh==1){
-                        if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                        else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
-                        }
-                    }
-                    else if (isubmesh == nsubmesh_x1){
-                        nodestart += hc_submesh_x1[isubmesh].Nel;
-                    }
-                    else{
-                        if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
-                        }
-                        else{
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                    }
-                }
-            }
-        }
-
-        jnp = hc_submesh_x2[jsubmesh].Nel;
-        for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-            if (jsubmesh == nsubmesh_x2){
-                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
-                if (h_submesh_activity(isubmesh, jsubmesh)){
-                    nodeoffset[isubmesh][Jnp] = nodestart;
-                }
-                else{
-                    nodeoffset[isubmesh][Jnp] = -1;
-                    if (isubmesh==1){
-                        if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                        else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
-                        }
-                    }
-                    else if (isubmesh==nsubmesh_x1){
-                        nodestart += hc_submesh_x1[isubmesh].Nel;
-                    }
-                    else{
-                        if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
-                        }
-                        else{
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                    }
-                }
-            }
-        }
-
-        for (jsubmesh=2; jsubmesh<=nsubmesh_x2; jsubmesh++){
-            jnp = 0;
-            int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
-
-            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-                if (h_submesh_activity(isubmesh,jsubmesh) || h_submesh_activity(isubmesh,jsubmesh-1)){
-                    nodestart += 0;
-                    nodeoffset[isubmesh][Jnp] = nodestart;
-                }
-                else{
-                    nodeoffset[isubmesh][Jnp] = -1;
-                    if (isubmesh==1){
-                        if (h_submesh_activity(isubmesh+1,jsubmesh) || h_submesh_activity(isubmesh+1,jsubmesh-1)){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                        else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
-                        }
-                    }
-                    else if (isubmesh==nsubmesh_x1){
-                        nodestart += (hc_submesh_x1[isubmesh].Nel);
-                    }
-                    else{
-                        if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
-                        }
-                        else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel);
-                        }
-                    }
-                }
-            }
-
-            for (jnp=1; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
-                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
-
-                for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-                    if (h_submesh_activity(isubmesh,jsubmesh)){
-                        nodeoffset[isubmesh][Jnp] = nodestart;
-                    }
-                    else{
-                        nodeoffset[isubmesh][Jnp] = -1;
-                        if (isubmesh==1){
-                            if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
-                            }
-                            else{
-                                nodestart += (hc_submesh_x1[isubmesh].Nel+1);
-                            }
-                        }
-                        else if (isubmesh == nsubmesh_x1){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                        else{
-                            if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                                nodestart += (hc_submesh_x1[isubmesh].Nel-1);
-                            }
-                            else{
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (jsubmesh==nsubmesh_x2){
-                jnp = hc_submesh_x2[jsubmesh].Nel;
-                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
-
-                for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-                    if (h_submesh_activity(isubmesh,jsubmesh)){
-                        nodeoffset[isubmesh][Jnp] = nodestart;
-                    }
-                    else{
-                        nodeoffset[isubmesh][Jnp] = -1;
-                        if (isubmesh==1){
-                            if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
-                            }
-                            else{
-                                nodestart += (hc_submesh_x1[isubmesh].Nel+1);
-                            }
-                        }
-                        else if (isubmesh==nsubmesh_x1){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
-                        }
-                        else{
-                            if (h_submesh_activity(isubmesh+1,jsubmesh)){
-                                nodestart += (hc_submesh_x1[isubmesh].Nel-1);
-                            }
-                            else{
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-
-        Nnp_total_2D -= nodestart;
-
-        for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
-            int Jnp = hc_submesh_x2[jsubmesh].Nel_cumulative;
-            for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-                if (h_submesh_activity(isubmesh,jsubmesh)){
-                    h_nodeoffset_start(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp];
-                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+1]-nodeoffset[isubmesh][Jnp];
-                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+2]-nodeoffset[isubmesh][Jnp+1];
-                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh].Nel] -
-                                                                nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh].Nel-1];
-                }
-                else{
-                    h_nodeoffset_start(isubmesh,jsubmesh) = -1;
-                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = -1;
-                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = -1;
-                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = -1;
-                }
-            }
-        }
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
-            host_elemoffset_skip[jsubmesh] = h_elemoffset_skip(jsubmesh);
-            for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++){
-                host_elemoffset_start[isubmesh][jsubmesh] = h_elemoffset_start(isubmesh,jsubmesh);
-                host_nodeoffset_start[isubmesh][jsubmesh] = h_nodeoffset_start(isubmesh,jsubmesh);
-                host_nodeoffset_skip_bot[isubmesh][jsubmesh] = h_nodeoffset_skip_bot(isubmesh,jsubmesh);
-                host_nodeoffset_skip_mid[isubmesh][jsubmesh] = h_nodeoffset_skip_mid(isubmesh,jsubmesh);
-                host_nodeoffset_skip_top[isubmesh][jsubmesh] = h_nodeoffset_skip_top(isubmesh,jsubmesh);
-            }
-        }
-        // printf("Full Mesh = %d\n", (Nel_tot_x1+1)*(Nel_tot_x2+1));
-        // printf("Actual Mesh = %d\n", Nnp_total_2D);
-        Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
-        Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
-        // Kokkos::deep_copy(nodeoffset, h_nodeoffset);
-        Kokkos::deep_copy(nodeoffset_start, h_nodeoffset_start);
-        Kokkos::deep_copy(nodeoffset_skip_bot, h_nodeoffset_skip_bot);
-        Kokkos::deep_copy(nodeoffset_skip_mid, h_nodeoffset_skip_mid);
-        Kokkos::deep_copy(nodeoffset_skip_top, h_nodeoffset_skip_top);
-
-    }
-    else{
-        Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
-        Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
-        // Kokkos::View<int**>::HostMirror h_nodeoffset = Kokkos::create_mirror_view(nodeoffset);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_start = Kokkos::create_mirror_view(nodeoffset_start);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_bot = Kokkos::create_mirror_view(nodeoffset_skip_bot);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
-        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
-
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
-            h_elemoffset_skip(jsubmesh) = 0;
-            for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++){
-                h_elemoffset_start(isubmesh,jsubmesh) = 0;
-                h_nodeoffset_start(isubmesh,jsubmesh) = 0;
-                h_nodeoffset_skip_bot(isubmesh,jsubmesh) = 0;
-                h_nodeoffset_skip_mid(isubmesh,jsubmesh) = 0;
-                h_nodeoffset_skip_top(isubmesh,jsubmesh) = 0;
-            }
-        }
-
-        for (int jsubmesh=0; jsubmesh<nsubmesh_x2+2; jsubmesh++){
-            host_elemoffset_skip[jsubmesh] = h_elemoffset_skip(jsubmesh);
-            for (int isubmesh=0; isubmesh<nsubmesh_x1+2; isubmesh++){
-                host_elemoffset_start[isubmesh][jsubmesh] = h_elemoffset_start(isubmesh,jsubmesh);
-                host_nodeoffset_start[isubmesh][jsubmesh] = h_nodeoffset_start(isubmesh,jsubmesh);
-                host_nodeoffset_skip_bot[isubmesh][jsubmesh] = h_nodeoffset_skip_bot(isubmesh,jsubmesh);
-                host_nodeoffset_skip_mid[isubmesh][jsubmesh] = h_nodeoffset_skip_mid(isubmesh,jsubmesh);
-                host_nodeoffset_skip_top[isubmesh][jsubmesh] = h_nodeoffset_skip_top(isubmesh,jsubmesh);
-            }
-        }
-
-        Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
-        Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
-        // Kokkos::deep_copy(nodeoffset, h_nodeoffset);
-        Kokkos::deep_copy(nodeoffset_start, h_nodeoffset_start);
-        Kokkos::deep_copy(nodeoffset_skip_bot, h_nodeoffset_skip_bot);
-        Kokkos::deep_copy(nodeoffset_skip_mid, h_nodeoffset_skip_mid);
-        Kokkos::deep_copy(nodeoffset_skip_top, h_nodeoffset_skip_top);
-    }
-
-    Kokkos::View<bool*> is_bdry("is_bdry", 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2);
-    Kokkos::View<double*[3]> bdry_normal("bdry_normal", 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2);
-    Kokkos::View<bool*>::HostMirror h_is_bdry = Kokkos::create_mirror_view(is_bdry);
-    Kokkos::View<double*[3]>::HostMirror h_bdry_normal = Kokkos::create_mirror_view(bdry_normal);
-
-    bool *host_is_bdry = new bool[2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2];
-    double **host_bdry_normal = new double*[2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2];
-    for (int idim=0; idim<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; idim++){
-        host_bdry_normal[idim] = new double[3];
-    }
-    int *edge_to_face = new int[2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2];
-
-    for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
-        for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
-            if (jsubmesh==1){
-                if (h_submesh_activity(isubmesh,jsubmesh)){
-                    h_is_bdry(isubmesh-1) = true;
-                    h_bdry_normal(isubmesh-1,0) = 0.0;
-                    h_bdry_normal(isubmesh-1,1) = -1.0;
-                    h_bdry_normal(isubmesh-1,2) = 0.0;
-                    if (isubmesh==1){
-                        h_is_bdry(nsubmesh_x1) = true;
-                        h_bdry_normal(nsubmesh_x1,0) = -1.0;
-                        h_bdry_normal(nsubmesh_x1,1) = 0.0;
-                        h_bdry_normal(nsubmesh_x1,2) = 0.0;
-                    }
-                    if (isubmesh==nsubmesh_x1){
-                        h_is_bdry(isubmesh-1+nsubmesh_x1+1) = true;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,0) = 1.0;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,1) = 0.0;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,2) = 0.0;
-                    }
-                }
-                else{
-                    h_is_bdry(isubmesh-1) = false;
-                    h_bdry_normal(isubmesh-1,0) = 0.0;
-                    h_bdry_normal(isubmesh-1,1) = 0.0;
-                    h_bdry_normal(isubmesh-1,2) = 0.0;
-                    if (isubmesh==1){
-                        h_is_bdry(nsubmesh_x1) = false;
-                        h_bdry_normal(nsubmesh_x1,0) = 0.0;
-                        h_bdry_normal(nsubmesh_x1,1) = 0.0;
-                        h_bdry_normal(nsubmesh_x1,2) = 0.0;
-                    }
-                    if (isubmesh==nsubmesh_x1){
-                        h_is_bdry(isubmesh-1+nsubmesh_x1+1) = false;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,0) = 0.0;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,1) = 0.0;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1+1,2) = 0.0;
-                    }
-                }
-
-                if (isubmesh>1){
-                    int sum = h_submesh_activity(isubmesh-1,jsubmesh)+h_submesh_activity(isubmesh,jsubmesh);
-                    if (sum == 1){
-                        h_is_bdry(isubmesh-1+nsubmesh_x1) = true;
-                        if (h_submesh_activity(isubmesh,jsubmesh)){
-                            h_bdry_normal(isubmesh-1+nsubmesh_x1,0) = -1.0;
-                            h_bdry_normal(isubmesh-1+nsubmesh_x1,1) = 0.0;
-                            h_bdry_normal(isubmesh-1+nsubmesh_x1,2) = 0.0;
-                        }
-                        else{
-                            h_bdry_normal(isubmesh-1+nsubmesh_x1,0) = 1.0;
-                            h_bdry_normal(isubmesh-1+nsubmesh_x1,1) = 0.0;
-                            h_bdry_normal(isubmesh-1+nsubmesh_x1,2) = 0.0;
-                        }
-                    }
-                    else{
-                        h_is_bdry(isubmesh-1+nsubmesh_x1) = false;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1,0) = 0.0;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1,1) = 0.0;
-                        h_bdry_normal(isubmesh-1+nsubmesh_x1,2) = 0.0;
-                    }
-                }
-            }
-            else{
-
-                int sum = h_submesh_activity(isubmesh,jsubmesh-1)+h_submesh_activity(isubmesh,jsubmesh);
-                if (sum == 1){
-                    h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1) = true;
-                    if (h_submesh_activity(isubmesh,jsubmesh)){
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,1) = -1.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
-                    }
-                    else{
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 1.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
-                    }
-                }
-                else{
-                    h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1) = false;
-                    h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
-                    h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 0.0;
-                    h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
-                }
-
-                if (isubmesh==1){
-                    if (h_submesh_activity(isubmesh,jsubmesh)){
-                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1) = true;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,0) = -1.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,1) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,2) = 0.0;
-                    }
-                    else{
-                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1) = false;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,0) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,1) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1,2) = 0.0;
-                    }
-                }
-                else{
-                    sum = h_submesh_activity(isubmesh-1,jsubmesh)+h_submesh_activity(isubmesh,jsubmesh);
-                    if (sum == 1){
-                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1) = true;
-                        if (h_submesh_activity(isubmesh,jsubmesh)){
-                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,0) = -1.0;
-                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,1) = 0.0;
-                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,2) = 0.0;
-                        }
-                        else{
-                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,0) = 1.0;
-                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,1) = 0.0;
-                            h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,2) = 0.0;
-                        }
-                    }
-                    else{
-                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1) = false;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,0) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,1) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+nsubmesh_x1+isubmesh-1,2) = 0.0;
-                    }
-                }
-
-                if (isubmesh==nsubmesh_x1){
-                    if (h_submesh_activity(isubmesh,jsubmesh)){
-                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1) = true;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,0) = 1.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,1) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,2) = 0.0;
-                    }
-                    else{
-                        h_is_bdry((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1) = false;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,0) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,1) = 0.0;
-                        h_bdry_normal((jsubmesh-1)*(2*nsubmesh_x1+1)+isubmesh-1+nsubmesh_x1+1,2) = 0.0;
-                    }
-                }
-            }
-
-            if (jsubmesh == nsubmesh_x2){
-                if (h_submesh_activity(isubmesh,jsubmesh)){
-                    h_is_bdry((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1) = true;
-                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
-                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 1.0;
-                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
-                }
-                else{
-                    h_is_bdry((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1) = false;
-                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,0) = 0.0;
-                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,1) = 0.0;
-                    h_bdry_normal((jsubmesh)*(2*nsubmesh_x1+1)+isubmesh-1,2) = 0.0;
-                }
-            }
-        }
-    }
-
-    Kokkos::deep_copy(is_bdry, h_is_bdry);
-    Kokkos::deep_copy(bdry_normal, h_bdry_normal);
-
-    int Nbdry_faces = 0;
-    for (int iedge=0; iedge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; iedge++){
-        int Nx2p1 = 2*nsubmesh_x1+1;
-        if (h_is_bdry(iedge)){
-            edge_to_face[iedge] = Nbdry_faces;
-            int num = iedge/Nx2p1;
-            int rem = iedge - num*Nx2p1;
-            if (rem < nsubmesh_x1){
-                Nbdry_faces += hc_submesh_x1[rem+1].Nel;
-                // printf("edge - %d -- Nel - %d - e2f=%d\n",iedge,hc_submesh_x1[rem+1].Nel,edge_to_face[iedge] );
-            }
-            else{
-                Nbdry_faces += hc_submesh_x2[num+1].Nel;
-                // printf("edge - %d -- Nel - %d - e2f=%d\n",iedge,hc_submesh_x2[num+1].Nel,edge_to_face[iedge] );
-            }
-        }
-        else{
-            edge_to_face[iedge] = -1;
-        }
-        host_is_bdry[iedge] = h_is_bdry(iedge);
-        host_bdry_normal[iedge][0] = h_bdry_normal(iedge,0);
-        host_bdry_normal[iedge][1] = h_bdry_normal(iedge,1);
-        host_bdry_normal[iedge][2] = h_bdry_normal(iedge,2);
-    }
-
-    // for (int i=0; i<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2; i++){
-    //     if (h_is_bdry(i)){
-    //         printf("Edge - %3d is boundary edge\n", i);
-    //     }
-    // }
+    MeshOffsets offsets = MeshOffsets(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
+    MeshBdry bdry = MeshBdry(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
 
     Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
         pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
-                        submesh_activity, elemoffset_start, elemoffset_skip,
-                        nodeoffset_start, nodeoffset_skip_bot, nodeoffset_skip_mid, nodeoffset_skip_top,
-                        host_elemoffset_start, host_elemoffset_skip, host_nodeoffset_start, host_nodeoffset_skip_bot,
-                        host_nodeoffset_skip_mid, host_nodeoffset_skip_top, is_bdry, bdry_normal, host_is_bdry,
-                        host_bdry_normal, Nbdry_faces, edge_to_face, Nel_total_2D, Nnp_total_2D, host_isactive);
+                            isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
     });
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
@@ -1522,6 +983,549 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
 
     return pumi_mesh;
 
+}
+
+
+MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
+                         int Nx,
+                         SubmeshHostViewPtr hc_submesh_x2,
+                         int Ny,
+                         bool** host_isactive){
+    bool is_fullmesh = true;
+    for (int isubmesh=1; isubmesh<=Nx; isubmesh++ ){
+        for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
+            if (!host_isactive[isubmesh][jsubmesh]){
+                is_fullmesh = false;
+            }
+        }
+    }
+
+    int Nel_tot_x1 = hc_submesh_x1[Nx].Nel + hc_submesh_x1[Nx].Nel_cumulative;
+    int Nel_tot_x2 = hc_submesh_x2[Ny].Nel + hc_submesh_x2[Ny].Nel_cumulative;
+    Nel_total = Nel_tot_x1*Nel_tot_x2;
+    Nnp_total = (Nel_tot_x1+1)*(Nel_tot_x2+1);
+
+    elemoffset_start = Kokkos::View<int**>("elemoffset_start", Nx+2, Ny+2);
+    elemoffset_skip = Kokkos::View<int*>("elemoffset_skip", Ny+2);
+    nodeoffset_start = Kokkos::View<int**>("nodeoffset_start", Nx+2, Ny+2);
+    nodeoffset_skip_bot = Kokkos::View<int**>("nodeoffset_skip_bot", Nx+2, Ny+2);
+    nodeoffset_skip_mid = Kokkos::View<int**>("nodeoffset_skip_mid", Nx+2, Ny+2);
+    nodeoffset_skip_top = Kokkos::View<int**>("nodeoffset_skip_top", Nx+2, Ny+2);
+
+    int **nodeoffset = new int*[Nx+2];
+    host_elemoffset_start = new int*[Nx+2];
+    host_elemoffset_skip = new int[Ny+2];
+    host_nodeoffset_start = new int*[Nx+2];
+    host_nodeoffset_skip_bot = new int*[Nx+2];
+    host_nodeoffset_skip_mid = new int*[Nx+2];
+    host_nodeoffset_skip_top = new int*[Nx+2];
+
+    for (int i=0; i<Nx+2; i++){
+        nodeoffset[i] = new int[Nel_tot_x2+1];
+        host_elemoffset_start[i] = new int[Ny+2];
+        host_nodeoffset_start[i] = new int[Ny+2];
+        host_nodeoffset_skip_bot[i] = new int[Ny+2];
+        host_nodeoffset_skip_mid[i] = new int[Ny+2];
+        host_nodeoffset_skip_top[i] = new int[Ny+2];
+    }
+
+    if (!is_fullmesh){
+        Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
+        Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_start = Kokkos::create_mirror_view(nodeoffset_start);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_bot = Kokkos::create_mirror_view(nodeoffset_skip_bot);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
+
+        // elemoffsets
+        int elemstart_init, elemskip;
+        int elemstart = 0;
+
+        for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
+            elemstart_init = elemstart;
+
+            for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+                if(host_isactive[isubmesh][jsubmesh]){
+                    h_elemoffset_start(isubmesh,jsubmesh) = elemstart;
+                }
+                else{
+                    elemstart +=  hc_submesh_x1[isubmesh].Nel;
+                    h_elemoffset_start(isubmesh,jsubmesh) = -1;
+                }
+            }
+            elemskip = elemstart-elemstart_init;
+            h_elemoffset_skip(jsubmesh) = elemskip;
+            elemstart = elemstart_init + elemskip*hc_submesh_x2[jsubmesh].Nel;
+        }
+        Nel_total -= elemstart;
+
+        int jnp;
+        int jsubmesh = 1;
+        int nodestart = 0;
+        for (jnp=0; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
+            int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+            for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+                if(host_isactive[isubmesh][jsubmesh]){
+                    nodeoffset[isubmesh][Jnp] = nodestart;
+                }
+                else{
+                    nodeoffset[isubmesh][Jnp] = -1;
+                    if (isubmesh==1){
+                        if (host_isactive[isubmesh+1][jsubmesh]){
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                        else{
+                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                        }
+                    }
+                    else if (isubmesh == Nx){
+                        nodestart += hc_submesh_x1[isubmesh].Nel;
+                    }
+                    else{
+                        if (host_isactive[isubmesh+1][jsubmesh]){
+                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                        }
+                        else{
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                    }
+                }
+            }
+        }
+
+        jnp = hc_submesh_x2[jsubmesh].Nel;
+        for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+            if (jsubmesh == Ny){
+                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+                if (host_isactive[isubmesh][jsubmesh]){
+                    nodeoffset[isubmesh][Jnp] = nodestart;
+                }
+                else{
+                    nodeoffset[isubmesh][Jnp] = -1;
+                    if (isubmesh==1){
+                        if (host_isactive[isubmesh+1][jsubmesh]){
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                        else{
+                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                        }
+                    }
+                    else if (isubmesh==Nx){
+                        nodestart += hc_submesh_x1[isubmesh].Nel;
+                    }
+                    else{
+                        if (host_isactive[isubmesh+1][jsubmesh]){
+                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                        }
+                        else{
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (jsubmesh=2; jsubmesh<=Ny; jsubmesh++){
+            jnp = 0;
+            int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+
+            for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+                if (host_isactive[isubmesh][jsubmesh] || host_isactive[isubmesh][jsubmesh-1]){
+                    nodeoffset[isubmesh][Jnp] = nodestart;
+                }
+                else{
+                    nodeoffset[isubmesh][Jnp] = -1;
+                    if (isubmesh==1){
+                        if (host_isactive[isubmesh+1][jsubmesh] || host_isactive[isubmesh+1][jsubmesh-1]){
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                        else{
+                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                        }
+                    }
+                    else if (isubmesh==Nx){
+                        nodestart += (hc_submesh_x1[isubmesh].Nel);
+                    }
+                    else{
+                        if (host_isactive[isubmesh+1][jsubmesh] || host_isactive[isubmesh+1][jsubmesh-1]){
+                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                        }
+                        else{
+                            nodestart += (hc_submesh_x1[isubmesh].Nel);
+                        }
+                    }
+                }
+            }
+
+            for (jnp=1; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
+                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+
+                for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+                    if (host_isactive[isubmesh][jsubmesh]){
+                        nodeoffset[isubmesh][Jnp] = nodestart;
+                    }
+                    else{
+                        nodeoffset[isubmesh][Jnp] = -1;
+                        if (isubmesh==1){
+                            if (host_isactive[isubmesh+1][jsubmesh]){
+                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                            }
+                            else{
+                                nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                            }
+                        }
+                        else if (isubmesh == Nx){
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                        else{
+                            if (host_isactive[isubmesh+1][jsubmesh]){
+                                nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                            }
+                            else{
+                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (jsubmesh==Ny){
+                jnp = hc_submesh_x2[jsubmesh].Nel;
+                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+
+                for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+                    if (host_isactive[isubmesh][jsubmesh]){
+                        nodeoffset[isubmesh][Jnp] = nodestart;
+                    }
+                    else{
+                        nodeoffset[isubmesh][Jnp] = -1;
+                        if (isubmesh==1){
+                            if (host_isactive[isubmesh+1][jsubmesh]){
+                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                            }
+                            else{
+                                nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                            }
+                        }
+                        else if (isubmesh==Nx){
+                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                        }
+                        else{
+                            if (host_isactive[isubmesh+1][jsubmesh]){
+                                nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                            }
+                            else{
+                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        Nnp_total -= nodestart;
+
+        for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
+            int Jnp = hc_submesh_x2[jsubmesh].Nel_cumulative;
+            for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+                if (host_isactive[isubmesh][jsubmesh]){
+                    h_nodeoffset_start(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp];
+                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+1]-nodeoffset[isubmesh][Jnp];
+                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+2]-nodeoffset[isubmesh][Jnp+1];
+                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh].Nel] -
+                                                                nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh].Nel-1];
+                }
+                else{
+                    h_nodeoffset_start(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = -1;
+                }
+            }
+        }
+
+        for (int jsubmesh=0; jsubmesh<Ny+2; jsubmesh++){
+            for (int isubmesh=0; isubmesh<Nx+2; isubmesh++){
+                if (isubmesh==0 || jsubmesh==0 || isubmesh==Nx+1 || jsubmesh==Ny+1){
+                    h_nodeoffset_start(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_bot(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_mid(isubmesh,jsubmesh) = -1;
+                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = -1;
+                    h_elemoffset_start(isubmesh,jsubmesh) = -1;
+                }
+            }
+            if (jsubmesh==0 || jsubmesh== Ny+1){
+                h_elemoffset_skip(jsubmesh) = -1;
+            }
+        }
+
+        for (int jsubmesh=0; jsubmesh<Ny+2; jsubmesh++){
+            host_elemoffset_skip[jsubmesh] = h_elemoffset_skip(jsubmesh);
+            for (int isubmesh=0; isubmesh<Nx+2; isubmesh++){
+                host_elemoffset_start[isubmesh][jsubmesh] = h_elemoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_start[isubmesh][jsubmesh] = h_nodeoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_skip_bot[isubmesh][jsubmesh] = h_nodeoffset_skip_bot(isubmesh,jsubmesh);
+                host_nodeoffset_skip_mid[isubmesh][jsubmesh] = h_nodeoffset_skip_mid(isubmesh,jsubmesh);
+                host_nodeoffset_skip_top[isubmesh][jsubmesh] = h_nodeoffset_skip_top(isubmesh,jsubmesh);
+            }
+        }
+
+        Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
+        Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
+        Kokkos::deep_copy(nodeoffset_start, h_nodeoffset_start);
+        Kokkos::deep_copy(nodeoffset_skip_bot, h_nodeoffset_skip_bot);
+        Kokkos::deep_copy(nodeoffset_skip_mid, h_nodeoffset_skip_mid);
+        Kokkos::deep_copy(nodeoffset_skip_top, h_nodeoffset_skip_top);
+
+    }
+    else{
+        Kokkos::View<int**>::HostMirror h_elemoffset_start = Kokkos::create_mirror_view(elemoffset_start);
+        Kokkos::View<int*>::HostMirror h_elemoffset_skip = Kokkos::create_mirror_view(elemoffset_skip);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_start = Kokkos::create_mirror_view(nodeoffset_start);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_bot = Kokkos::create_mirror_view(nodeoffset_skip_bot);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_mid = Kokkos::create_mirror_view(nodeoffset_skip_mid);
+        Kokkos::View<int**>::HostMirror h_nodeoffset_skip_top = Kokkos::create_mirror_view(nodeoffset_skip_top);
+
+        for (int jsubmesh=0; jsubmesh<Ny+2; jsubmesh++){
+            h_elemoffset_skip(jsubmesh) = 0;
+            for (int isubmesh=0; isubmesh<Nx+2; isubmesh++){
+                h_elemoffset_start(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_start(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_skip_bot(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_skip_mid(isubmesh,jsubmesh) = 0;
+                h_nodeoffset_skip_top(isubmesh,jsubmesh) = 0;
+            }
+        }
+
+        for (int jsubmesh=0; jsubmesh<Ny+2; jsubmesh++){
+            host_elemoffset_skip[jsubmesh] = h_elemoffset_skip(jsubmesh);
+            for (int isubmesh=0; isubmesh<Nx+2; isubmesh++){
+                host_elemoffset_start[isubmesh][jsubmesh] = h_elemoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_start[isubmesh][jsubmesh] = h_nodeoffset_start(isubmesh,jsubmesh);
+                host_nodeoffset_skip_bot[isubmesh][jsubmesh] = h_nodeoffset_skip_bot(isubmesh,jsubmesh);
+                host_nodeoffset_skip_mid[isubmesh][jsubmesh] = h_nodeoffset_skip_mid(isubmesh,jsubmesh);
+                host_nodeoffset_skip_top[isubmesh][jsubmesh] = h_nodeoffset_skip_top(isubmesh,jsubmesh);
+            }
+        }
+
+        Kokkos::deep_copy(elemoffset_skip, h_elemoffset_skip);
+        Kokkos::deep_copy(elemoffset_start, h_elemoffset_start);
+        Kokkos::deep_copy(nodeoffset_start, h_nodeoffset_start);
+        Kokkos::deep_copy(nodeoffset_skip_bot, h_nodeoffset_skip_bot);
+        Kokkos::deep_copy(nodeoffset_skip_mid, h_nodeoffset_skip_mid);
+        Kokkos::deep_copy(nodeoffset_skip_top, h_nodeoffset_skip_top);
+    }
+
+    for (int i=0; i<Nx+2; i++){
+        delete[] nodeoffset[i];
+    }
+    delete[] nodeoffset;
+}
+
+MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
+                   int Nx,
+                   SubmeshHostViewPtr hc_submesh_x2,
+                   int Ny,
+                   bool** host_isactive){
+
+    is_bdry_edge = Kokkos::View<bool*> ("is_bdry_edge", 2*Nx*Ny+Nx+Ny);
+    bdry_edge_normal = Kokkos::View<double*[3]> ("bdry_edge_normal", 2*Nx*Ny+Nx+Ny);
+    edge_to_face = Kokkos::View<int*> ("Edge2Face", 2*Nx*Ny+Nx+Ny);
+
+    Kokkos::View<bool*>::HostMirror h_is_bdry_edge = Kokkos::create_mirror_view(is_bdry_edge);
+    Kokkos::View<double*[3]>::HostMirror h_bdry_edge_normal = Kokkos::create_mirror_view(bdry_edge_normal);
+    Kokkos::View<int*>::HostMirror h_edge_to_face = Kokkos::create_mirror_view(edge_to_face);
+
+    host_is_bdry_edge = new bool[2*Nx*Ny+Nx+Ny];
+    host_bdry_edge_normal = new double*[2*Nx*Ny+Nx+Ny];
+    for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
+        host_bdry_edge_normal[i] = new double[3];
+    }
+    host_edge_to_face = new int[2*Nx*Ny+Nx+Ny];
+
+    for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
+        for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+            if (jsubmesh==1){
+                if (host_isactive[isubmesh][jsubmesh]){
+                    h_is_bdry_edge(isubmesh-1) = true;
+                    h_bdry_edge_normal(isubmesh-1,0) = 0.0;
+                    h_bdry_edge_normal(isubmesh-1,1) = -1.0;
+                    h_bdry_edge_normal(isubmesh-1,2) = 0.0;
+                    if (isubmesh==1){
+                        h_is_bdry_edge(Nx) = true;
+                        h_bdry_edge_normal(Nx,0) = -1.0;
+                        h_bdry_edge_normal(Nx,1) = 0.0;
+                        h_bdry_edge_normal(Nx,2) = 0.0;
+                    }
+                    if (isubmesh==Nx){
+                        h_is_bdry_edge(isubmesh-1+Nx+1) = true;
+                        h_bdry_edge_normal(isubmesh-1+Nx+1,0) = 1.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx+1,1) = 0.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx+1,2) = 0.0;
+                    }
+                }
+                else{
+                    h_is_bdry_edge(isubmesh-1) = false;
+                    h_bdry_edge_normal(isubmesh-1,0) = 0.0;
+                    h_bdry_edge_normal(isubmesh-1,1) = 0.0;
+                    h_bdry_edge_normal(isubmesh-1,2) = 0.0;
+                    if (isubmesh==1){
+                        h_is_bdry_edge(Nx) = false;
+                        h_bdry_edge_normal(Nx,0) = 0.0;
+                        h_bdry_edge_normal(Nx,1) = 0.0;
+                        h_bdry_edge_normal(Nx,2) = 0.0;
+                    }
+                    if (isubmesh==Nx){
+                        h_is_bdry_edge(isubmesh-1+Nx+1) = false;
+                        h_bdry_edge_normal(isubmesh-1+Nx+1,0) = 0.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx+1,1) = 0.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx+1,2) = 0.0;
+                    }
+                }
+
+                if (isubmesh>1){
+                    int sum = host_isactive[isubmesh-1][jsubmesh]+host_isactive[isubmesh][jsubmesh];
+                    if (sum == 1){
+                        h_is_bdry_edge(isubmesh-1+Nx) = true;
+                        if (host_isactive[isubmesh][jsubmesh]){
+                            h_bdry_edge_normal(isubmesh-1+Nx,0) = -1.0;
+                            h_bdry_edge_normal(isubmesh-1+Nx,1) = 0.0;
+                            h_bdry_edge_normal(isubmesh-1+Nx,2) = 0.0;
+                        }
+                        else{
+                            h_bdry_edge_normal(isubmesh-1+Nx,0) = 1.0;
+                            h_bdry_edge_normal(isubmesh-1+Nx,1) = 0.0;
+                            h_bdry_edge_normal(isubmesh-1+Nx,2) = 0.0;
+                        }
+                    }
+                    else{
+                        h_is_bdry_edge(isubmesh-1+Nx) = false;
+                        h_bdry_edge_normal(isubmesh-1+Nx,0) = 0.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx,1) = 0.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx,2) = 0.0;
+                    }
+                }
+            }
+            else{
+
+                int sum = host_isactive[isubmesh][jsubmesh-1]+host_isactive[isubmesh][jsubmesh];
+                if (sum == 1){
+                    h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = true;
+                    if (host_isactive[isubmesh][jsubmesh]){
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,0) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,1) = -1.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                    }
+                    else{
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,0) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,1) = 1.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                    }
+                }
+                else{
+                    h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = false;
+                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,0) = 0.0;
+                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,1) = 0.0;
+                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                }
+
+                if (isubmesh==1){
+                    if (host_isactive[isubmesh][jsubmesh]){
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx) = true;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,0) = -1.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,1) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,2) = 0.0;
+                    }
+                    else{
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx) = false;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,0) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,1) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,2) = 0.0;
+                    }
+                }
+                else{
+                    sum = host_isactive[isubmesh-1][jsubmesh]+host_isactive[isubmesh][jsubmesh];
+                    if (sum == 1){
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = true;
+                        if (host_isactive[isubmesh][jsubmesh]){
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,0) = -1.0;
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,1) = 0.0;
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,2) = 0.0;
+                        }
+                        else{
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,0) = 1.0;
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,1) = 0.0;
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,2) = 0.0;
+                        }
+                    }
+                    else{
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = false;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,0) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,1) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,2) = 0.0;
+                    }
+                }
+
+                if (isubmesh==Nx){
+                    if (host_isactive[isubmesh][jsubmesh]){
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1) = true;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,0) = 1.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,1) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,2) = 0.0;
+                    }
+                    else{
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1) = false;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,0) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,1) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,2) = 0.0;
+                    }
+                }
+            }
+
+            if (jsubmesh == Ny){
+                if (host_isactive[isubmesh][jsubmesh]){
+                    h_is_bdry_edge((jsubmesh)*(2*Nx+1)+isubmesh-1) = true;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,0) = 0.0;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,1) = 1.0;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                }
+                else{
+                    h_is_bdry_edge((jsubmesh)*(2*Nx+1)+isubmesh-1) = false;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,0) = 0.0;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,1) = 0.0;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                }
+            }
+        }
+    }
+
+    Kokkos::deep_copy(is_bdry_edge, h_is_bdry_edge);
+    Kokkos::deep_copy(bdry_edge_normal, h_bdry_edge_normal);
+
+    Nbdry_faces = 0;
+    for (int iedge=0; iedge<2*Nx*Ny+Nx+Ny; iedge++){
+        int Nx2p1 = 2*Nx+1;
+        if (h_is_bdry_edge(iedge)){
+            h_edge_to_face(iedge) = Nbdry_faces;
+            int num = iedge/Nx2p1;
+            int rem = iedge - num*Nx2p1;
+            if (rem < Nx){
+                Nbdry_faces += hc_submesh_x1[rem+1].Nel;
+            }
+            else{
+                Nbdry_faces += hc_submesh_x2[num+1].Nel;
+            }
+        }
+        else{
+            h_edge_to_face(iedge) = -1;
+        }
+        host_edge_to_face[iedge] = h_edge_to_face(iedge);
+        host_is_bdry_edge[iedge] = h_is_bdry_edge(iedge);
+        host_bdry_edge_normal[iedge][0] = h_bdry_edge_normal(iedge,0);
+        host_bdry_edge_normal[iedge][1] = h_bdry_edge_normal(iedge,1);
+        host_bdry_edge_normal[iedge][2] = h_bdry_edge_normal(iedge,2);
+    }
 }
 
 

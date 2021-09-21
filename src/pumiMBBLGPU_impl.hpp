@@ -336,18 +336,18 @@ void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, in
     // int nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2);
     // int nodeoffset_top = pumi_obj.mesh(0).nodeoffset(isubmesh,kcell_x2+1);
     int icell_x2 = kcell_x2 - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
-    int elemoffset = pumi_obj.mesh(0).elemoffset_start(isubmesh,jsubmesh) + icell_x2*pumi_obj.mesh(0).elemoffset_skip(jsubmesh);
+    int elemoffset = pumi_obj.mesh(0).offsets.elemoffset_start(isubmesh,jsubmesh) + icell_x2*pumi_obj.mesh(0).offsets.elemoffset_skip(jsubmesh);
     int fullmesh_elem = kcell_x1 + kcell_x2*pumi_obj.mesh(0).Nel_tot_x1;
     *global_cell_2D = fullmesh_elem - elemoffset;
-    int nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).nodeoffset_skip_bot(isubmesh,jsubmesh)
-                    +(icell_x2-1)*pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh);
-    int nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh);
+    int nodeoffset_bottom = pumi_obj.mesh(0).offsets.nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).offsets.nodeoffset_skip_bot(isubmesh,jsubmesh)
+                    +(icell_x2-1)*pumi_obj.mesh(0).offsets.nodeoffset_skip_mid(isubmesh,jsubmesh);
+    int nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh(0).offsets.nodeoffset_skip_mid(isubmesh,jsubmesh);
     if (icell_x2==0){
-        nodeoffset_bottom = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh);
-        nodeoffset_top = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).nodeoffset_skip_bot(isubmesh,jsubmesh);
+        nodeoffset_bottom = pumi_obj.mesh(0).offsets.nodeoffset_start(isubmesh,jsubmesh);
+        nodeoffset_top = pumi_obj.mesh(0).offsets.nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).offsets.nodeoffset_skip_bot(isubmesh,jsubmesh);
     }
     if (icell_x2==pumi_obj.submesh_x2(jsubmesh)()->Nel-1){
-        nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh(0).nodeoffset_skip_top(isubmesh,jsubmesh);
+        nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh(0).offsets.nodeoffset_skip_top(isubmesh,jsubmesh);
     }
     *bottomleft_node = fullmesh_elem + kcell_x2 - nodeoffset_bottom;
     *topleft_node = fullmesh_elem + kcell_x2 + pumi_obj.mesh(0).Nel_tot_x1 + 1 - nodeoffset_top;
@@ -360,13 +360,13 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
     int jnp = Jnp - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
     // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
     int nodeoffset;
-    nodeoffset = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).nodeoffset_skip_bot(isubmesh,jsubmesh)
-                    +(jnp-1)*pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh);
+    nodeoffset = pumi_obj.mesh(0).offsets.nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh(0).offsets.nodeoffset_skip_bot(isubmesh,jsubmesh)
+                    +(jnp-1)*pumi_obj.mesh(0).offsets.nodeoffset_skip_mid(isubmesh,jsubmesh);
     if (jnp==0){
-        nodeoffset = pumi_obj.mesh(0).nodeoffset_start(isubmesh,jsubmesh);
+        nodeoffset = pumi_obj.mesh(0).offsets.nodeoffset_start(isubmesh,jsubmesh);
     }
     if (jnp==pumi_obj.submesh_x2(jsubmesh)()->Nel){
-        nodeoffset +=  (pumi_obj.mesh(0).nodeoffset_skip_top(isubmesh,jsubmesh)-pumi_obj.mesh(0).nodeoffset_skip_mid(isubmesh,jsubmesh));
+        nodeoffset +=  (pumi_obj.mesh(0).offsets.nodeoffset_skip_top(isubmesh,jsubmesh)-pumi_obj.mesh(0).offsets.nodeoffset_skip_mid(isubmesh,jsubmesh));
     }
     return nodeID-nodeoffset;
 }
@@ -414,7 +414,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
 
 
                 while (!located && in_domain){
-                    if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
                         *isubmesh=-1;
                         *icell=-1;
@@ -474,7 +474,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 }
 
                 while (!located && in_domain){
-                    if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
                         *isubmesh=-1;
                         *icell=-1;
@@ -534,7 +534,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 }
 
                 while (!located && in_domain){
-                    if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
                         *isubmesh=-1;
                         *icell=-1;
@@ -594,7 +594,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 }
 
                 while (!located && in_domain){
-                    if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                    if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
                         *isubmesh=-1;
                         *icell=-1;
@@ -716,7 +716,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x1_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     *fraction_done = fabs((pumi_obj.submesh_x1(isub_tmp)()->xmax-q1)/dq1);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
@@ -746,7 +746,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x1_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     *fraction_done = fabs((q1-pumi_obj.submesh_x1(isub_tmp)()->xmin)/dq1);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
@@ -776,7 +776,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x2_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     *fraction_done = fabs((pumi_obj.submesh_x2(jsub_tmp)()->xmax-q2)/dq2);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
@@ -817,7 +817,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -874,7 +874,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -920,7 +920,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x2_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     *fraction_done = fabs((q2-pumi_obj.submesh_x2(jsub_tmp)()->xmin)/dq2);
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
@@ -960,7 +960,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;
@@ -1016,7 +1016,7 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
             i=0;
             while (i<num_x1_crossed+num_x2_crossed){
                 i++;
-                if (pumi_obj.mesh(0).is_bdry(*bdry_hit)){
+                if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                     // printf("hit_bdry = %d\n",*bdry_hit );
                     *in_domain = false;
                     *isubmesh = -1;

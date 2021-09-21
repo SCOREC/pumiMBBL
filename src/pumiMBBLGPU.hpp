@@ -170,12 +170,12 @@ public:
     }
 
     KOKKOS_INLINE_FUNCTION
-    int update_cell(double q, int icell){
+    int update_cell(double q, int){
         return (q - this->xmin)/this->t0;
     }
 
     KOKKOS_INLINE_FUNCTION
-    double elem_size(int icell){
+    double elem_size(int){
         return this->t0;
     }
 
@@ -349,28 +349,71 @@ public:
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,unassigned,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
-    int locate_cell(double q){
+    int locate_cell(double){
         return -1;
     }
 
     KOKKOS_INLINE_FUNCTION
-    int update_cell(double q, int icell){
+    int update_cell(double, int ){
         return -1;
     }
 
     KOKKOS_INLINE_FUNCTION
-    double elem_size(int icell){
+    double elem_size(int ){
         return -999.0;
     }
 
     KOKKOS_INLINE_FUNCTION
-    void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
+    void calc_weights(double , int , int *global_cell, double *Wgh2){
         *Wgh2 = -999.0;
         *global_cell = -1;
     }
 
 };
 
+class MeshOffsets{
+public:
+    Kokkos::View<int**> nodeoffset_start; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> nodeoffset_skip_top; //!< aux data structure to compute nodeoffset
+    Kokkos::View<int**> elemoffset_start; //!< aux data structure to compute elemtent offset
+    Kokkos::View<int*> elemoffset_skip; //!< aux data structure to compute element offset
+
+    int** host_nodeoffset_start;
+    int** host_nodeoffset_skip_bot;
+    int** host_nodeoffset_skip_mid;
+    int** host_nodeoffset_skip_top;
+    int** host_elemoffset_start;
+    int* host_elemoffset_skip;
+
+    int Nel_total; //!< Total active elements in domain
+    int Nnp_total; //!< Total active nodes in domain
+
+    MeshOffsets(){};
+
+    MeshOffsets(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
+};
+
+class MeshBdry{
+public:
+
+    Kokkos::View<bool*> is_bdry_edge; //!< bool value stores if an edge is on boundary
+    Kokkos::View<double*[3]> bdry_edge_normal; //!< boundary normal direction
+    Kokkos::View<int*> edge_to_face;
+
+    bool* host_is_bdry_edge;
+    double** host_bdry_edge_normal;
+    int *host_edge_to_face;
+
+    int Nbdry_faces; //!< int value storing number of boundary element faces
+
+    MeshBdry(){};
+
+    MeshBdry(int):Nbdry_faces(2){};
+
+    MeshBdry(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
+};
 
 /**
  * @brief Mesh class
@@ -387,27 +430,8 @@ public:
     Kokkos::View<bool**> isactive; //!< 2D bool-array defining the activity of blocks
     bool **host_isactive;
 
-    // Kokkos::View<int**> nodeoffset;
-    Kokkos::View<int**> nodeoffset_start; //!< aux data structure to compute nodeoffset
-    int** host_nodeoffset_start;
-    Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
-    int** host_nodeoffset_skip_bot;
-    Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset
-    int** host_nodeoffset_skip_mid;
-    Kokkos::View<int**> nodeoffset_skip_top; //!< aux data structure to compute nodeoffset
-    int** host_nodeoffset_skip_top;
-    Kokkos::View<int**> elemoffset_start; //!< aux data structure to compute elemtent offset
-    int** host_elemoffset_start;
-    Kokkos::View<int*> elemoffset_skip; //!< aux data structure to compute element offset
-    int* host_elemoffset_skip;
-
-    Kokkos::View<bool*> is_bdry; //!< bool value stores if an edge is on boundary
-    bool* host_is_bdry;
-    Kokkos::View<double*[3]> bdry_normal; //!< boundary normal direction
-    double** host_bdry_normal;
-
-    int Nbdry_faces; //!< int value storing number of boundary element faces
-    int *edge_to_face;
+    MeshOffsets offsets;
+    MeshBdry bdry;
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
@@ -420,6 +444,7 @@ public:
     * @brief Default constructor.
     */
     Mesh(){};
+
     /**
     * @brief Constructor for 1D Mesh
     * \param[in] number of x1-submesh blocks
@@ -428,17 +453,18 @@ public:
     */
     KOKKOS_INLINE_FUNCTION
     Mesh(int nsubmesh_x1_,
-         int Nel_tot_x1_):
+         int Nel_tot_x1_,
+         MeshBdry bdry_):
          ndim(1),
          nsubmesh_x1(nsubmesh_x1_),
-         Nel_tot_x1(Nel_tot_x1_){
+         Nel_tot_x1(Nel_tot_x1_),
+         bdry(bdry_){
              Nel_total = Nel_tot_x1_;
              Nnp_total = Nel_tot_x1_+1;
              nsubmesh_x2 = 0;
              nsubmesh_x3 = 0;
              Nel_tot_x2 = 0;
              Nel_tot_x3 = 0;
-             Nbdry_faces = 2;
          };
      /**
      * @brief Constructor for 2D Mesh
@@ -456,54 +482,22 @@ public:
          int nsubmesh_x2_,
          int Nel_tot_x2_,
          Kokkos::View<bool**> isactive_,
-         Kokkos::View<int**> elemoffset_start_,
-         Kokkos::View<int*> elemoffset_skip_,
-         Kokkos::View<int**> nodeoffset_start_,
-         Kokkos::View<int**> nodeoffset_skip_bot_,
-         Kokkos::View<int**> nodeoffset_skip_mid_,
-         Kokkos::View<int**> nodeoffset_skip_top_,
-         int** host_elemoffset_start_,
-         int* host_elemoffset_skip_,
-         int** host_nodeoffset_start_,
-         int** host_nodeoffset_skip_bot_,
-         int** host_nodeoffset_skip_mid_,
-         int** host_nodeoffset_skip_top_,
-         Kokkos::View<bool*> is_bdry_,
-         Kokkos::View<double*[3]> bdry_normal_,
-         bool* host_is_bdry_,
-         double** host_bdry_normal_,
-         int Nbdry_faces_,
-         int* edge_to_face_,
+         bool** host_isactive_,
+         MeshOffsets offsets_,
+         MeshBdry bdry_,
          int Nel_total_,
-         int Nnp_total_,
-         bool** host_isactive_):
+         int Nnp_total_):
          ndim(2),
          nsubmesh_x1(nsubmesh_x1_),
          Nel_tot_x1(Nel_tot_x1_),
          nsubmesh_x2(nsubmesh_x2_),
          Nel_tot_x2(Nel_tot_x2_),
          isactive(isactive_),
-         elemoffset_start(elemoffset_start_),
-         elemoffset_skip(elemoffset_skip_),
-         nodeoffset_start(nodeoffset_start_),
-         nodeoffset_skip_bot(nodeoffset_skip_bot_),
-         nodeoffset_skip_mid(nodeoffset_skip_mid_),
-         nodeoffset_skip_top(nodeoffset_skip_top_),
-         host_elemoffset_start(host_elemoffset_start_),
-         host_elemoffset_skip(host_elemoffset_skip_),
-         host_nodeoffset_start(host_nodeoffset_start_),
-         host_nodeoffset_skip_bot(host_nodeoffset_skip_bot_),
-         host_nodeoffset_skip_mid(host_nodeoffset_skip_mid_),
-         host_nodeoffset_skip_top(host_nodeoffset_skip_top_),
-         is_bdry(is_bdry_),
-         bdry_normal(bdry_normal_),
-         host_is_bdry(host_is_bdry_),
-         host_bdry_normal(host_bdry_normal_),
-         Nbdry_faces(Nbdry_faces_),
-         edge_to_face(edge_to_face_),
+         host_isactive(host_isactive_),
+         offsets(offsets_),
+         bdry(bdry_),
          Nel_total(Nel_total_),
-         Nnp_total(Nnp_total_),
-         host_isactive(host_isactive_)
+         Nnp_total(Nnp_total_)
          {
              nsubmesh_x3 = 0;
              Nel_tot_x3 = 0;
@@ -523,37 +517,21 @@ public:
              int Nel_tot_x1_,
              int nsubmesh_x2_,
              int Nel_tot_x2_,
-             int Nel_total_,
-             int Nnp_total_,
              bool** host_isactive_,
-             bool* host_is_bdry_,
-             double** host_bdry_normal_,
-             int Nbdry_faces_,
-             int* edge_to_face_,
-             int** host_elemoffset_start_,
-             int* host_elemoffset_skip_,
-             int** host_nodeoffset_start_,
-             int** host_nodeoffset_skip_bot_,
-             int** host_nodeoffset_skip_mid_,
-             int** host_nodeoffset_skip_top_):
+             MeshOffsets offsets_,
+             MeshBdry bdry_,
+             int Nel_total_,
+             int Nnp_total_):
              ndim(2),
              nsubmesh_x1(nsubmesh_x1_),
              Nel_tot_x1(Nel_tot_x1_),
              nsubmesh_x2(nsubmesh_x2_),
              Nel_tot_x2(Nel_tot_x2_),
-             Nel_total(Nel_total_),
-             Nnp_total(Nnp_total_),
              host_isactive(host_isactive_),
-             host_is_bdry(host_is_bdry_),
-             host_bdry_normal(host_bdry_normal_),
-             Nbdry_faces(Nbdry_faces_),
-             edge_to_face(edge_to_face_),
-             host_elemoffset_start(host_elemoffset_start_),
-             host_elemoffset_skip(host_elemoffset_skip_),
-             host_nodeoffset_start(host_nodeoffset_start_),
-             host_nodeoffset_skip_bot(host_nodeoffset_skip_bot_),
-             host_nodeoffset_skip_mid(host_nodeoffset_skip_mid_),
-             host_nodeoffset_skip_top(host_nodeoffset_skip_top_)
+             offsets(offsets_),
+             bdry(bdry_),
+             Nel_total(Nel_total_),
+             Nnp_total(Nnp_total_)
              {
                  nsubmesh_x3 = 0;
                  Nel_tot_x3 = 0;
@@ -594,7 +572,7 @@ struct MBBL{
          host_submesh_x1(host_submesh_x1_){
              MeshDeviceViewPtr::HostMirror h_mesh_ = Kokkos::create_mirror_view(mesh_);
              Kokkos::deep_copy(h_mesh_, mesh_);
-             host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1);
+             host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1,h_mesh_(0).bdry);
          };
 
     /**
@@ -618,10 +596,7 @@ struct MBBL{
              MeshDeviceViewPtr::HostMirror h_mesh_ = Kokkos::create_mirror_view(mesh_);
              Kokkos::deep_copy(h_mesh_, mesh_);
              host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1,h_mesh_(0).nsubmesh_x2,h_mesh_(0).Nel_tot_x2,
-                                    h_mesh_(0).Nel_total,h_mesh_(0).Nnp_total,h_mesh_(0).host_isactive,h_mesh_(0).host_is_bdry,
-                                    h_mesh_(0).host_bdry_normal,h_mesh_(0).Nbdry_faces,h_mesh_(0).edge_to_face, h_mesh_(0).host_elemoffset_start,
-                                    h_mesh_(0).host_elemoffset_skip,h_mesh_(0).host_nodeoffset_start,h_mesh_(0).host_nodeoffset_skip_bot,
-                                    h_mesh_(0).host_nodeoffset_skip_mid,h_mesh_(0).host_nodeoffset_skip_top);
+                                  h_mesh_(0).host_isactive,h_mesh_(0).offsets,h_mesh_(0).bdry,h_mesh_(0).Nel_total,h_mesh_(0).Nnp_total);
          };
 };
 

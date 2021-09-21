@@ -1227,14 +1227,14 @@ double get_mesh_volume(MBBL pumi_obj){
     }
 }
 
-std::vector<double> get_bdry_normal(MBBL pumi_obj, unsigned int iEdge){
+std::vector<double> get_bdry_normal(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
-    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        // double nrml = pumi_obj.host_mesh->host_bdry_normal[iEdge][dir];
-        std::vector<double> nrml = {pumi_obj.host_mesh->host_bdry_normal[iEdge][0],
-                                    pumi_obj.host_mesh->host_bdry_normal[iEdge][1],
-                                    pumi_obj.host_mesh->host_bdry_normal[iEdge][2]};
+    if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        // double nrml = pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][dir];
+        std::vector<double> nrml = {pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][0],
+                                    pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][1],
+                                    pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][2]};
         return nrml;
     }
     else{
@@ -1245,11 +1245,11 @@ std::vector<double> get_bdry_normal(MBBL pumi_obj, unsigned int iEdge){
     }
 }
 
-int get_num_faces_on_bdry(MBBL pumi_obj, unsigned int iEdge){
+int get_num_faces_on_bdry(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
-    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+    if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
         int num = iEdge/Nx2p1;
         int rem = iEdge-num*Nx2p1;
         if (rem < nsubmesh_x1){
@@ -1266,11 +1266,11 @@ int get_num_faces_on_bdry(MBBL pumi_obj, unsigned int iEdge){
     }
 }
 
-int get_starting_faceID_on_bdry(MBBL pumi_obj, unsigned int iEdge){
+int get_starting_faceID_on_bdry(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
-    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        return pumi_obj.host_mesh->edge_to_face[iEdge];
+    if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        return pumi_obj.host_mesh->bdry.host_edge_to_face[iEdge];
     }
     else{
         std::cout << "Invalid edge ID\n";
@@ -1279,11 +1279,11 @@ int get_starting_faceID_on_bdry(MBBL pumi_obj, unsigned int iEdge){
     }
 }
 
-bool is_edge_bdry(MBBL pumi_obj, unsigned int iEdge){
+bool is_edge_bdry(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
-    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        return pumi_obj.host_mesh->host_is_bdry[iEdge];
+    if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+        return pumi_obj.host_mesh->bdry.host_is_bdry_edge[iEdge];
     }
     else{
         std::cout << "Invalid edge ID\n";
@@ -1324,22 +1324,22 @@ int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
     int jnp = Jnp - pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
     // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
     int nodeoffset;
-    nodeoffset = pumi_obj.host_mesh->host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->host_nodeoffset_skip_bot[isubmesh][jsubmesh]
-                    +(jnp-1)*pumi_obj.host_mesh->host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    nodeoffset = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
+                    +(jnp-1)*pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
     if (jnp==0){
-        nodeoffset = pumi_obj.host_mesh->host_nodeoffset_start[isubmesh][jsubmesh];
+        nodeoffset = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh];
     }
     if (jnp==pumi_obj.host_submesh_x2[jsubmesh].Nel){
-        nodeoffset +=  (pumi_obj.host_mesh->host_nodeoffset_skip_top[isubmesh][jsubmesh]-pumi_obj.host_mesh->host_nodeoffset_skip_mid[isubmesh][jsubmesh]);
+        nodeoffset +=  (pumi_obj.host_mesh->offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh]-pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh]);
     }
     return nodeID-nodeoffset;
 }
 
-void get_edge_info(MBBL pumi_obj, unsigned int iEdge, int *Knp, int *next_offset, int *submeshID){
+void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *submeshID){
     int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
-    if (iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+    if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
         if (is_edge_bdry(pumi_obj,iEdge)){
             int num = iEdge/Nx2p1;
             int rem = iEdge-num*Nx2p1;
