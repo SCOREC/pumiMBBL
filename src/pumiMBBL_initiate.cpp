@@ -1526,6 +1526,7 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
         host_bdry_edge_normal[iedge][1] = h_bdry_edge_normal(iedge,1);
         host_bdry_edge_normal[iedge][2] = h_bdry_edge_normal(iedge,2);
     }
+    Kokkos::deep_copy(edge_to_face, h_edge_to_face);
 }
 
 
