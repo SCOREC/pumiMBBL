@@ -683,6 +683,7 @@ public:
     int cellID;
     int submeshID;
     bool part_active;
+    int exit_faceID;
 
     ParticleData(){};
 
@@ -690,8 +691,8 @@ public:
                 x1(x1_),x2(x2_){};
 
     KOKKOS_INLINE_FUNCTION
-    ParticleData(double x1_, double x2_, int submeshID_, int cellID_, bool part_active_):
-                x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_),part_active(part_active_){};
+    ParticleData(double x1_, double x2_, int submeshID_, int cellID_, bool part_active_, int exit_faceID_):
+                x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_),part_active(part_active_),exit_faceID(exit_faceID_){};
 
 };
 

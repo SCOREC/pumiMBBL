@@ -209,7 +209,7 @@ int main( int argc, char* argv[] )
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
             pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true);
+            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
         });
         Kokkos::deep_copy(h_Partdata,Partdata);
         write2file(h_Partdata, N_part, 0);
@@ -248,7 +248,7 @@ int main( int argc, char* argv[] )
                         if (q1 < x1_min || q1 > x1_max || q2 < x2_min || q2 > x2_max){
                             submeshID=-1;
                             cellID=-1;
-                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false);
+                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false,-1);
                         }
                         else {
                             pumi::update_submesh_and_cell_x1(pumi_obj, q1, isub, icell, &isub, &icell);
@@ -259,7 +259,7 @@ int main( int argc, char* argv[] )
                             Wgh1_x2 = 1.0-Wgh2_x2;
                             pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true);
+                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
                         }
 
                     }
@@ -287,7 +287,7 @@ int main( int argc, char* argv[] )
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
             pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true);
+            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
         });
         Kokkos::deep_copy(h_Partdata,Partdata);
         write2file(h_Partdata, N_part, N_step+1);
@@ -303,7 +303,7 @@ int main( int argc, char* argv[] )
                 for (int ipart=0; ipart<N_part; ipart++){
                     bool part_active = Partdata(ipart).part_active;
                     if (part_active){
-                        int isub, jsub, icell, jcell, kcell_x1, kcell_x2, bdry_hit, submeshID, cellID;
+                        int isub, jsub, icell, jcell, kcell_x1, kcell_x2, bdry_hit, submeshID, cellID, bdry_faceID;
                         bool in_domain;
                         int global_cell, topleft_node, bottomleft_node;
                         double fraction_done;
@@ -321,15 +321,17 @@ int main( int argc, char* argv[] )
                         Wgh1_x2 = 1.0-Wgh2_x2;
                         pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                         double dq1 = L_x1/dist_factor;
-                        double dq2 = -L_x2/dist_factor;
+                        double dq2 = L_x2/dist_factor;
 
 
 
-                        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell, &in_domain, &bdry_hit, &fraction_done);
+                        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell,
+                                            &in_domain, &bdry_hit, &fraction_done, &bdry_faceID);
                         if (!in_domain){
                             q1 += dq1*fraction_done;
                             q2 += dq2*fraction_done;
-                            Partdata(ipart) = pumi::ParticleData(q1,q2,-1,-1,false);
+                            pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
+                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false,bdry_faceID);
                         }
                         else{
                             pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
@@ -338,7 +340,7 @@ int main( int argc, char* argv[] )
                             Wgh1_x2 = 1.0-Wgh2_x2;
                             pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                            Partdata(ipart) = pumi::ParticleData(q1+dq1,q2+dq2,submeshID,cellID,true);
+                            Partdata(ipart) = pumi::ParticleData(q1+dq1,q2+dq2,submeshID,cellID,true,-1);
                         }
                     }
                 }
@@ -623,10 +625,12 @@ void write2file(Kokkos::View<pumi::ParticleData*>::HostMirror hp, int N_part, in
     char part_filename[30];
     sprintf(part_filename,"part_coords_t%d.dat",nstep);
     part_file = fopen(part_filename,"w");
-
-    for (int i=0; i<N_part; i++){
+    int skip = 50;
+    for (int i=0; i<N_part; i=i+skip){
         int part_active = hp(i).part_active;
-        fprintf(part_file, "%d %.5e %.5e\n", part_active, hp(i).x1, hp(i).x2);
+        int subID = hp(i).submeshID;
+        int exit_faceID = hp(i).exit_faceID;
+        fprintf(part_file, "%d %.5e %.5e %d %d\n", part_active, hp(i).x1, hp(i).x2, subID, exit_faceID);
     }
 
     fclose(part_file);

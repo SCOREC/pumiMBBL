@@ -102,7 +102,7 @@ int main( int argc, char* argv[] )
             int isub, icell;
             double q1 = Partdata(ipart).x1;
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true);
+            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true,-1);
         });
         Kokkos::deep_copy(h_Partdata,Partdata);
         // print_partdata(Partdata, N_part);
@@ -132,15 +132,16 @@ int main( int argc, char* argv[] )
                         q1 += dq1;
 
                         if (q1 < x1_min || q1 > x1_max){
+                            int exit_faceID = (q1 < x1_min) + 2*(q1>x1_max) - 1;
                             isub = -1;
                             icell = -1;
-                            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,false);
+                            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,false,exit_faceID);
                         }
                         else {
                             pumi::update_submesh_and_cell_x1(pumi_obj, q1, isub, icell, &isub, &icell);
                             pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
                             Wgh1_x1 = 1.0-Wgh2_x1;
-                            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true);
+                            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true,-1);
                         }
 
                     }
