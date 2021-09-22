@@ -102,7 +102,7 @@ int main( int argc, char* argv[] )
             int isub, icell;
             double q1 = Partdata(ipart).x1;
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell);
+            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true);
         });
         Kokkos::deep_copy(h_Partdata,Partdata);
         // print_partdata(Partdata, N_part);
@@ -110,14 +110,14 @@ int main( int argc, char* argv[] )
         Kokkos::Profiling::pushRegion("push_test_0");
         for (int istep=0; istep<N_step; istep++){
             for (int p=0; p<N_part; p++){
-                int part_active = h_Partdata(p).submeshID;
-                num_push += (part_active+1 != 0);
+                bool part_active = h_Partdata(p).part_active;
+                num_push += part_active;
             }
             Kokkos::parallel_for("particle-push-test-0", 1, KOKKOS_LAMBDA (const int) {
                 for (int ipart=0; ipart<N_part; ipart++){
                     // int part_active = part_coords(ipart,1);
-                    int part_active = Partdata(ipart).submeshID;
-                    if (part_active+1){
+                    bool part_active = Partdata(ipart).part_active;
+                    if (part_active){
                         int isub, icell, kcell_x1;
                         double q1 = Partdata(ipart).x1;
                         isub = Partdata(ipart).submeshID;
@@ -134,14 +134,15 @@ int main( int argc, char* argv[] )
                         if (q1 < x1_min || q1 > x1_max){
                             isub = -1;
                             icell = -1;
+                            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,false);
                         }
                         else {
                             pumi::update_submesh_and_cell_x1(pumi_obj, q1, isub, icell, &isub, &icell);
                             pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
                             Wgh1_x1 = 1.0-Wgh2_x1;
+                            Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true);
                         }
 
-                        Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell);
                     }
                 }
             });
