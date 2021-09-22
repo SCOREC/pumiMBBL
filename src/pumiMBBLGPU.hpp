@@ -649,11 +649,13 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
 
 KOKKOS_FUNCTION
 void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit);
+                    int *isubmesh, int *jsubmesh, int *icell, int *jcell,
+                    bool *in_domain, int *bdry_hit, int *fraction_done, int* faceID_on_bdry);
 
 KOKKOS_FUNCTION
 void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit);
+                    int *isubmesh, int *jsubmesh, int *icell, int *jcell,
+                    bool *in_domain, int *bdry_hit, int* fraction_done);
 
 KOKKOS_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell);

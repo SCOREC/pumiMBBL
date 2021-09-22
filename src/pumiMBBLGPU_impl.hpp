@@ -373,7 +373,8 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
 
 KOKKOS_INLINE_FUNCTION
 void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain, int *bdry_hit, double *fraction_done){
+                   int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
+                   int *bdry_hit, double *fraction_done, int *faceID_on_bdry){
 
     double q1_new = q1+dq1;
     double q2_new = q2+dq2;
@@ -392,6 +393,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
         // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
         *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
         *bdry_hit = -1;
+        *faceID_on_bdry = -1;
         *fraction_done = 1.0;
         return;
     }
@@ -406,27 +408,41 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 if (del2/del1 > fabs(dq2/dq1)){
                     *bdry_hit = (jsub-1)*(Nxx)+isub-1+Nx;
                     isub--;
+                    *icell = pumi_obj.submesh_x1(isub)()->Nel-1;
                 }
                 else{
                     *bdry_hit = (jsub-1)*(Nxx)+isub-1;
                     jsub--;
+                    *jcell = pumi_obj.submesh_x2(jsub)()->Nel-1;
                 }
 
 
                 while (!located && in_domain){
                     if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        *isubmesh=-1;
-                        *icell=-1;
-                        *jsubmesh=-1;
-                        *jcell=-1;
+                        // *isubmesh=-1;
+                        // *icell=-1;
+                        // *jsubmesh=-1;
+                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
                             *fraction_done = fabs(del2/dq2);
+                            *isubmesh = isub;
+                            *jsubmesh = jsub+1;
+                            *jcell = 0;
+                            q1_new = q1+(*fraction_done)*dq1;
+                            *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *icell;
                         }
                         else{
                             *fraction_done = fabs(del1/dq1);
+                            *isubmesh = isub+1;
+                            *jsubmesh = jsub;
+                            *icell = 0;
+                            q2_new = q2+(*fraction_done)*dq2;
+                            *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
                         return;
                     }
@@ -440,6 +456,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
+                            *faceID_on_bdry = -1;
                             *fraction_done = 1.0;
                             located = true;
                             return;
@@ -451,10 +468,12 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             if (del2/del1 > fabs(dq2/dq1)){
                                 *bdry_hit = (jsub-1)*(Nxx)+isub-1+Nx;
                                 isub--;
+                                *icell = pumi_obj.submesh_x1(isub)()->Nel-1;
                             }
                             else{
                                 *bdry_hit = (jsub-1)*(Nxx)+isub-1;
                                 jsub--;
+                                *jcell = pumi_obj.submesh_x2(jsub)()->Nel-1;
                             }
                         }
                     }
@@ -467,26 +486,40 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 if (del2/del1 > fabs(dq2/dq1)){
                     *bdry_hit = (jsub-1)*(Nxx)+isub-1+Nx;
                     isub--;
+                    *icell = pumi_obj.submesh_x1(isub)()->Nel-1;
                 }
                 else{
                     *bdry_hit = jsub*(Nxx)+isub-1;
                     jsub++;
+                    *jcell = 0;
                 }
 
                 while (!located && in_domain){
                     if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        *isubmesh=-1;
-                        *icell=-1;
-                        *jsubmesh=-1;
-                        *jcell=-1;
+                        // *isubmesh=-1;
+                        // *icell=-1;
+                        // *jsubmesh=-1;
+                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
                             *fraction_done = fabs(del2/dq2);
+                            *isubmesh = isub;
+                            *jsubmesh = jsub-1;
+                            *jcell = pumi_obj.submesh_x2(*jsubmesh)()->Nel-1;
+                            q1_new = q1+(*fraction_done)*dq1;
+                            *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *icell;
                         }
                         else{
                             *fraction_done = fabs(del1/dq1);
+                            *isubmesh = isub+1;
+                            *jsubmesh = jsub;
+                            *icell = 0;
+                            q2_new = q2+(*fraction_done)*dq2;
+                            *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
                         return;
                     }
@@ -500,6 +533,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
+                            *faceID_on_bdry = -1;
                             located = true;
                             *fraction_done = 1.0;
                             return;
@@ -511,10 +545,12 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             if (del2/del1 > fabs(dq2/dq1)){
                                 *bdry_hit = (jsub-1)*(Nxx)+isub-1+Nx;
                                 isub--;
+                                *icell = pumi_obj.submesh_x1(isub)()->Nel-1;
                             }
                             else{
                                 *bdry_hit = jsub*(Nxx)+isub-1;
                                 jsub++;
+                                *jcell = 0;
                             }
                         }
                     }
@@ -527,26 +563,40 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 if (del2/del1 > fabs(dq2/dq1)){
                     *bdry_hit = (jsub-1)*(Nxx)+isub+Nx;
                     isub++;
+                    *icell = 0;
                 }
                 else{
                     *bdry_hit = (jsub-1)*(Nxx)+isub-1;
                     jsub--;
+                    *jcell = pumi_obj.submesh_x2(jsub)()->Nel-1;
                 }
 
                 while (!located && in_domain){
                     if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        *isubmesh=-1;
-                        *icell=-1;
-                        *jsubmesh=-1;
-                        *jcell=-1;
+                        // *isubmesh=-1;
+                        // *icell=-1;
+                        // *jsubmesh=-1;
+                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
                             *fraction_done = fabs(del2/dq2);
+                            *isubmesh = isub;
+                            *jsubmesh = jsub+1;
+                            *jcell = 0;
+                            q1_new=q1+(*fraction_done)*dq1;
+                            *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *icell;
                         }
                         else{
                             *fraction_done = fabs(del1/dq1);
+                            *isubmesh = isub-1;
+                            *jsubmesh = jsub;
+                            *icell = pumi_obj.submesh_x1(*isubmesh)()->Nel-1;
+                            q2_new=q2+(*fraction_done)*dq2;
+                            *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
                         return;
                     }
@@ -560,6 +610,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
+                            *faceID_on_bdry = -1;
                             located = true;
                             *fraction_done = 1.0;
                             return;
@@ -571,10 +622,12 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             if (del2/del1 > fabs(dq2/dq1)){
                                 *bdry_hit = (jsub-1)*(Nxx)+isub+Nx;
                                 isub++;
+                                *icell = 0;
                             }
                             else{
                                 *bdry_hit = (jsub-1)*(Nxx)+isub-1;
                                 jsub--;
+                                *jcell = pumi_obj.submesh_x2(jsub)()->Nel-1;
                             }
                         }
                     }
@@ -587,26 +640,40 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 if (del2/del1 > fabs(dq2/dq1)){
                     *bdry_hit = (jsub-1)*(Nxx)+isub+Nx;
                     isub++;
+                    *icell = 0;
                 }
                 else{
                     *bdry_hit = jsub*(Nxx)+isub-1;
                     jsub++;
+                    *jcell = 0;
                 }
 
                 while (!located && in_domain){
                     if (pumi_obj.mesh(0).bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        *isubmesh=-1;
-                        *icell=-1;
-                        *jsubmesh=-1;
-                        *jcell=-1;
+                        // *isubmesh=-1;
+                        // *icell=-1;
+                        // *jsubmesh=-1;
+                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
                             *fraction_done = fabs(del2/dq2);
+                            *isubmesh = isub;
+                            *jsubmesh = jsub-1;
+                            *jcell = pumi_obj.submesh_x2(*jsubmesh)()->Nel-1;
+                            q1_new = q1+(*fraction_done)*dq1;
+                            *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *icell;
                         }
                         else{
                             *fraction_done = fabs(del1/dq1);
+                            *isubmesh = isub-1;
+                            *jsubmesh = jsub;
+                            *icell = pumi_obj.submesh_x1(*isubmesh)()->Nel-1;
+                            q2_new = q2+(*fraction_done)*dq2;
+                            *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
+                            *faceID_on_bdry = pumi_obj.mesh(0).bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
                         return;
                     }
@@ -620,6 +687,7 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
+                            *faceID_on_bdry = -1;
                             located = true;
                             *fraction_done = 1.0;
                             return;
@@ -631,10 +699,12 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             if (del2/del1 > fabs(dq2/dq1)){
                                 *bdry_hit = (jsub-1)*(Nxx)+isub+Nx;
                                 isub++;
+                                *icell = 0;
                             }
                             else{
                                 *bdry_hit = jsub*(Nxx)+isub-1;
                                 jsub++;
+                                *jcell = 0;
                             }
                         }
                     }
