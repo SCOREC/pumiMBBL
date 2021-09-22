@@ -52,5 +52,6 @@ void get_edge_info(MBBL pumi_obj,  int iEdge, int *Knp, int *next_offset, int *s
 std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj);
 bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q);
 void print_nodeIDs(MBBL pumi_obj);
+void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID);
 } // namespace pumi
 #endif

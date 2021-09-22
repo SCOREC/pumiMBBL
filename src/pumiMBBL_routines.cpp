@@ -1528,4 +1528,9 @@ void print_nodeIDs(MBBL pumi_obj){
     }
 }
 
+void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
+    *submeshID = (isub-1) + (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1;
+    *cellID = icell + jcell*pumi_obj.host_submesh_x1[isub].Nel;
+}
+
 } // namespace pumi
