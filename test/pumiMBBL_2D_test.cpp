@@ -49,7 +49,7 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
-    pumi::print_nodeIDs(pumi_obj);
+    // pumi::print_nodeIDs(pumi_obj);
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
@@ -131,7 +131,7 @@ int main( int argc, char* argv[] )
     // }
     // printf("domain area is %2.4f\n",integral_tot );
 
-    int N_part = 1000;
+    int N_part = 100000;
     int N_step = 10;
     // Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
     Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part);
