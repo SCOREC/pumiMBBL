@@ -49,6 +49,8 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
+    pumi::print_nodeIDs(pumi_obj);
+
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
     //         std::vector<double> bn = pumi::get_bdry_normal(pumi_obj, iEdge);
@@ -129,7 +131,7 @@ int main( int argc, char* argv[] )
     // }
     // printf("domain area is %2.4f\n",integral_tot );
 
-    int N_part = 100;
+    int N_part = 1000;
     int N_step = 10;
     // Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
     Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part);
@@ -158,17 +160,17 @@ int main( int argc, char* argv[] )
     //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
     //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
     //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-    //         if (pumi_obj.mesh(0).is_bdry(i)){
-    //             if (pumi_obj.mesh(0).bdry_normal(i,0)==1.0){
+    //         if (pumi_obj.mesh(0).bdry.is_bdry_edge(i)){
+    //             if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,0)==1.0){
     //                 printf("edge-%2d is boundary with +ve X normal\n",i);
     //             }
-    //             else if (pumi_obj.mesh(0).bdry_normal(i,0)==-1.0){
+    //             else if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,0)==-1.0){
     //                 printf("edge-%2d is boundary with -ve X normal\n",i);
     //             }
-    //             else if (pumi_obj.mesh(0).bdry_normal(i,1)==1.0){
+    //             else if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,1)==1.0){
     //                 printf("edge-%2d is boundary with +ve Y normal\n",i);
     //             }
-    //             else if (pumi_obj.mesh(0).bdry_normal(i,1)==-1.0){
+    //             else if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,1)==-1.0){
     //                 printf("edge-%2d is boundary with -ve Y normal\n",i);
     //             }
     //         }
@@ -685,6 +687,9 @@ void print_usage()
     // printf("    ./pumi-test.host 3 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");
     printf("    ./install/bin/pumiMBBL2D_Demo 3 0.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 1.0 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
+    printf("  E.g.#2 [On-DEVICE]\n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 4 0.0 \"minBL,uniform,uniform,maxBL\" \"10.0,5.0,5.0,10.0\" \"3.0,1.0,1.0,3.0\" \"1.0,1.0,1.0,1.0\" 4 1.0 \"maxBL,uniform,uniform,minBL\" \"20.0,20.0,20.0,20.0\" \"4.0,1.0,1.0,4.0\" \"1.0,2.0,2.0,1.0\" \"1,0,1,1,1,0,0,1,1,1,1,1,0,1,0,1\" \n\n");
+
     Kokkos::finalize();
     exit(0);
 }
