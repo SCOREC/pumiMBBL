@@ -1497,4 +1497,35 @@ bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
     return false;
 }
 
+void print_nodeIDs(MBBL pumi_obj){
+    printf("\nPrinting NodeIDs in each active blocks\n" );
+    int Nx = pumi_obj.host_mesh->nsubmesh_x1;
+    int Ny = pumi_obj.host_mesh->nsubmesh_x2;
+    for (int jsub=Ny; jsub>0; jsub--){
+        int nnp_y = pumi_obj.host_submesh_x2[jsub].Nel+1;
+        for (int jnp=nnp_y-1; jnp>=0; jnp--){
+            int Jnp = jnp+pumi_obj.host_submesh_x2[jsub].Nel_cumulative;
+            for (int isub=1; isub<=Nx; isub++){
+                int nnp_x = pumi_obj.host_submesh_x1[isub].Nel+1;
+                for (int inp=0; inp<nnp_x; inp++){
+                    int Inp = inp+pumi_obj.host_submesh_x1[isub].Nel_cumulative;
+                    if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
+                        int Knp = Jnp*(pumi_obj.host_mesh->Nel_tot_x1+1)+Inp;
+                        int Ksub = (jsub-1)*Nx+isub-1;
+                        int nodeID = get_global_nodeID(pumi_obj,Ksub,Knp);
+                        printf("%5d",nodeID);
+                    }
+                    else{
+                        printf("     ");
+                    }
+                }
+                if (isub<Nx)
+                    printf(" || " );
+            }
+            printf("\n");
+        }
+        printf("\n\n");
+    }
+}
+
 } // namespace pumi
