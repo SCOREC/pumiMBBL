@@ -36,31 +36,31 @@ double return_gradingratio(MBBL pumi_obj, int dir, int node){
     }
     else{
         for (int isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
-            int submesh_min_node =  h_submesh[isubmesh].Nel_cumulative;
-            int submesh_max_node = submesh_min_node + h_submesh[isubmesh].Nel;
+            int submesh_min_node =  h_submesh[isubmesh]->Nel_cumulative;
+            int submesh_max_node = submesh_min_node + h_submesh[isubmesh]->Nel;
             if (node > submesh_min_node && node < submesh_max_node){
-                if (h_submesh[isubmesh].meshtype & maxBL){
-                    return 1.0/h_submesh[isubmesh].r;
+                if (h_submesh[isubmesh]->meshtype & maxBL){
+                    return 1.0/h_submesh[isubmesh]->r;
                 }
                 else{
-                    return h_submesh[isubmesh].r;
+                    return h_submesh[isubmesh]->r;
                 }
             }
             else if (node == submesh_min_node){
                 double max_elem;
                 double min_elem;
-                if (h_submesh[isubmesh-1].meshtype & minBL){
-                    min_elem = h_submesh[isubmesh-1].t0 * pow(h_submesh[isubmesh-1].r, h_submesh[isubmesh-1].Nel-1);
+                if (h_submesh[isubmesh-1]->meshtype & minBL){
+                    min_elem = h_submesh[isubmesh-1]->t0 * pow(h_submesh[isubmesh-1]->r, h_submesh[isubmesh-1]->Nel-1);
                 }
                 else{
-                    min_elem = h_submesh[isubmesh-1].t0;
+                    min_elem = h_submesh[isubmesh-1]->t0;
                 }
 
-                if (h_submesh[isubmesh].meshtype & maxBL){
-                    max_elem = h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r, h_submesh[isubmesh].Nel-1);
+                if (h_submesh[isubmesh]->meshtype & maxBL){
+                    max_elem = h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r, h_submesh[isubmesh]->Nel-1);
                 }
                 else{
-                    max_elem = h_submesh[isubmesh].t0;
+                    max_elem = h_submesh[isubmesh]->t0;
                 }
                 return max_elem/min_elem;
             }
@@ -103,20 +103,20 @@ double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
     }
 
     for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
-        int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
-        int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+        int submesh_min_elem = h_submesh[isubmesh]->Nel_cumulative;
+        int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh]->Nel-1;
 
         if (elem >= submesh_min_elem && elem <= submesh_max_elem){
-            if (h_submesh[isubmesh].meshtype & uniform){
-                return h_submesh[isubmesh].t0;
+            if (h_submesh[isubmesh]->meshtype & uniform){
+                return h_submesh[isubmesh]->t0;
             }
-            if (h_submesh[isubmesh].meshtype & minBL){
+            if (h_submesh[isubmesh]->meshtype & minBL){
                 int local_cell = elem - submesh_min_elem;
-                return (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                return (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
             }
-            if (h_submesh[isubmesh].meshtype & maxBL){
-                int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
-                return (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+            if (h_submesh[isubmesh]->meshtype & maxBL){
+                int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                return (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
             }
         }
     }
@@ -239,21 +239,21 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     }
     else{
         for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
-            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
-            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+            int submesh_min_elem = h_submesh[isubmesh]->Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh]->Nel-1;
 
             if (elem >= submesh_min_elem && elem <= submesh_max_elem){
                 isub_min = isubmesh;
-                if (h_submesh[isubmesh].meshtype & uniform){
-                    dx1_min = h_submesh[isubmesh].t0;
+                if (h_submesh[isubmesh]->meshtype & uniform){
+                    dx1_min = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh].meshtype & minBL){
+                if (h_submesh[isubmesh]->meshtype & minBL){
                     int local_cell = elem - submesh_min_elem;
-                    dx1_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                    dx1_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
-                if (h_submesh[isubmesh].meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
-                    dx1_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                if (h_submesh[isubmesh]->meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                    dx1_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
             }
         }
@@ -266,21 +266,21 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     }
     else{
         for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
-            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
-            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+            int submesh_min_elem = h_submesh[isubmesh]->Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh]->Nel-1;
 
             if (elem >= submesh_min_elem && elem <= submesh_max_elem){
                 isub_max = isubmesh;
-                if (h_submesh[isubmesh].meshtype & uniform){
-                    dx1_max = h_submesh[isubmesh].t0;
+                if (h_submesh[isubmesh]->meshtype & uniform){
+                    dx1_max = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh].meshtype & minBL){
+                if (h_submesh[isubmesh]->meshtype & minBL){
                     int local_cell = elem - submesh_min_elem;
-                    dx1_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                    dx1_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
-                if (h_submesh[isubmesh].meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
-                    dx1_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                if (h_submesh[isubmesh]->meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                    dx1_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
             }
         }
@@ -298,21 +298,21 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     }
     else{
         for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
-            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
-            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+            int submesh_min_elem = h_submesh[isubmesh]->Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh]->Nel-1;
 
             if (elem >= submesh_min_elem && elem <= submesh_max_elem){
                 jsub_min = isubmesh;
-                if (h_submesh[isubmesh].meshtype & uniform){
-                    dx2_min = h_submesh[isubmesh].t0;
+                if (h_submesh[isubmesh]->meshtype & uniform){
+                    dx2_min = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh].meshtype & minBL){
+                if (h_submesh[isubmesh]->meshtype & minBL){
                     int local_cell = elem - submesh_min_elem;
-                    dx2_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                    dx2_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
-                if (h_submesh[isubmesh].meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
-                    dx2_min = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                if (h_submesh[isubmesh]->meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                    dx2_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
             }
         }
@@ -325,21 +325,21 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     }
     else{
         for (int isubmesh = 1; isubmesh <= nsubmesh; isubmesh++){
-            int submesh_min_elem = h_submesh[isubmesh].Nel_cumulative;
-            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh].Nel-1;
+            int submesh_min_elem = h_submesh[isubmesh]->Nel_cumulative;
+            int submesh_max_elem = submesh_min_elem + h_submesh[isubmesh]->Nel-1;
 
             if (elem >= submesh_min_elem && elem <= submesh_max_elem){
                 jsub_max = isubmesh;
-                if (h_submesh[isubmesh].meshtype & uniform){
-                    dx2_max = h_submesh[isubmesh].t0;
+                if (h_submesh[isubmesh]->meshtype & uniform){
+                    dx2_max = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh].meshtype & minBL){
+                if (h_submesh[isubmesh]->meshtype & minBL){
                     int local_cell = elem - submesh_min_elem;
-                    dx2_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                    dx2_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
-                if (h_submesh[isubmesh].meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh].Nel - (elem - submesh_min_elem) - 1;
-                    dx2_max = (h_submesh[isubmesh].t0 * pow(h_submesh[isubmesh].r , local_cell));
+                if (h_submesh[isubmesh]->meshtype & maxBL){
+                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                    dx2_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
                 }
             }
         }
@@ -376,8 +376,8 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     bool left_edge, right_edge, bottom_edge, top_edge;
 
     for (isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-        int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
-        int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh].Nel + submesh_min_node;
+        int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+        int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh]->Nel + submesh_min_node;
         left_edge =  false;
         right_edge = false;
         if (knode_x1 >= submesh_min_node && knode_x1 <= submesh_max_node){
@@ -385,7 +385,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (inp == 0){
                 left_edge = true;
             }
-            if (inp == pumi_obj.host_submesh_x1[isubmesh].Nel){
+            if (inp == pumi_obj.host_submesh_x1[isubmesh]->Nel){
                 right_edge = true;
             }
             break;
@@ -393,8 +393,8 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     for (jsubmesh=1; jsubmesh<=h_pumi_mesh(0).nsubmesh_x2; jsubmesh++){
-        int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
-        int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh].Nel + submesh_min_node;
+        int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+        int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel + submesh_min_node;
         bottom_edge =  false;
         top_edge = false;
         if (knode_x2 >= submesh_min_node && knode_x2 <= submesh_max_node){
@@ -402,7 +402,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             if (jnp == 0){
                 bottom_edge = true;
             }
-            if (jnp == pumi_obj.host_submesh_x2[jsubmesh].Nel){
+            if (jnp == pumi_obj.host_submesh_x2[jsubmesh]->Nel){
                 top_edge = true;
             }
             break;
@@ -917,7 +917,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
  * \param[in] Object of the wrapper mesh structure
  */
 double get_global_x1_min_coord(MBBL pumi_obj){
-    return pumi_obj.host_submesh_x1[1].xmin;
+    return pumi_obj.host_submesh_x1[1]->xmin;
 }
 
 /**
@@ -927,7 +927,7 @@ double get_global_x1_min_coord(MBBL pumi_obj){
  */
 double get_global_x1_max_coord(MBBL pumi_obj){
     int nsubmesh = pumi_obj.host_mesh->nsubmesh_x1;
-    return pumi_obj.host_submesh_x1[nsubmesh].xmax;
+    return pumi_obj.host_submesh_x1[nsubmesh]->xmax;
 }
 
 /**
@@ -936,7 +936,7 @@ double get_global_x1_max_coord(MBBL pumi_obj){
  * \param[in] Object of the wrapper mesh structure
  */
 double get_global_x2_min_coord(MBBL pumi_obj){
-    return pumi_obj.host_submesh_x2[1].xmin;
+    return pumi_obj.host_submesh_x2[1]->xmin;
 }
 
 /**
@@ -946,7 +946,7 @@ double get_global_x2_min_coord(MBBL pumi_obj){
  */
 double get_global_x2_max_coord(MBBL pumi_obj){
     int nsubmesh = pumi_obj.host_mesh->nsubmesh_x2;
-    return pumi_obj.host_submesh_x2[nsubmesh].xmax;
+    return pumi_obj.host_submesh_x2[nsubmesh]->xmax;
 }
 
 /**
@@ -963,9 +963,9 @@ void print_mesh_skeleton(MBBL pumi_obj){
     printf("E --> Boundary block-edge\n");
     printf("V --> Boundary block-vertex\n\n");
     for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
-        int Jnp = pumi_obj.host_submesh_x2[jsubmesh].Nel + pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
+        int Jnp = pumi_obj.host_submesh_x2[jsubmesh]->Nel + pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
         for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
                 if (bdry_tag+1){
@@ -992,7 +992,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
             if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
                     printf("%3dV",bdry_tag );
@@ -1005,7 +1005,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
         printf("\n");
         Jnp--;
         for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
                 printf("   |");
@@ -1023,7 +1023,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
 
             if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
                     printf("   |");
@@ -1035,7 +1035,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
         }
         printf("\n");
         for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
                 if (bdry_tag+1){
@@ -1059,7 +1059,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
 
             if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
                     printf("%3dE",bdry_tag);
@@ -1071,7 +1071,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
         }
         printf("\n");
         for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-            int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+            int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
                 printf("   |");
@@ -1089,7 +1089,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
 
             if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
                     printf("   |");
@@ -1104,7 +1104,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             printf("\n");
             Jnp = 0;
             for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
-                int Inp = pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
                     printf("%3dV",bdry_tag );
@@ -1126,7 +1126,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                     printf("            ");
                 }
                 if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                    Inp = pumi_obj.host_submesh_x1[isubmesh].Nel + pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+                    Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                     pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                     if (in_domain){
                         printf("%3dV",bdry_tag );
@@ -1146,11 +1146,11 @@ int get_num_x1_submesh(MBBL pumi_obj){
 }
 
 int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
-    return pumi_obj.host_submesh_x1[isubmesh].Nel;
+    return pumi_obj.host_submesh_x1[isubmesh]->Nel;
 }
 
 int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
-    return pumi_obj.host_submesh_x1[isubmesh].Nel_cumulative;
+    return pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
 }
 
 int get_num_x2_submesh(MBBL pumi_obj){
@@ -1158,11 +1158,11 @@ int get_num_x2_submesh(MBBL pumi_obj){
 }
 
 int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
-    return pumi_obj.host_submesh_x2[isubmesh].Nel;
+    return pumi_obj.host_submesh_x2[isubmesh]->Nel;
 }
 
 int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
-    return pumi_obj.host_submesh_x2[isubmesh].Nel_cumulative;
+    return pumi_obj.host_submesh_x2[isubmesh]->Nel_cumulative;
 }
 
 int get_total_mesh_elements(MBBL pumi_obj){
@@ -1193,12 +1193,12 @@ int get_total_submesh_blocks(MBBL pumi_obj){
 
 int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
     if (pumi_obj.host_mesh->ndim==1){
-        return pumi_obj.host_submesh_x1[flattened_submesh_ID].Nel;
+        return pumi_obj.host_submesh_x1[flattened_submesh_ID]->Nel;
     }
     else if (pumi_obj.host_mesh->ndim==2){
         int jsub = flattened_submesh_ID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
         int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1 + 1;
-        int Nel = pumi_obj.host_submesh_x1[isub].Nel * pumi_obj.host_submesh_x2[jsub].Nel;
+        int Nel = pumi_obj.host_submesh_x1[isub]->Nel * pumi_obj.host_submesh_x2[jsub]->Nel;
         return Nel;
     }
     return 0;
@@ -1206,7 +1206,7 @@ int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
 
 double get_mesh_volume(MBBL pumi_obj){
     if (pumi_obj.host_mesh->ndim==1){
-        double volume = pumi_obj.host_submesh_x1[pumi_obj.host_mesh->nsubmesh_x1].xmax - pumi_obj.host_submesh_x1[1].xmin;
+        double volume = pumi_obj.host_submesh_x1[pumi_obj.host_mesh->nsubmesh_x1]->xmax - pumi_obj.host_submesh_x1[1]->xmin;
         return volume;
     }
     else if (pumi_obj.host_mesh->ndim==2){
@@ -1216,7 +1216,7 @@ double get_mesh_volume(MBBL pumi_obj){
         for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
             for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
                 if (pumi_obj.host_mesh->host_isactive[isubmesh][jsubmesh]){
-                    volume += pumi_obj.host_submesh_x1[isubmesh].length * pumi_obj.host_submesh_x2[jsubmesh].length;
+                    volume += pumi_obj.host_submesh_x1[isubmesh]->length * pumi_obj.host_submesh_x2[jsubmesh]->length;
                 }
             }
         }
@@ -1253,10 +1253,10 @@ int get_num_faces_on_bdry(MBBL pumi_obj, int iEdge){
         int num = iEdge/Nx2p1;
         int rem = iEdge-num*Nx2p1;
         if (rem < nsubmesh_x1){
-            return pumi_obj.host_submesh_x1[rem+1].Nel;
+            return pumi_obj.host_submesh_x1[rem+1]->Nel;
         }
         else {
-            return pumi_obj.host_submesh_x2[num+1].Nel;
+            return pumi_obj.host_submesh_x2[num+1]->Nel;
         }
     }
     else{
@@ -1321,7 +1321,7 @@ int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
 
 
     int nodeID = fullmesh_node_id;
-    int jnp = Jnp - pumi_obj.host_submesh_x2[jsubmesh].Nel_cumulative;
+    int jnp = Jnp - pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
     // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
     int nodeoffset;
     nodeoffset = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
@@ -1329,7 +1329,7 @@ int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
     if (jnp==0){
         nodeoffset = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh];
     }
-    if (jnp==pumi_obj.host_submesh_x2[jsubmesh].Nel){
+    if (jnp==pumi_obj.host_submesh_x2[jsubmesh]->Nel){
         nodeoffset +=  (pumi_obj.host_mesh->offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh]-pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh]);
     }
     return nodeID-nodeoffset;
@@ -1350,15 +1350,15 @@ void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *su
                 jsubmesh = num;
                 if (jsubmesh >= nsubmesh_x2){
                     jsubmesh = nsubmesh_x2-1;
-                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1].Nel_cumulative;
+                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
                     int Jnp = pumi_obj.host_mesh->Nel_tot_x2;
                     *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
                     *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                     return;
                 }
                 else{
-                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1].Nel_cumulative;
-                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1].Nel_cumulative;
+                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
+                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
                     if (pumi_obj.host_mesh->host_isactive[isubmesh+1][jsubmesh+1]){
                         *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
                         *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
@@ -1378,15 +1378,15 @@ void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *su
                 isubmesh = rem-nsubmesh_x2;
                 if (isubmesh >= nsubmesh_x1){
                     isubmesh = nsubmesh_x1-1;
-                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1].Nel_cumulative;
+                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
                     int Inp = pumi_obj.host_mesh->Nel_tot_x1;
                     *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
                     *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                     return;
                 }
                 else{
-                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1].Nel_cumulative;
-                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1].Nel_cumulative;
+                    int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
+                    int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
                     if (pumi_obj.host_mesh->host_isactive[isubmesh+1][jsubmesh+1]){
                         *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
                         *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
@@ -1442,13 +1442,13 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
             int jsub=0;
 
             for (int i=1; i<=pumi_obj.host_mesh->nsubmesh_x1; i++){
-                if (pumi_obj.host_submesh_x1[i].xmin < q1 && pumi_obj.host_submesh_x1[i].xmax > q1){
+                if (pumi_obj.host_submesh_x1[i]->xmin < q1 && pumi_obj.host_submesh_x1[i]->xmax > q1){
                     isub = i;
                     break;
                 }
             }
             for (int j=1; j<=pumi_obj.host_mesh->nsubmesh_x2; j++){
-                if (pumi_obj.host_submesh_x2[j].xmin < q2 && pumi_obj.host_submesh_x2[j].xmax > q2){
+                if (pumi_obj.host_submesh_x2[j]->xmin < q2 && pumi_obj.host_submesh_x2[j]->xmax > q2){
                     jsub = j;
                     break;
                 }
@@ -1478,13 +1478,13 @@ bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
         int jsub=0;
 
         for (int i=1; i<=pumi_obj.host_mesh->nsubmesh_x1; i++){
-            if (pumi_obj.host_submesh_x1[i].xmin < q[0] && pumi_obj.host_submesh_x1[i].xmax > q[0]){
+            if (pumi_obj.host_submesh_x1[i]->xmin < q[0] && pumi_obj.host_submesh_x1[i]->xmax > q[0]){
                 isub = i;
                 break;
             }
         }
         for (int j=1; j<=pumi_obj.host_mesh->nsubmesh_x2; j++){
-            if (pumi_obj.host_submesh_x2[j].xmin < q[1] && pumi_obj.host_submesh_x2[j].xmax > q[1]){
+            if (pumi_obj.host_submesh_x2[j]->xmin < q[1] && pumi_obj.host_submesh_x2[j]->xmax > q[1]){
                 jsub = j;
                 break;
             }
@@ -1502,13 +1502,13 @@ void print_nodeIDs(MBBL pumi_obj){
     int Nx = pumi_obj.host_mesh->nsubmesh_x1;
     int Ny = pumi_obj.host_mesh->nsubmesh_x2;
     for (int jsub=Ny; jsub>0; jsub--){
-        int nnp_y = pumi_obj.host_submesh_x2[jsub].Nel+1;
+        int nnp_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
         for (int jnp=nnp_y-1; jnp>=0; jnp--){
-            int Jnp = jnp+pumi_obj.host_submesh_x2[jsub].Nel_cumulative;
+            int Jnp = jnp+pumi_obj.host_submesh_x2[jsub]->Nel_cumulative;
             for (int isub=1; isub<=Nx; isub++){
-                int nnp_x = pumi_obj.host_submesh_x1[isub].Nel+1;
+                int nnp_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
                 for (int inp=0; inp<nnp_x; inp++){
-                    int Inp = inp+pumi_obj.host_submesh_x1[isub].Nel_cumulative;
+                    int Inp = inp+pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
                     if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
                         int Knp = Jnp*(pumi_obj.host_mesh->Nel_tot_x1+1)+Inp;
                         int Ksub = (jsub-1)*Nx+isub-1;
@@ -1530,7 +1530,160 @@ void print_nodeIDs(MBBL pumi_obj){
 
 void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
     *submeshID = (isub-1) + (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1;
-    *cellID = icell + jcell*pumi_obj.host_submesh_x1[isub].Nel;
+    *cellID = icell + jcell*pumi_obj.host_submesh_x1[isub]->Nel;
+}
+
+/**
+* @brief Locate the submesh ID and local cell ID for a given x1-coordinate
+* Uses analytical formulae to locate the input coordinate
+* \param[in] Object of the wrapper mesh structure
+* \param[in] x1-coordinate to be located
+* \param[out] located x1-submesh ID
+* \param[out] located x1-localcell ID
+*/
+void locate_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int* submeshID, int *cellID){
+    int isubmesh;
+    int submesh_located = 0;
+    // int nsubmesh = pumi_obj.submesh_x1.extent(0);
+    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x1;
+    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
+     if (q < (pumi_obj.host_submesh_x1[isubmesh]->xmin)){
+         *submeshID = isubmesh-1;
+         submesh_located++;
+         break;
+     }
+    }
+    if (!(submesh_located)){
+     *submeshID = nsubmesh;
+    }
+    *cellID  = pumi_obj.host_submesh_x1[*submeshID]->locate_cell_host(q);
+}
+
+/**
+* @brief Locate the submesh ID and local cell ID for a given x2-coordinate
+* Uses analytical formulae to locate the input coordinate
+* \param[in] Object of the wrapper mesh structure
+* \param[in] x2-coordinate to be located
+* \param[out] located x2-submesh ID
+* \param[out] located x2-localcell ID
+*/
+void locate_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int* submeshID, int *cellID){
+    int isubmesh;
+    int submesh_located = 0;
+    // int nsubmesh = pumi_obj.submesh_x2.extent(0);
+    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x2;
+    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
+     if (q < (pumi_obj.host_submesh_x2[isubmesh]->xmin)){
+         *submeshID = isubmesh-1;
+         submesh_located++;
+         break;
+     }
+    }
+    if (!(submesh_located)){
+     *submeshID = nsubmesh;
+    }
+    *cellID  = pumi_obj.host_submesh_x2[*submeshID]->locate_cell_host(q);
+}
+
+/**
+ * @brief Update the submesh ID and local cell ID for a given x1-coordinate
+ * based on previous submesh and cell IDs.
+ * Uses adjacency search to update the IDs
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] new x1-coordinate
+ * \param[in] old x1-submesh ID
+ * \param[in] old x1-localcell ID
+ * \param[out] updated x1-submesh ID
+ * \param[out] updated x1-localcell ID
+ */
+void update_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
+    *submeshID = prev_submeshID;
+    while(q < (pumi_obj.host_submesh_x1[*submeshID]->xmin)){
+        *submeshID -= 1;
+        prev_cellID = pumi_obj.host_submesh_x1[*submeshID]->Nel - 1;
+    }
+
+    while(q > (pumi_obj.host_submesh_x1[*submeshID]->xmax)){
+        *submeshID += 1;
+        prev_cellID = 0;
+    }
+    *cellID = pumi_obj.host_submesh_x1[*submeshID]->update_cell_host(q, prev_cellID);
+}
+
+
+/**
+ * @brief Update the submesh ID and local cell ID for a given x2-coordinate
+ * based on previous submesh and cell IDs.
+ * Uses adjacency search to update the IDs
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] new x2-coordinate
+ * \param[in] old x2-submesh ID
+ * \param[in] old x2-localcell ID
+ * \param[out] updated x2-submesh ID
+ * \param[out] updated x2-localcell ID
+ */
+void update_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
+    *submeshID = prev_submeshID;
+    while(q < (pumi_obj.host_submesh_x2[*submeshID]->xmin)){
+        *submeshID -= 1;
+        prev_cellID = pumi_obj.host_submesh_x2[*submeshID]->Nel - 1;
+    }
+
+    while(q > (pumi_obj.host_submesh_x2[*submeshID]->xmax)){
+        *submeshID += 1;
+        prev_cellID = 0;
+    }
+    *cellID = pumi_obj.host_submesh_x2[*submeshID]->update_cell_host(q, prev_cellID);
+}
+
+/**
+ * @brief Computes the partial weights (correspoding to node on the max-side i.e right side)
+ * for a located particle coordinate and the global directional cell ID
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] x1-coordinate of the particle
+ * \param[in] x1-submesh ID of the particle
+ * \param[in] x1-localcell ID of the particle
+ * \param[out] global cell ID in x1 direction
+ * \param[out] partial weight
+ */
+void calc_weights_x1_host(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_global_cell, double *Wgh2){
+    pumi_obj.host_submesh_x1[isubmesh]->calc_weights_host(q, icell, x1_global_cell, Wgh2);
+}
+
+/**
+ * @brief Computes the partial weights (correspoding to node on the max-side i.e top side)
+ * for a located particle coordinate and the global directional cell ID
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] x2-coordinate of the particle
+ * \param[in] x2-submesh ID of the particle
+ * \param[in] x2-localcell ID of the particle
+ * \param[out] global cell ID in x2 direction
+ * \param[out] partial weight
+ */
+ void calc_weights_x2_host(MBBL pumi_obj, double q, int isubmesh, int icell, int *x2_global_cell, double *Wgh2){
+     pumi_obj.host_submesh_x2[isubmesh]->calc_weights_host(q, icell, x2_global_cell, Wgh2);
+ }
+
+/**
+* @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
+* with no-inactive blocks (mesh with inactive blocks will need separate implementations)
+* \param[in] global cell ID in x1-direction
+* \param[in] global cell ID in x2-direction
+* \param[out] global cell ID in 2D
+* \param[out] global node ID of the node in left-bottom corner
+* \param[out] global node ID of the node in left-top coner
+*/
+void calc_global_cellID_and_nodeID_fullmesh_host(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node){
+  *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.host_mesh->Nel_tot_x1;
+  *bottomleft_node = *global_cell_2D + kcell_x2;
+  *topleft_node = *bottomleft_node + pumi_obj.host_mesh->Nel_tot_x1 + 1;
+}
+
+void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
+    *jsub = submeshID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
+    *isub = submeshID - pumi_obj.host_mesh->nsubmesh_x1*(*jsub-1) + 1;
+    *jcell = cellID/pumi_obj.host_submesh_x1[*isub]->Nel;
+    *icell = cellID - pumi_obj.host_submesh_x1[*isub]->Nel*(*jcell);
 }
 
 } // namespace pumi
