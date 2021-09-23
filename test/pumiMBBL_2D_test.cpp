@@ -29,23 +29,24 @@ int main( int argc, char* argv[] )
     parse_inputs(argc, argv, pumi_inputs);
 
 
-    pumi::MeshDeviceViewPtr mesh;
-    // pumi::SubmeshDeviceViewPtr submesh_x1;
-    // pumi::SubmeshHostViewPtr host_submesh_x1;
-    // pumi::SubmeshDeviceViewPtr submesh_x2;
-    // pumi::SubmeshHostViewPtr host_submesh_x2;
-    pumi::SubmeshInit x1_sub_obj;
-    pumi::SubmeshInit x2_sub_obj;
+    // pumi::MeshDeviceViewPtr mesh;
+    // // pumi::SubmeshDeviceViewPtr submesh_x1;
+    // // pumi::SubmeshHostViewPtr host_submesh_x1;
+    // // pumi::SubmeshDeviceViewPtr submesh_x2;
+    // // pumi::SubmeshHostViewPtr host_submesh_x2;
+    // pumi::SubmeshInit x1_sub_obj;
+    // pumi::SubmeshInit x2_sub_obj;
     pumi::Mesh_Options pumi_options;
     pumi_options.BL_storage_option = pumi::store_BL_coords_ON;
     pumi_options.print_node_option = pumi::print_node_coords_OFF;
 
-    x1_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir);
-    x2_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir);
-    mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
-
-    pumi::MBBL pumi_obj(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
-
+    // x1_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir);
+    // x2_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir);
+    // mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+    //
+    // pumi::MBBL pumi_obj(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+    pumi::MBBL pumi_obj = pumi::initialize_MBBL_mesh(pumi_inputs, pumi_options);
+    
     printf("Mesh volume = %2.2f\n",pumi::get_mesh_volume(pumi_obj) );
     pumi::inputs_deallocate(pumi_inputs);
 
