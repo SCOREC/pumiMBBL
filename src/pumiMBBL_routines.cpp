@@ -1679,6 +1679,35 @@ void calc_global_cellID_and_nodeID_fullmesh_host(MBBL pumi_obj, int kcell_x1, in
   *topleft_node = *bottomleft_node + pumi_obj.host_mesh->Nel_tot_x1 + 1;
 }
 
+/**
+* @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
+* with no-inactive blocks (mesh with inactive blocks will need separate implementations)
+* \param[in] global cell ID in x1-direction
+* \param[in] global cell ID in x2-direction
+* \param[out] global cell ID in 2D
+* \param[out] global node ID of the node in left-bottom corner
+* \param[out] global node ID of the node in left-top coner
+*/
+void calc_global_cellID_and_nodeID_host(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
+                                    int *global_cell_2D, int *bottomleft_node, int *topleft_node){
+    int icell_x2 = kcell_x2 - pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+    int elemoffset = pumi_obj.host_mesh->offsets.host_elemoffset_start[isubmesh][jsubmesh] + icell_x2*pumi_obj.host_mesh->offsets.host_elemoffset_skip[jsubmesh];
+    int fullmesh_elem = kcell_x1 + kcell_x2*pumi_obj.host_mesh->Nel_tot_x1;
+    *global_cell_2D = fullmesh_elem - elemoffset;
+    int nodeoffset_bottom = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
+                    +(icell_x2-1)*pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    int nodeoffset_top = nodeoffset_bottom + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    if (icell_x2==0){
+        nodeoffset_bottom = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh];
+        nodeoffset_top = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh];
+    }
+    if (icell_x2==pumi_obj.host_submesh_x2[jsubmesh]->Nel-1){
+        nodeoffset_top = nodeoffset_bottom + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh];
+    }
+    *bottomleft_node = fullmesh_elem + kcell_x2 - nodeoffset_bottom;
+    *topleft_node = fullmesh_elem + kcell_x2 + pumi_obj.host_mesh->Nel_tot_x1 + 1 - nodeoffset_top;
+}
+
 void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
     *jsub = submeshID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.host_mesh->nsubmesh_x1*(*jsub-1) + 1;
