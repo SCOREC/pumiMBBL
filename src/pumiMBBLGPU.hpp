@@ -71,6 +71,7 @@ public:
     double r_by_t0; //!< value of (r-1.0)/t0 -- value needed in analytical cell-locate functions
     double log_r; //!< value of log(r) -- value needed in analtyical cell-locate functions
     DoubleViewPtr BL_coords; //<! BL coords to be stored (optional) for BL blocks for faster particle search
+    double *host_BL_coords;
     /**
     * @brief Default constructor.
     */
@@ -100,7 +101,8 @@ public:
             int Nel_cumulative_,
             double r_by_t0_,
             double log_r_,
-            DoubleViewPtr BL_coords_):
+            DoubleViewPtr BL_coords_,
+            double* host_BL_coords_):
             xmin(xmin_),
             xmax(xmax_),
             Nel(Nel_),
@@ -111,27 +113,21 @@ public:
             Nel_cumulative(Nel_cumulative_),
             r_by_t0(r_by_t0_),
             log_r(log_r_),
-            BL_coords(BL_coords_){};
+            BL_coords(BL_coords_),
+            host_BL_coords(host_BL_coords_){};
 
-    // KOKKOS_INLINE_FUNCTION
-    // virtual int locate_cell(double q) { return -1; }
-    //
-    // KOKKOS_INLINE_FUNCTION
-    // virtual int update_cell(double q, int icell) { return -1; }
-    //
-    // KOKKOS_INLINE_FUNCTION
-    // virtual double elem_size(int icell) { return -999.0; }
-    //
-    // KOKKOS_INLINE_FUNCTION
-    // virtual void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
-    //     *global_cell = -1;
-    //     *Wgh2 = -999.0;
-    // }
+    virtual int locate_cell_host(double ) { return -1; }
+    virtual int update_cell_host(double , int) { return -1; }
+    virtual double elem_size_host(int ) { return -999.0; }
+    virtual void calc_weights_host(double , int , int *global_cell, double *Wgh2){
+        *global_cell = -1;
+        *Wgh2 = -999.0;
+    }
 
 };
 
 using SubmeshDeviceViewPtr = Kokkos::View<DevicePointer<Submesh>*>; //!< Pointer to array of Submesh objects (in device space) poniting to address of derived class
-using SubmeshHostViewPtr = Submesh*; //<! Pointer to array of submesh objects (in CPU memory)
+using SubmeshHostViewPtr = Submesh**; //<! Pointer to array of submesh objects (in CPU memory)
 /**
  * @brief Uniform submesh class derived from submesh class
  *
@@ -161,8 +157,9 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_):
-                    Submesh(xmin_,xmax_,Nel_,t0_,r_,uniform,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
+                    DoubleViewPtr BL_coords_,
+                    double *host_BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,uniform,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -184,6 +181,24 @@ public:
         *Wgh2 = ((q - this->xmin) - local_cell*this->t0)/this->t0;
         *global_cell = local_cell + this->Nel_cumulative;
     }
+
+    int locate_cell_host(double q) {
+        return (q - this->xmin)/this->t0;
+    }
+
+    int update_cell_host(double q, int ) {
+        return (q - this->xmin)/this->t0;
+    }
+
+    double elem_size_host(int ) {
+        return this->t0;
+    }
+
+    void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
+        *Wgh2 = ((q - this->xmin) - local_cell*this->t0)/this->t0;
+        *global_cell = local_cell + this->Nel_cumulative;
+    }
+
 };
 /**
  * @brief MinBL submesh class derived from submesh class
@@ -214,8 +229,9 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_):
-                    Submesh(xmin_,xmax_,Nel_,t0_,r_,minBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
+                    DoubleViewPtr BL_coords_,
+                    double *host_BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,minBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -245,6 +261,30 @@ public:
         *Wgh2 = (q - this->BL_coords(local_cell))/(this->BL_coords(local_cell+1)-this->BL_coords(local_cell));
         // double r_pow_cell = pow(this->r, local_cell);
         // *Wgh2 = (q - (this->xmin + (r_pow_cell-1.0)/this->r_by_t0))/(r_pow_cell*this->t0);
+        *global_cell = local_cell + this->Nel_cumulative;
+    }
+
+    int locate_cell_host(double q) {
+        int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
+        return cell;
+    }
+
+    int update_cell_host(double q, int icell) {
+        while (q < this->host_BL_coords[icell]){
+            icell--;
+        }
+        while (q > this->host_BL_coords[icell+1]){
+            icell++;
+        }
+        return icell;
+    }
+
+    double elem_size_host(int icell) {
+        return (this->host_BL_coords[icell+1]-this->host_BL_coords[icell]);
+    }
+
+    void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
+        *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
@@ -279,8 +319,9 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_):
-                    Submesh(xmin_,xmax_,Nel_,t0_,r_,maxBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
+                    DoubleViewPtr BL_coords_,
+                    double *host_BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,maxBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
@@ -314,6 +355,30 @@ public:
         // *Wgh2 = 1.0 - ((this->xmax - (r_pow_cell-1.0)/this->r_by_t0) - q)/(this->t0*r_pow_cell);
     }
 
+    int locate_cell_host(double q) {
+        int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
+        return this->Nel - cell - 1;
+    }
+
+    int update_cell_host(double q, int icell) {
+        while (q < this->host_BL_coords[icell]){
+            icell--;
+        }
+        while (q > this->host_BL_coords[icell+1]){
+            icell++;
+        }
+        return icell;
+    }
+
+    double elem_size_host(int icell) {
+        return (this->host_BL_coords[icell+1]-this->host_BL_coords[icell]);
+    }
+
+    void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
+        *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
+        *global_cell = local_cell + this->Nel_cumulative;
+    }
+
 };
 
 /**
@@ -345,8 +410,9 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_):
-                    Submesh(xmin_,xmax_,Nel_,t0_,r_,unassigned,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_){};
+                    DoubleViewPtr BL_coords_,
+                    double *host_BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,unassigned,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double){
@@ -367,6 +433,14 @@ public:
     void calc_weights(double , int , int *global_cell, double *Wgh2){
         *Wgh2 = -999.0;
         *global_cell = -1;
+    }
+
+    int locate_cell_host(double ) { return -1; }
+    int update_cell_host(double , int) { return -1; }
+    double elem_size_host(int ) { return -999.0; }
+    void calc_weights_host(double , int , int *global_cell, double *Wgh2){
+        *global_cell = -1;
+        *Wgh2 = -999.0;
     }
 
 };
@@ -692,6 +766,25 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     ParticleData(double x1_, double x2_, int submeshID_, int cellID_, bool part_active_, int exit_faceID_):
+                x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_),part_active(part_active_),exit_faceID(exit_faceID_){};
+
+};
+
+class ParticleDataCPU{
+public:
+    double x1;
+    double x2;
+    int cellID;
+    int submeshID;
+    bool part_active;
+    int exit_faceID;
+
+    ParticleDataCPU(){};
+
+    ParticleDataCPU(double x1_,double x2_):
+                x1(x1_),x2(x2_){};
+
+    ParticleDataCPU(double x1_, double x2_, int submeshID_, int cellID_, bool part_active_, int exit_faceID_):
                 x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_),part_active(part_active_),exit_faceID(exit_faceID_){};
 
 };
