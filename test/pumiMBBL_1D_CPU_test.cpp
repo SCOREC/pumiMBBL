@@ -29,18 +29,10 @@ int main( int argc, char* argv[] )
 
     parse_inputs(argc, argv, pumi_inputs);
 
-    // pumi::MeshDeviceViewPtr mesh;
-    // // pumi::SubmeshDeviceViewPtr submesh_x1;
-    // // pumi::SubmeshHostViewPtr host_submesh_x1;
-    // pumi::SubmeshInit x1_sub_obj;
     pumi::Mesh_Options pumi_options;
     pumi_options.BL_storage_option = pumi::store_BL_coords_ON;
     pumi_options.print_node_option = pumi::print_node_coords_OFF;
 
-    // x1_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir);
-    // mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh);
-    //
-    // pumi::MBBL pumi_obj(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh);
     pumi::MBBL pumi_obj = pumi::initialize_MBBL_mesh(pumi_inputs, pumi_options);
 
     printf("Mesh volume = %2.2f\n",pumi::get_mesh_volume(pumi_obj) );
@@ -242,7 +234,7 @@ void print_usage()
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
     printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL1D_Demo 3 1.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \n\n");
+    printf("    ./install/bin/pumiMBBL1D_Demo_CPU 3 1.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \n\n");
     Kokkos::finalize();
     exit(0);
 }
