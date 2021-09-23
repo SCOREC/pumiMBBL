@@ -55,6 +55,17 @@ struct Mesh_Options{
     Mesh_Options():BL_storage_option(store_BL_coords_ON),print_node_option(print_node_coords_OFF){};
 };
 
+class SubmeshInit{
+public:
+    SubmeshDeviceViewPtr submesh;
+    SubmeshHostViewPtr host_submesh;
+
+    SubmeshInit(){};
+
+    SubmeshInit(SubmeshDeviceViewPtr submesh_, SubmeshHostViewPtr host_submesh_):
+                submesh(submesh_), host_submesh(host_submesh_){};
+};
+
 unsigned int get_submesh_type(std::string meshtype_string);
 double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel);
 Mesh_Inputs* inputs_allocate();
@@ -65,7 +76,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
 void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2, Mesh_Options pumi_options);
 bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1);
 bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2);
-SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir, SubmeshHostViewPtr* hc_submesh);
+SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir);
 MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1);
 MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1,
                             SubmeshDeviceViewPtr submesh_x2, SubmeshHostViewPtr hc_submesh_x2);

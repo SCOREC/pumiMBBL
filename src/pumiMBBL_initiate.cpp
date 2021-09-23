@@ -107,34 +107,34 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
-        if (h_submesh_x1[i].meshtype & minBL){
+        if (h_submesh_x1[i]->meshtype & minBL){
             printf("leftBL\n");
-            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", h_submesh_x1[i].t0);
+            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", h_submesh_x1[i]->t0);
             printf("\t left_tN        = %2.4e \t [m] Cell size of last/rightmost cell in left BL block\n",
-                (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
-            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x1[i].length);
-            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", h_submesh_x1[i].r);
-            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", h_submesh_x1[i].Nel);
-            // if (h_submesh_x1[i].BL_coords.extent(0)){
-                printf("\t %d leftBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
+                (h_submesh_x1[i]->t0)*pow(h_submesh_x1[i]->r,h_submesh_x1[i]->Nel-1));
+            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x1[i]->length);
+            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", h_submesh_x1[i]->r);
+            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", h_submesh_x1[i]->Nel);
+            // if (h_submesh_x1[i]->BL_coords.extent(0)){
+                printf("\t %d leftBL node coords stored in a array\n\n", h_submesh_x1[i]->Nel+1);
             // }
         }
-        if (h_submesh_x1[i].meshtype & maxBL){
+        if (h_submesh_x1[i]->meshtype & maxBL){
             printf("rightBL\n");
-            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", h_submesh_x1[i].t0);
+            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", h_submesh_x1[i]->t0);
             printf("\t right_tN       = %2.4e \t [m] Cell size of first/leftmost cell in right BL block\n",
-            (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
-            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x1[i].length);
-            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x1[i].r);
-            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x1[i].Nel);
-            // if (h_submesh_x1[i].BL_coords.extent(0)){
-                printf("\t %d rightBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
+            (h_submesh_x1[i]->t0)*pow(h_submesh_x1[i]->r,h_submesh_x1[i]->Nel-1));
+            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x1[i]->length);
+            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x1[i]->r);
+            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x1[i]->Nel);
+            // if (h_submesh_x1[i]->BL_coords.extent(0)){
+                printf("\t %d rightBL node coords stored in a array\n\n", h_submesh_x1[i]->Nel+1);
             // }
         }
-        if (h_submesh_x1[i].meshtype & uniform){
+        if (h_submesh_x1[i]->meshtype & uniform){
             printf("uniform\n");
-            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i].t0);
-            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i].Nel);
+            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i]->t0);
+            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i]->Nel);
         }
     }
 }
@@ -155,34 +155,34 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
-        if (h_submesh_x1[i].meshtype & minBL){
+        if (h_submesh_x1[i]->meshtype & minBL){
             printf("leftBL\n");
-            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", h_submesh_x1[i].t0);
+            printf("\t left_t0        = %2.4e \t [m] Cell size of first/leftmost cell in left BL block\n", h_submesh_x1[i]->t0);
             printf("\t left_tN        = %2.4e \t [m] Cell size of last/rightmost cell in left BL block\n",
-                (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
-            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x1[i].length);
-            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", h_submesh_x1[i].r);
-            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", h_submesh_x1[i].Nel);
-            if (h_submesh_x1[i].BL_coords.extent(0)){
-                printf("\t %d leftBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
+                (h_submesh_x1[i]->t0)*pow(h_submesh_x1[i]->r,h_submesh_x1[i]->Nel-1));
+            printf("\t left_T         = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x1[i]->length);
+            printf("\t left_r         = %2.4e \t Grading ratio in left BL block\n", h_submesh_x1[i]->r);
+            printf("\t left_Nel       = %d    \t Number of Cells in left BL block\n\n", h_submesh_x1[i]->Nel);
+            if (h_submesh_x1[i]->BL_coords.extent(0)){
+                printf("\t %d leftBL node coords stored in a array\n\n", h_submesh_x1[i]->Nel+1);
             }
         }
-        if (h_submesh_x1[i].meshtype & maxBL){
+        if (h_submesh_x1[i]->meshtype & maxBL){
             printf("rightBL\n");
-            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", h_submesh_x1[i].t0);
+            printf("\t right_t0       = %2.4e \t [m] Cell size of last/rightmost cell in right BL block\n", h_submesh_x1[i]->t0);
             printf("\t right_tN       = %2.4e \t [m] Cell size of first/leftmost cell in right BL block\n",
-            (h_submesh_x1[i].t0)*pow(h_submesh_x1[i].r,h_submesh_x1[i].Nel-1));
-            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x1[i].length);
-            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x1[i].r);
-            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x1[i].Nel);
-            if (h_submesh_x1[i].BL_coords.extent(0)){
-                printf("\t %d rightBL node coords stored in a array\n\n", h_submesh_x1[i].Nel+1);
+            (h_submesh_x1[i]->t0)*pow(h_submesh_x1[i]->r,h_submesh_x1[i]->Nel-1));
+            printf("\t right_T        = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x1[i]->length);
+            printf("\t right_r        = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x1[i]->r);
+            printf("\t right_Nel      = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x1[i]->Nel);
+            if (h_submesh_x1[i]->BL_coords.extent(0)){
+                printf("\t %d rightBL node coords stored in a array\n\n", h_submesh_x1[i]->Nel+1);
             }
         }
-        if (h_submesh_x1[i].meshtype & uniform){
+        if (h_submesh_x1[i]->meshtype & uniform){
             printf("uniform\n");
-            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i].t0);
-            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i].Nel);
+            printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i]->t0);
+            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i]->Nel);
         }
     }
 
@@ -191,35 +191,35 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x2; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
-        if (h_submesh_x2[i].meshtype & minBL){
+        if (h_submesh_x2[i]->meshtype & minBL){
             printf("bottomBL\n");
-            printf("\t bottom_t0      = %2.4e \t [m] Cell size of first/bottom-most cell in left BL block\n", h_submesh_x2[i].t0);
+            printf("\t bottom_t0      = %2.4e \t [m] Cell size of first/bottom-most cell in left BL block\n", h_submesh_x2[i]->t0);
             printf("\t bottom_tN      = %2.4e \t [m] Cell size of last /   top-most cell in left BL block\n",
-                (h_submesh_x2[i].t0)*pow(h_submesh_x2[i].r,h_submesh_x2[i].Nel-1));
-            printf("\t bottom_T       = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x2[i].length);
-            printf("\t bottom_r       = %2.4e \t Grading ratio in left BL block\n", h_submesh_x2[i].r);
-            printf("\t bottom_Nel     = %d    \t Number of Cells in left BL block\n\n", h_submesh_x2[i].Nel);
-            if (h_submesh_x2[i].BL_coords.extent(0)){
-                printf("\t %d bottomBL node coords stored in a array\n\n", h_submesh_x2[i].Nel+1);
+                (h_submesh_x2[i]->t0)*pow(h_submesh_x2[i]->r,h_submesh_x2[i]->Nel-1));
+            printf("\t bottom_T       = %2.4e \t [m] Left boundary layer (left BL) thickness\n", h_submesh_x2[i]->length);
+            printf("\t bottom_r       = %2.4e \t Grading ratio in left BL block\n", h_submesh_x2[i]->r);
+            printf("\t bottom_Nel     = %d    \t Number of Cells in left BL block\n\n", h_submesh_x2[i]->Nel);
+            if (h_submesh_x2[i]->BL_coords.extent(0)){
+                printf("\t %d bottomBL node coords stored in a array\n\n", h_submesh_x2[i]->Nel+1);
             }
         }
-        if (h_submesh_x2[i].meshtype & maxBL){
+        if (h_submesh_x2[i]->meshtype & maxBL){
             printf("topBL\n");
-            printf("\t top_t0         = %2.4e \t [m] Cell size of last /   top-most cell in right BL block\n", h_submesh_x2[i].t0);
+            printf("\t top_t0         = %2.4e \t [m] Cell size of last /   top-most cell in right BL block\n", h_submesh_x2[i]->t0);
             printf("\t top_tN         = %2.4e \t [m] Cell size of first/bottom-most cell in right BL block\n",
-            (h_submesh_x2[i].t0)*pow(h_submesh_x2[i].r,h_submesh_x2[i].Nel-1));
+            (h_submesh_x2[i]->t0)*pow(h_submesh_x2[i]->r,h_submesh_x2[i]->Nel-1));
 
-            printf("\t top_T          = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x2[i].length);
-            printf("\t top_r          = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x2[i].r);
-            printf("\t top_Nel        = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x2[i].Nel);
-            if (h_submesh_x2[i].BL_coords.extent(0)){
-                printf("\t %d topBL node coords stored in a array\n\n", h_submesh_x2[i].Nel+1);
+            printf("\t top_T          = %2.4e \t [m] Left boundary layer (right BL) thickness\n", h_submesh_x2[i]->length);
+            printf("\t top_r          = %2.4e \t Grading ratio in right BL mesh\n", h_submesh_x2[i]->r);
+            printf("\t top_Nel        = %d    \t Number of Cells in left BL mesh region\n\n", h_submesh_x2[i]->Nel);
+            if (h_submesh_x2[i]->BL_coords.extent(0)){
+                printf("\t %d topBL node coords stored in a array\n\n", h_submesh_x2[i]->Nel+1);
             }
         }
-        if (h_submesh_x2[i].meshtype & uniform){
+        if (h_submesh_x2[i]->meshtype & uniform){
             printf("uniform\n");
-            printf("\t uniform_dx2    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x2[i].t0);
-            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x2[i].Nel);
+            printf("\t uniform_dx2    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x2[i]->t0);
+            printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x2[i]->Nel);
         }
     }
 
@@ -276,12 +276,12 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
-        double icoord = h_submesh_x1[isubmesh].xmin;
-        double cell_size = h_submesh_x1[isubmesh].t0;
-        double r = h_submesh_x1[isubmesh].r;
-        if (h_submesh_x1[isubmesh].meshtype & maxBL){
-            cell_size = (h_submesh_x1[isubmesh].t0)*
-                        pow(h_submesh_x1[isubmesh].r,h_submesh_x1[isubmesh].Nel-1);
+        double icoord = h_submesh_x1[isubmesh]->xmin;
+        double cell_size = h_submesh_x1[isubmesh]->t0;
+        double r = h_submesh_x1[isubmesh]->r;
+        if (h_submesh_x1[isubmesh]->meshtype & maxBL){
+            cell_size = (h_submesh_x1[isubmesh]->t0)*
+                        pow(h_submesh_x1[isubmesh]->r,h_submesh_x1[isubmesh]->Nel-1);
             r = 1.0/r;
         }
 
@@ -291,7 +291,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         fprintf(submesh_coords_file, "%.16e\n", icoord);
         if (pumi_options.print_node_option)
             printf("\t\tNode %6d: %2.8e\n", inode, icoord );
-        for (int icell=0; icell<h_submesh_x1[isubmesh].Nel; icell++){
+        for (int icell=0; icell<h_submesh_x1[isubmesh]->Nel; icell++){
             inode++;
             icoord += cell_size;
             cell_size *= r;
@@ -331,12 +331,12 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X1_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
-        double icoord = h_submesh_x1[isubmesh].xmin;
-        double cell_size = h_submesh_x1[isubmesh].t0;
-        double r = h_submesh_x1[isubmesh].r;
-        if (h_submesh_x1[isubmesh].meshtype & maxBL){
-            cell_size = (h_submesh_x1[isubmesh].t0)*
-                        pow(h_submesh_x1[isubmesh].r,h_submesh_x1[isubmesh].Nel-1);
+        double icoord = h_submesh_x1[isubmesh]->xmin;
+        double cell_size = h_submesh_x1[isubmesh]->t0;
+        double r = h_submesh_x1[isubmesh]->r;
+        if (h_submesh_x1[isubmesh]->meshtype & maxBL){
+            cell_size = (h_submesh_x1[isubmesh]->t0)*
+                        pow(h_submesh_x1[isubmesh]->r,h_submesh_x1[isubmesh]->Nel-1);
             r = 1.0/r;
         }
 
@@ -346,7 +346,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         fprintf(submesh_coords_file, "%.16e\n", icoord);
         if (pumi_options.print_node_option)
             printf("\t\tNode %6d: %2.8e\n", inode, icoord );
-        for (int icell=0; icell<h_submesh_x1[isubmesh].Nel; icell++){
+        for (int icell=0; icell<h_submesh_x1[isubmesh]->Nel; icell++){
             inode++;
             icoord += cell_size;
             cell_size *= r;
@@ -370,12 +370,12 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         char submesh_coords_filename[33];
         sprintf(submesh_coords_filename,"X2_submesh_%d_coords.dat",isubmesh);
         submesh_coords_file = fopen(submesh_coords_filename,"w");
-        double icoord = h_submesh_x2[isubmesh].xmin;
-        double cell_size = h_submesh_x2[isubmesh].t0;
-        double r = h_submesh_x2[isubmesh].r;
-        if (h_submesh_x2[isubmesh].meshtype & maxBL){
-            cell_size = (h_submesh_x2[isubmesh].t0)*
-                        pow(h_submesh_x2[isubmesh].r,h_submesh_x2[isubmesh].Nel-1);
+        double icoord = h_submesh_x2[isubmesh]->xmin;
+        double cell_size = h_submesh_x2[isubmesh]->t0;
+        double r = h_submesh_x2[isubmesh]->r;
+        if (h_submesh_x2[isubmesh]->meshtype & maxBL){
+            cell_size = (h_submesh_x2[isubmesh]->t0)*
+                        pow(h_submesh_x2[isubmesh]->r,h_submesh_x2[isubmesh]->Nel-1);
             r = 1.0/r;
         }
 
@@ -385,7 +385,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
         fprintf(submesh_coords_file, "%.16e\n", icoord);
         if (pumi_options.print_node_option)
             printf("\t\tNode %6d: %2.8e\n", inode, icoord );
-        for (int icell=0; icell<h_submesh_x2[isubmesh].Nel; icell++){
+        for (int icell=0; icell<h_submesh_x2[isubmesh]->Nel; icell++){
             inode++;
             icoord += cell_size;
             cell_size *= r;
@@ -414,67 +414,67 @@ bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submes
     int flag = 0;
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         printf("\tX1-SUBMESH %d:\n", isubmesh );
-        if (h_submesh_x1[isubmesh].meshtype & minBL){
-            if (!(h_submesh_x1[isubmesh].Nel > 0)){
-                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
+        if (h_submesh_x1[isubmesh]->meshtype & minBL){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
                 flag++;
             }
             else{
                 printf("\t\t left_Nel    -- verified...\n");
             }
-            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
-                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
+            if (!(h_submesh_x1[isubmesh]->r >= 1.0)){
+                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh]->r);
                 flag++;
             }
             else{
                 printf("\t\t left_r      -- verified...\n");
             }
-            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
-            if (!(h_submesh_x1[isubmesh].length > 0.0)){
-                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
+            double min_computed_T = h_submesh_x1[isubmesh]->t0*h_submesh_x1[isubmesh]->Nel;
+            if (!(h_submesh_x1[isubmesh]->length > 0.0)){
+                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
                 printf("\t\t left_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                h_submesh_x1[isubmesh].length, min_computed_T);
+                h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t left_T      -- verified...\n");
             }
         }
-        if (h_submesh_x1[isubmesh].meshtype & maxBL){
-            if (!(h_submesh_x1[isubmesh].Nel > 0)){
-                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
+        if (h_submesh_x1[isubmesh]->meshtype & maxBL){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
                 flag++;
             }
             else{
                 printf("\t\t right_Nel   -- verified...\n");
             }
-            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
-                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
+            if (!(h_submesh_x1[isubmesh]->r >= 1.0)){
+                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh]->r);
                 flag++;
             }
             else{
                 printf("\t\t right_r     -- verified...\n");
             }
-            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
-            if (!(h_submesh_x1[isubmesh].length > 0.0)){
-                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
+            double min_computed_T = h_submesh_x1[isubmesh]->t0*h_submesh_x1[isubmesh]->Nel;
+            if (!(h_submesh_x1[isubmesh]->length > 0.0)){
+                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
                 printf("\t\t right_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                h_submesh_x1[isubmesh].length, min_computed_T);
+                h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t right_T     -- verified...\n");
             }
         }
-        if (h_submesh_x1[isubmesh].meshtype & uniform){
-            if (!(h_submesh_x1[isubmesh].Nel > 0)){
-                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
+        if (h_submesh_x1[isubmesh]->meshtype & uniform){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
                 flag++;
             }
             else{
@@ -508,67 +508,67 @@ bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submes
     int flag = 0;
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
         printf("\tX1-SUBMESH %d:\n", isubmesh );
-        if (h_submesh_x1[isubmesh].meshtype & minBL){
-            if (!(h_submesh_x1[isubmesh].Nel > 0)){
-                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
+        if (h_submesh_x1[isubmesh]->meshtype & minBL){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t left_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
                 flag++;
             }
             else{
                 printf("\t\t left_Nel    -- verified...\n");
             }
-            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
-                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
+            if (!(h_submesh_x1[isubmesh]->r >= 1.0)){
+                printf("\t\t left_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh]->r);
                 flag++;
             }
             else{
                 printf("\t\t left_r      -- verified...\n");
             }
-            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
-            if (!(h_submesh_x1[isubmesh].length > 0.0)){
-                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
+            double min_computed_T = h_submesh_x1[isubmesh]->t0*h_submesh_x1[isubmesh]->Nel;
+            if (!(h_submesh_x1[isubmesh]->length > 0.0)){
+                printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
                 printf("\t\t left_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                h_submesh_x1[isubmesh].length, min_computed_T);
+                h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t left_T      -- verified...\n");
             }
         }
-        if (h_submesh_x1[isubmesh].meshtype & maxBL){
-            if (!(h_submesh_x1[isubmesh].Nel > 0)){
-                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
+        if (h_submesh_x1[isubmesh]->meshtype & maxBL){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t right_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
                 flag++;
             }
             else{
                 printf("\t\t right_Nel   -- verified...\n");
             }
-            if (!(h_submesh_x1[isubmesh].r >= 1.0)){
-                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh].r);
+            if (!(h_submesh_x1[isubmesh]->r >= 1.0)){
+                printf("\t\t right_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x1[isubmesh]->r);
                 flag++;
             }
             else{
                 printf("\t\t right_r     -- verified...\n");
             }
-            double min_computed_T = h_submesh_x1[isubmesh].t0*h_submesh_x1[isubmesh].Nel;
-            if (!(h_submesh_x1[isubmesh].length > 0.0)){
-                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh].length);
+            double min_computed_T = h_submesh_x1[isubmesh]->t0*h_submesh_x1[isubmesh]->Nel;
+            if (!(h_submesh_x1[isubmesh]->length > 0.0)){
+                printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh].length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
                 printf("\t\t right_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                h_submesh_x1[isubmesh].length, min_computed_T);
+                h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t right_T     -- verified...\n");
             }
         }
-        if (h_submesh_x1[isubmesh].meshtype & uniform){
-            if (!(h_submesh_x1[isubmesh].Nel > 0)){
-                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh].Nel);
+        if (h_submesh_x1[isubmesh]->meshtype & uniform){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
                 flag++;
             }
             else{
@@ -580,67 +580,67 @@ bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submes
 
     for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
         printf("\tX2-SUBMESH %d:\n", isubmesh );
-        if (h_submesh_x2[isubmesh].meshtype & minBL){
-            if (!(h_submesh_x2[isubmesh].Nel > 0)){
-                printf("\t\t bottom_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh].Nel);
+        if (h_submesh_x2[isubmesh]->meshtype & minBL){
+            if (!(h_submesh_x2[isubmesh]->Nel > 0)){
+                printf("\t\t bottom_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh]->Nel);
                 flag++;
             }
             else{
                 printf("\t\t bottom_Nel  -- verified...\n");
             }
-            if (!(h_submesh_x2[isubmesh].r >= 1.0)){
-                printf("\t\t bottom_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x2[isubmesh].r);
+            if (!(h_submesh_x2[isubmesh]->r >= 1.0)){
+                printf("\t\t bottom_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x2[isubmesh]->r);
                 flag++;
             }
             else{
                 printf("\t\t bottom_r    -- verified...\n");
             }
-            double min_computed_T = h_submesh_x2[isubmesh].t0*h_submesh_x2[isubmesh].Nel;
-            if (!(h_submesh_x2[isubmesh].length > 0.0)){
-                printf("\t\t bottom_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh].length);
+            double min_computed_T = h_submesh_x2[isubmesh]->t0*h_submesh_x2[isubmesh]->Nel;
+            if (!(h_submesh_x2[isubmesh]->length > 0.0)){
+                printf("\t\t bottom_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x2[isubmesh].length > min_computed_T)){
+            else if (!(h_submesh_x2[isubmesh]->length > min_computed_T)){
                 printf("\t\t bottom_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                h_submesh_x2[isubmesh].length, min_computed_T);
+                h_submesh_x2[isubmesh]->length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t bottom_T    -- verified...\n");
             }
         }
-        if (h_submesh_x2[isubmesh].meshtype & maxBL){
-            if (!(h_submesh_x2[isubmesh].Nel > 0)){
-                printf("\t\t top_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh].Nel);
+        if (h_submesh_x2[isubmesh]->meshtype & maxBL){
+            if (!(h_submesh_x2[isubmesh]->Nel > 0)){
+                printf("\t\t top_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh]->Nel);
                 flag++;
             }
             else{
                 printf("\t\t top_Nel     -- verified...\n");
             }
-            if (!(h_submesh_x2[isubmesh].r >= 1.0)){
-                printf("\t\t top_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x2[isubmesh].r);
+            if (!(h_submesh_x2[isubmesh]->r >= 1.0)){
+                printf("\t\t top_r   = %2.4f is not a valid input. It has to be a greater than 1.0\n", h_submesh_x2[isubmesh]->r);
                 flag++;
             }
             else{
                 printf("\t\t top_r       -- verified...\n");
             }
-            double min_computed_T = h_submesh_x2[isubmesh].t0*h_submesh_x2[isubmesh].Nel;
-            if (!(h_submesh_x2[isubmesh].length > 0.0)){
-                printf("\t\t top_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh].length);
+            double min_computed_T = h_submesh_x2[isubmesh]->t0*h_submesh_x2[isubmesh]->Nel;
+            if (!(h_submesh_x2[isubmesh]->length > 0.0)){
+                printf("\t\t top_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x2[isubmesh].length > min_computed_T)){
+            else if (!(h_submesh_x2[isubmesh]->length > min_computed_T)){
                 printf("\t\t top_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
-                h_submesh_x2[isubmesh].length, min_computed_T);
+                h_submesh_x2[isubmesh]->length, min_computed_T);
                 flag++;
             }
             else{
                 printf("\t\t top_T       -- verified...\n");
             }
         }
-        if (h_submesh_x2[isubmesh].meshtype & uniform){
-            if (!(h_submesh_x2[isubmesh].Nel > 0)){
-                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh].Nel);
+        if (h_submesh_x2[isubmesh]->meshtype & uniform){
+            if (!(h_submesh_x2[isubmesh]->Nel > 0)){
+                printf("\t\t uniform_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh]->Nel);
             }
             else{
                 printf("\t\t uniform_Nel -- verified...\n");
@@ -669,7 +669,7 @@ bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submes
  * \param[out] Host-copy of array of submeshes
  * \return Final mesh object pointer
  */
-SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir, SubmeshHostViewPtr* hc_submesh){
+SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir){
     int nsubmesh = 0;
     SubmeshDeviceViewPtr submesh;
     SubmeshDeviceViewPtr::HostMirror h_submesh;
@@ -685,7 +685,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         h_submesh = Kokkos::create_mirror_view(submesh);
     }
 
-    SubmeshHostViewPtr submesh_host_copy = new Submesh[nsubmesh+2];
+    SubmeshHostViewPtr submesh_host_copy = new Submesh*[nsubmesh+2];
 
     if (pumi_options.BL_storage_option == store_BL_coords_OFF){
         pumi_options.BL_storage_option = store_BL_coords_ON;
@@ -713,18 +713,21 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         type = unassigned;
         xlength = 1000.0*total_length;
         DoubleViewPtr BLcoords;
+        double *host_BLcoords = NULL;
         // padding submesh to min-side
         xmax = pumi_inputs->domain_x1_min;
         xmin = xmax - xlength;
-        Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
-        submesh_host_copy[0] = tmp_obj_min;
+        Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        Unassigned_Submesh *tmp_obj_min_host = new Unassigned_Submesh(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        submesh_host_copy[0] = tmp_obj_min_host;
         auto dvc_ptr_1 = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_min);
         h_submesh(0) = DevicePointer<Submesh> (dvc_ptr_1);
         // padding submesh to max-side
         xmin = pumi_inputs->domain_x1_min+total_length;
         xmax = xmin + xlength;
-        Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
-        submesh_host_copy[nsubmesh+1] = tmp_obj_max;
+        Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        Unassigned_Submesh *tmp_obj_max_host = new Unassigned_Submesh(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        submesh_host_copy[nsubmesh+1] = tmp_obj_max_host;
         auto dvc_ptr_2 = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_max);
         h_submesh(nsubmesh+1) = DevicePointer<Submesh>(dvc_ptr_2);
     }
@@ -736,18 +739,21 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
         type = unassigned;
         xlength = 1000.0*total_length;
         DoubleViewPtr BLcoords;
+        double *host_BLcoords = NULL;
         // padding submesh to min-side
         xmax = pumi_inputs->domain_x2_min;
         xmin = xmax - xlength;
-        Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
-        submesh_host_copy[0] = tmp_obj_min;
+        Unassigned_Submesh tmp_obj_min(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        Unassigned_Submesh *tmp_obj_min_host = new Unassigned_Submesh(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        submesh_host_copy[0] = tmp_obj_min_host;
         auto dvc_ptr_1 = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_min);
         h_submesh(0) = DevicePointer<Submesh>(dvc_ptr_1);
         // padding submesh to max-side
         xmin = pumi_inputs->domain_x2_min+total_length;
         xmax = xmin + xlength;
-        Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords);
-        submesh_host_copy[nsubmesh+1] = tmp_obj_max;
+        Unassigned_Submesh tmp_obj_max(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        Unassigned_Submesh *tmp_obj_max_host = new Unassigned_Submesh(xmin,xmax,0,0.0,0.0,xlength,0,0.0,0.0,BLcoords,host_BLcoords);
+        submesh_host_copy[nsubmesh+1] = tmp_obj_max_host;
         auto dvc_ptr_2 = copyForDevice<Submesh, Unassigned_Submesh> (tmp_obj_max);
         h_submesh(nsubmesh+1) = DevicePointer<Submesh>(dvc_ptr_2);
     }
@@ -755,6 +761,7 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
 
     for (int isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
         DoubleViewPtr BLcoords;
+        double *host_BLcoords;
         std::string BLcoordsname;
 
         if (dir == x1_dir){
@@ -802,9 +809,11 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
             t0 = xlength/Nel;
             r_t0_ratio = (r-1.0)/t0;
             logr = log(r);
+            host_BLcoords = NULL;
 
-            Uniform_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords);
-            submesh_host_copy[isubmesh] = tmp_obj;
+            Uniform_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            Uniform_Submesh *tmp_obj_host = new Uniform_Submesh(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            submesh_host_copy[isubmesh] = tmp_obj_host;
             auto dvc_ptr = copyForDevice<Submesh, Uniform_Submesh> (tmp_obj);
             h_submesh(isubmesh) = DevicePointer<Submesh>(dvc_ptr);
         }
@@ -822,19 +831,24 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
             logr = log(r);
             if (pumi_options.BL_storage_option){
                 BLcoords = DoubleViewPtr (BLcoordsname, Nel+1);
+                host_BLcoords = new double[Nel+1];
                 DoubleViewPtr::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
                 h_BLcoords(0) = xmin;
+                host_BLcoords[0] = xmin;
                 double cell_size = t0;
                 for (int icell=1; icell<Nel; icell++){
                     h_BLcoords(icell) = h_BLcoords(icell-1) + cell_size;
+                    host_BLcoords[icell] = host_BLcoords[icell-1] + cell_size;
                     cell_size *= r;
                 }
                 h_BLcoords(Nel) = xmax;
+                host_BLcoords[Nel] = xmax;
 
                 Kokkos::deep_copy(BLcoords, h_BLcoords);
             }
-            MinBL_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords);
-            submesh_host_copy[isubmesh] = tmp_obj;
+            MinBL_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            MinBL_Submesh *tmp_obj_host = new MinBL_Submesh(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            submesh_host_copy[isubmesh] = tmp_obj_host;
             auto dvc_ptr = copyForDevice<Submesh, MinBL_Submesh> (tmp_obj);
             h_submesh(isubmesh) = DevicePointer<Submesh>(dvc_ptr);
         }
@@ -852,19 +866,24 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
             logr = log(r);
             if (pumi_options.BL_storage_option){
                 BLcoords = DoubleViewPtr (BLcoordsname, Nel+1);
+                host_BLcoords = new double[Nel+1];
                 DoubleViewPtr::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
                 h_BLcoords(0) = xmin;
+                host_BLcoords[0] = xmin;
                 double cell_size = t0*pow(r,Nel-1);
                 for (int icell=1; icell<Nel; icell++){
                     h_BLcoords(icell) = h_BLcoords(icell-1) + cell_size;
+                    host_BLcoords[icell] = host_BLcoords[icell-1] + cell_size;
                     cell_size /= r;
                 }
                 h_BLcoords(Nel) = xmax;
+                host_BLcoords[Nel] = xmax;
 
                 Kokkos::deep_copy(BLcoords, h_BLcoords);
             }
-            MaxBL_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords);
-            submesh_host_copy[isubmesh] = tmp_obj;
+            MaxBL_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            MaxBL_Submesh *tmp_obj_host = new MaxBL_Submesh(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            submesh_host_copy[isubmesh] = tmp_obj_host;
             auto dvc_ptr = copyForDevice<Submesh, MaxBL_Submesh> (tmp_obj);
             h_submesh(isubmesh) = DevicePointer<Submesh>(dvc_ptr);
         }
@@ -872,9 +891,11 @@ SubmeshDeviceViewPtr submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options p
     }
 
     Kokkos::deep_copy(submesh, h_submesh);
-    *hc_submesh = submesh_host_copy;
+    // *hc_submesh = submesh_host_copy;
 
-    return submesh;
+    SubmeshInit init(submesh, submesh_host_copy);
+
+    return init;
 }
 
 /**
@@ -891,7 +912,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int Nel_tot_x1;
 
-    Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1].Nel + hc_submesh_x1[nsubmesh_x1].Nel_cumulative;
+    Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1]->Nel + hc_submesh_x1[nsubmesh_x1]->Nel_cumulative;
     MeshBdry bdry = MeshBdry(nsubmesh_x1);
 
     Kokkos::parallel_for("1D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
@@ -929,8 +950,8 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
     int nsubmesh_x2 = pumi_inputs->nsubmesh_x2;
     int Nel_tot_x1, Nel_tot_x2;
 
-    Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1].Nel + hc_submesh_x1[nsubmesh_x1].Nel_cumulative;
-    Nel_tot_x2 = hc_submesh_x2[nsubmesh_x2].Nel + hc_submesh_x2[nsubmesh_x2].Nel_cumulative;
+    Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1]->Nel + hc_submesh_x1[nsubmesh_x1]->Nel_cumulative;
+    Nel_tot_x2 = hc_submesh_x2[nsubmesh_x2]->Nel + hc_submesh_x2[nsubmesh_x2]->Nel_cumulative;
 
     Kokkos::View<bool**> isactive("isactive",nsubmesh_x1+2,nsubmesh_x2+2);
     bool** host_isactive = new bool*[nsubmesh_x1+2];
@@ -1000,8 +1021,8 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
         }
     }
 
-    int Nel_tot_x1 = hc_submesh_x1[Nx].Nel + hc_submesh_x1[Nx].Nel_cumulative;
-    int Nel_tot_x2 = hc_submesh_x2[Ny].Nel + hc_submesh_x2[Ny].Nel_cumulative;
+    int Nel_tot_x1 = hc_submesh_x1[Nx]->Nel + hc_submesh_x1[Nx]->Nel_cumulative;
+    int Nel_tot_x2 = hc_submesh_x2[Ny]->Nel + hc_submesh_x2[Ny]->Nel_cumulative;
     Nel_total = Nel_tot_x1*Nel_tot_x2;
     Nnp_total = (Nel_tot_x1+1)*(Nel_tot_x2+1);
 
@@ -1049,21 +1070,21 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                     h_elemoffset_start(isubmesh,jsubmesh) = elemstart;
                 }
                 else{
-                    elemstart +=  hc_submesh_x1[isubmesh].Nel;
+                    elemstart +=  hc_submesh_x1[isubmesh]->Nel;
                     h_elemoffset_start(isubmesh,jsubmesh) = -1;
                 }
             }
             elemskip = elemstart-elemstart_init;
             h_elemoffset_skip(jsubmesh) = elemskip;
-            elemstart = elemstart_init + elemskip*hc_submesh_x2[jsubmesh].Nel;
+            elemstart = elemstart_init + elemskip*hc_submesh_x2[jsubmesh]->Nel;
         }
         Nel_total -= elemstart;
 
         int jnp;
         int jsubmesh = 1;
         int nodestart = 0;
-        for (jnp=0; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
-            int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+        for (jnp=0; jnp<hc_submesh_x2[jsubmesh]->Nel; jnp++){
+            int Jnp = jnp + hc_submesh_x2[jsubmesh]->Nel_cumulative;
             for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
                 if(host_isactive[isubmesh][jsubmesh]){
                     nodeoffset[isubmesh][Jnp] = nodestart;
@@ -1072,31 +1093,31 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                     nodeoffset[isubmesh][Jnp] = -1;
                     if (isubmesh==1){
                         if (host_isactive[isubmesh+1][jsubmesh]){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                         else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel+1);
                         }
                     }
                     else if (isubmesh == Nx){
-                        nodestart += hc_submesh_x1[isubmesh].Nel;
+                        nodestart += hc_submesh_x1[isubmesh]->Nel;
                     }
                     else{
                         if (host_isactive[isubmesh+1][jsubmesh]){
-                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel-1);
                         }
                         else{
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                     }
                 }
             }
         }
 
-        jnp = hc_submesh_x2[jsubmesh].Nel;
+        jnp = hc_submesh_x2[jsubmesh]->Nel;
         for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
             if (jsubmesh == Ny){
-                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+                int Jnp = jnp + hc_submesh_x2[jsubmesh]->Nel_cumulative;
                 if (host_isactive[isubmesh][jsubmesh]){
                     nodeoffset[isubmesh][Jnp] = nodestart;
                 }
@@ -1104,21 +1125,21 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                     nodeoffset[isubmesh][Jnp] = -1;
                     if (isubmesh==1){
                         if (host_isactive[isubmesh+1][jsubmesh]){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                         else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel+1);
                         }
                     }
                     else if (isubmesh==Nx){
-                        nodestart += hc_submesh_x1[isubmesh].Nel;
+                        nodestart += hc_submesh_x1[isubmesh]->Nel;
                     }
                     else{
                         if (host_isactive[isubmesh+1][jsubmesh]){
-                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel-1);
                         }
                         else{
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                     }
                 }
@@ -1127,7 +1148,7 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
 
         for (jsubmesh=2; jsubmesh<=Ny; jsubmesh++){
             jnp = 0;
-            int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+            int Jnp = jnp + hc_submesh_x2[jsubmesh]->Nel_cumulative;
 
             for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
                 if (host_isactive[isubmesh][jsubmesh] || host_isactive[isubmesh][jsubmesh-1]){
@@ -1137,28 +1158,28 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                     nodeoffset[isubmesh][Jnp] = -1;
                     if (isubmesh==1){
                         if (host_isactive[isubmesh+1][jsubmesh] || host_isactive[isubmesh+1][jsubmesh-1]){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                         else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel+1);
                         }
                     }
                     else if (isubmesh==Nx){
-                        nodestart += (hc_submesh_x1[isubmesh].Nel);
+                        nodestart += (hc_submesh_x1[isubmesh]->Nel);
                     }
                     else{
                         if (host_isactive[isubmesh+1][jsubmesh] || host_isactive[isubmesh+1][jsubmesh-1]){
-                            nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel-1);
                         }
                         else{
-                            nodestart += (hc_submesh_x1[isubmesh].Nel);
+                            nodestart += (hc_submesh_x1[isubmesh]->Nel);
                         }
                     }
                 }
             }
 
-            for (jnp=1; jnp<hc_submesh_x2[jsubmesh].Nel; jnp++){
-                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+            for (jnp=1; jnp<hc_submesh_x2[jsubmesh]->Nel; jnp++){
+                int Jnp = jnp + hc_submesh_x2[jsubmesh]->Nel_cumulative;
 
                 for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
                     if (host_isactive[isubmesh][jsubmesh]){
@@ -1168,21 +1189,21 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                         nodeoffset[isubmesh][Jnp] = -1;
                         if (isubmesh==1){
                             if (host_isactive[isubmesh+1][jsubmesh]){
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                                nodestart += hc_submesh_x1[isubmesh]->Nel;
                             }
                             else{
-                                nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                                nodestart += (hc_submesh_x1[isubmesh]->Nel+1);
                             }
                         }
                         else if (isubmesh == Nx){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                         else{
                             if (host_isactive[isubmesh+1][jsubmesh]){
-                                nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                                nodestart += (hc_submesh_x1[isubmesh]->Nel-1);
                             }
                             else{
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                                nodestart += hc_submesh_x1[isubmesh]->Nel;
                             }
                         }
                     }
@@ -1190,8 +1211,8 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
             }
 
             if (jsubmesh==Ny){
-                jnp = hc_submesh_x2[jsubmesh].Nel;
-                int Jnp = jnp + hc_submesh_x2[jsubmesh].Nel_cumulative;
+                jnp = hc_submesh_x2[jsubmesh]->Nel;
+                int Jnp = jnp + hc_submesh_x2[jsubmesh]->Nel_cumulative;
 
                 for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
                     if (host_isactive[isubmesh][jsubmesh]){
@@ -1201,21 +1222,21 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                         nodeoffset[isubmesh][Jnp] = -1;
                         if (isubmesh==1){
                             if (host_isactive[isubmesh+1][jsubmesh]){
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                                nodestart += hc_submesh_x1[isubmesh]->Nel;
                             }
                             else{
-                                nodestart += (hc_submesh_x1[isubmesh].Nel+1);
+                                nodestart += (hc_submesh_x1[isubmesh]->Nel+1);
                             }
                         }
                         else if (isubmesh==Nx){
-                            nodestart += hc_submesh_x1[isubmesh].Nel;
+                            nodestart += hc_submesh_x1[isubmesh]->Nel;
                         }
                         else{
                             if (host_isactive[isubmesh+1][jsubmesh]){
-                                nodestart += (hc_submesh_x1[isubmesh].Nel-1);
+                                nodestart += (hc_submesh_x1[isubmesh]->Nel-1);
                             }
                             else{
-                                nodestart += hc_submesh_x1[isubmesh].Nel;
+                                nodestart += hc_submesh_x1[isubmesh]->Nel;
                             }
                         }
                     }
@@ -1227,14 +1248,14 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
         Nnp_total -= nodestart;
 
         for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
-            int Jnp = hc_submesh_x2[jsubmesh].Nel_cumulative;
+            int Jnp = hc_submesh_x2[jsubmesh]->Nel_cumulative;
             for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
                 if (host_isactive[isubmesh][jsubmesh]){
                     h_nodeoffset_start(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp];
                     h_nodeoffset_skip_bot(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+1]-nodeoffset[isubmesh][Jnp];
                     h_nodeoffset_skip_mid(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+2]-nodeoffset[isubmesh][Jnp+1];
-                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh].Nel] -
-                                                                nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh].Nel-1];
+                    h_nodeoffset_skip_top(isubmesh,jsubmesh) = nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh]->Nel] -
+                                                                nodeoffset[isubmesh][Jnp+hc_submesh_x2[jsubmesh]->Nel-1];
                 }
                 else{
                     h_nodeoffset_start(isubmesh,jsubmesh) = -1;
@@ -1511,10 +1532,10 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
             int num = iedge/Nx2p1;
             int rem = iedge - num*Nx2p1;
             if (rem < Nx){
-                Nbdry_faces += hc_submesh_x1[rem+1].Nel;
+                Nbdry_faces += hc_submesh_x1[rem+1]->Nel;
             }
             else{
-                Nbdry_faces += hc_submesh_x2[num+1].Nel;
+                Nbdry_faces += hc_submesh_x2[num+1]->Nel;
             }
         }
         else{
