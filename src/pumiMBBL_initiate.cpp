@@ -1551,6 +1551,26 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
 }
 
 
+MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
+    pumi::MeshDeviceViewPtr mesh;
+    pumi::SubmeshInit x1_sub_obj;
+    pumi::SubmeshInit x2_sub_obj;
+
+    MBBL pumi_obj;
+
+    if (pumi_inputs->ndim == 1){
+        x1_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir);
+        mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh);
+        pumi_obj = MBBL(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh);
+    }
+    else if (pumi_inputs->ndim == 2){
+        x1_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir);
+        x2_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir);
+        mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+        pumi_obj = MBBL(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+    }
+    return pumi_obj;
+}
 // KOKKOS_INLINE_FUNCTION
 // void print_BL_coords(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, SubmeshDeviceViewPtr submesh_x2){
 //     for (int isubmesh=0; isubmesh < pumi_mesh(0).nsubmesh_x1; isubmesh++){

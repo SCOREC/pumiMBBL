@@ -81,5 +81,7 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
 MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr submesh_x1, SubmeshHostViewPtr hc_submesh_x1,
                             SubmeshDeviceViewPtr submesh_x2, SubmeshHostViewPtr hc_submesh_x2);
 
+MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options);
+
 } // namespace pumi
 #endif
