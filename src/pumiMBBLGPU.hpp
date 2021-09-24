@@ -748,6 +748,8 @@ public:
 
 } // namespace pumi
 #include "pumiMBBL_initiate.hpp"
-#include "pumiMBBL_routines.hpp"
+#include "pumiMBBL_meshinfo.hpp"
+#include "pumiMBBL_meshops.hpp"
+#include "pumiMBBL_meshutils.hpp"
 #include "pumiMBBLGPU_impl.hpp"
 #endif
