@@ -22,9 +22,10 @@ public:
 
     KOKKOS_FUNCTION
     Vector3(double x[3]);
-};
 
-using Vector3View = Kokkos::View<Vector3*>;
+    KOKKOS_FUNCTION
+    double &operator[](int i);
+};
 
 /**
  * @brief Default constructor.
@@ -49,6 +50,15 @@ Vector3::Vector3(double x1, double x2, double x3) : components_{x1, x2, x3} {}
  */
 KOKKOS_INLINE_FUNCTION
 Vector3::Vector3(double x[3]) : components_{x[0], x[1], x[2]} {}
+
+/**
+ * @brief Vector element access overload.
+ *
+ * @param[in] i Int, component of vector to access.
+ * @return i-th component.
+ */
+KOKKOS_INLINE_FUNCTION
+double &Vector3::operator[](int i) { return components_[i]; }
 /**
  * @brief Copies a derived class to device and returns pointer to it.
  *
