@@ -1343,18 +1343,15 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                    bool** host_isactive){
 
     is_bdry_edge = Kokkos::View<bool*> ("is_bdry_edge", 2*Nx*Ny+Nx+Ny);
-    bdry_edge_normal = Kokkos::View<double*[3]> ("bdry_edge_normal", 2*Nx*Ny+Nx+Ny);
+    bdry_edge_normal = Kokkos::View<Vector3*> ("bdry_edge_normal", 2*Nx*Ny+Nx+Ny);
     edge_to_face = Kokkos::View<int*> ("Edge2Face", 2*Nx*Ny+Nx+Ny);
 
     Kokkos::View<bool*>::HostMirror h_is_bdry_edge = Kokkos::create_mirror_view(is_bdry_edge);
-    Kokkos::View<double*[3]>::HostMirror h_bdry_edge_normal = Kokkos::create_mirror_view(bdry_edge_normal);
+    Kokkos::View<Vector3*>::HostMirror h_bdry_edge_normal = Kokkos::create_mirror_view(bdry_edge_normal);
     Kokkos::View<int*>::HostMirror h_edge_to_face = Kokkos::create_mirror_view(edge_to_face);
 
     host_is_bdry_edge = new bool[2*Nx*Ny+Nx+Ny];
-    host_bdry_edge_normal = new double*[2*Nx*Ny+Nx+Ny];
-    for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-        host_bdry_edge_normal[i] = new double[3];
-    }
+    host_bdry_edge_normal = new Vector3[2*Nx*Ny+Nx+Ny];
     host_edge_to_face = new int[2*Nx*Ny+Nx+Ny];
 
     for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
@@ -1362,38 +1359,26 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
             if (jsubmesh==1){
                 if (host_isactive[isubmesh][jsubmesh]){
                     h_is_bdry_edge(isubmesh-1) = true;
-                    h_bdry_edge_normal(isubmesh-1,0) = 0.0;
-                    h_bdry_edge_normal(isubmesh-1,1) = -1.0;
-                    h_bdry_edge_normal(isubmesh-1,2) = 0.0;
+                    h_bdry_edge_normal(isubmesh-1) = Vector3(0.0,-1.0,0.0);
                     if (isubmesh==1){
                         h_is_bdry_edge(Nx) = true;
-                        h_bdry_edge_normal(Nx,0) = -1.0;
-                        h_bdry_edge_normal(Nx,1) = 0.0;
-                        h_bdry_edge_normal(Nx,2) = 0.0;
+                        h_bdry_edge_normal(Nx) = Vector3(-1.0,0.0,0.0);
                     }
                     if (isubmesh==Nx){
-                        h_is_bdry_edge(isubmesh-1+Nx+1) = true;
-                        h_bdry_edge_normal(isubmesh-1+Nx+1,0) = 1.0;
-                        h_bdry_edge_normal(isubmesh-1+Nx+1,1) = 0.0;
-                        h_bdry_edge_normal(isubmesh-1+Nx+1,2) = 0.0;
+                        h_is_bdry_edge(isubmesh+Nx) = true;
+                        h_bdry_edge_normal(isubmesh+Nx) = Vector3(1.0,0.0,0.0);
                     }
                 }
                 else{
                     h_is_bdry_edge(isubmesh-1) = false;
-                    h_bdry_edge_normal(isubmesh-1,0) = 0.0;
-                    h_bdry_edge_normal(isubmesh-1,1) = 0.0;
-                    h_bdry_edge_normal(isubmesh-1,2) = 0.0;
+                    h_bdry_edge_normal(isubmesh-1) = Vector3(0.0,0.0,0.0);
                     if (isubmesh==1){
                         h_is_bdry_edge(Nx) = false;
-                        h_bdry_edge_normal(Nx,0) = 0.0;
-                        h_bdry_edge_normal(Nx,1) = 0.0;
-                        h_bdry_edge_normal(Nx,2) = 0.0;
+                        h_bdry_edge_normal(Nx) = Vector3(0.0,0.0,0.0);
                     }
                     if (isubmesh==Nx){
-                        h_is_bdry_edge(isubmesh-1+Nx+1) = false;
-                        h_bdry_edge_normal(isubmesh-1+Nx+1,0) = 0.0;
-                        h_bdry_edge_normal(isubmesh-1+Nx+1,1) = 0.0;
-                        h_bdry_edge_normal(isubmesh-1+Nx+1,2) = 0.0;
+                        h_is_bdry_edge(isubmesh+Nx) = false;
+                        h_bdry_edge_normal(isubmesh+Nx) = Vector3(0.0,0.0,0.0);
                     }
                 }
 
@@ -1402,21 +1387,16 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                     if (sum == 1){
                         h_is_bdry_edge(isubmesh-1+Nx) = true;
                         if (host_isactive[isubmesh][jsubmesh]){
-                            h_bdry_edge_normal(isubmesh-1+Nx,0) = -1.0;
-                            h_bdry_edge_normal(isubmesh-1+Nx,1) = 0.0;
-                            h_bdry_edge_normal(isubmesh-1+Nx,2) = 0.0;
+                            h_bdry_edge_normal(isubmesh-1+Nx) = Vector3(-1.0,0.0,0.0);
+
                         }
                         else{
-                            h_bdry_edge_normal(isubmesh-1+Nx,0) = 1.0;
-                            h_bdry_edge_normal(isubmesh-1+Nx,1) = 0.0;
-                            h_bdry_edge_normal(isubmesh-1+Nx,2) = 0.0;
+                            h_bdry_edge_normal(isubmesh-1+Nx) = Vector3(1.0,0.0,0.0);
                         }
                     }
                     else{
                         h_is_bdry_edge(isubmesh-1+Nx) = false;
-                        h_bdry_edge_normal(isubmesh-1+Nx,0) = 0.0;
-                        h_bdry_edge_normal(isubmesh-1+Nx,1) = 0.0;
-                        h_bdry_edge_normal(isubmesh-1+Nx,2) = 0.0;
+                        h_bdry_edge_normal(isubmesh-1+Nx) = Vector3(0.0,0.0,0.0);
                     }
                 }
             }
@@ -1426,35 +1406,26 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                 if (sum == 1){
                     h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = true;
                     if (host_isactive[isubmesh][jsubmesh]){
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,0) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,1) = -1.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = Vector3(0.0,-1.0,0.0);
                     }
                     else{
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,0) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,1) = 1.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = Vector3(0.0,1.0,0.0);
                     }
                 }
                 else{
                     h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = false;
-                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,0) = 0.0;
-                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,1) = 0.0;
-                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                    h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1) = Vector3(0.0,0.0,0.0);
                 }
 
                 if (isubmesh==1){
                     if (host_isactive[isubmesh][jsubmesh]){
                         h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx) = true;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,0) = -1.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,1) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,2) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx) = Vector3(-1.0,0.0,0.0);
+
                     }
                     else{
                         h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx) = false;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,0) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,1) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx,2) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx) = Vector3(0.0,0.0,0.0);
                     }
                 }
                 else{
@@ -1462,36 +1433,26 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                     if (sum == 1){
                         h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = true;
                         if (host_isactive[isubmesh][jsubmesh]){
-                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,0) = -1.0;
-                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,1) = 0.0;
-                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,2) = 0.0;
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = Vector3(-1.0,0.0,0.0);
                         }
                         else{
-                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,0) = 1.0;
-                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,1) = 0.0;
-                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,2) = 0.0;
+                            h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = Vector3(1.0,0.0,0.0);
                         }
                     }
                     else{
                         h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = false;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,0) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,1) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1,2) = 0.0;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+Nx+isubmesh-1) = Vector3(0.0,0.0,0.0);
                     }
                 }
 
                 if (isubmesh==Nx){
                     if (host_isactive[isubmesh][jsubmesh]){
-                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1) = true;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,0) = 1.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,1) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,2) = 0.0;
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh+Nx) = true;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh+Nx) = Vector3(1.0,0.0,0.0);
                     }
                     else{
-                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1) = false;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,0) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,1) = 0.0;
-                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh-1+Nx+1,2) = 0.0;
+                        h_is_bdry_edge((jsubmesh-1)*(2*Nx+1)+isubmesh+Nx) = false;
+                        h_bdry_edge_normal((jsubmesh-1)*(2*Nx+1)+isubmesh+Nx) = Vector3(0.0,0.0,0.0);
                     }
                 }
             }
@@ -1499,15 +1460,11 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
             if (jsubmesh == Ny){
                 if (host_isactive[isubmesh][jsubmesh]){
                     h_is_bdry_edge((jsubmesh)*(2*Nx+1)+isubmesh-1) = true;
-                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,0) = 0.0;
-                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,1) = 1.0;
-                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1) = Vector3(0.0,1.0,0.0);
                 }
                 else{
                     h_is_bdry_edge((jsubmesh)*(2*Nx+1)+isubmesh-1) = false;
-                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,0) = 0.0;
-                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,1) = 0.0;
-                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1,2) = 0.0;
+                    h_bdry_edge_normal((jsubmesh)*(2*Nx+1)+isubmesh-1) = Vector3(0.0,0.0,0.0);
                 }
             }
         }
@@ -1535,9 +1492,7 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
         }
         host_edge_to_face[iedge] = h_edge_to_face(iedge);
         host_is_bdry_edge[iedge] = h_is_bdry_edge(iedge);
-        host_bdry_edge_normal[iedge][0] = h_bdry_edge_normal(iedge,0);
-        host_bdry_edge_normal[iedge][1] = h_bdry_edge_normal(iedge,1);
-        host_bdry_edge_normal[iedge][2] = h_bdry_edge_normal(iedge,2);
+        host_bdry_edge_normal[iedge] = h_bdry_edge_normal(iedge);
     }
     Kokkos::deep_copy(edge_to_face, h_edge_to_face);
 }
