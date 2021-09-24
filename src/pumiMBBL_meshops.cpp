@@ -2,13 +2,14 @@
 
 namespace pumi {
 
-std::vector<double> get_rand_point_in_mesh_host(MBBL pumi_obj){
+Vector3 get_rand_point_in_mesh_host(MBBL pumi_obj){
     if (pumi_obj.mesh.ndim == 1){
         double rand_x1 = (double) rand()/RAND_MAX;
         double x1_min = get_global_x1_min_coord(pumi_obj);
         double x1_max = get_global_x1_max_coord(pumi_obj);
         double q1 = x1_min + (x1_max-x1_min)*rand_x1;
-        std::vector<double> q = {q1,0.0,0.0};
+        // std::vector<double> q = {q1,0.0,0.0};
+        Vector3 q = Vector3(q1,0.0,0.0);
         return q;
     }
     else if (pumi_obj.mesh.ndim == 2){
@@ -43,14 +44,16 @@ std::vector<double> get_rand_point_in_mesh_host(MBBL pumi_obj){
                 part_set = true;
             }
         }
-        std::vector<double> q = {q1,q2,0.0};
+        // std::vector<double> q = {q1,q2,0.0};
+        Vector3 q = Vector3(q1,q2,0.0);
         return q;
     }
-    std::vector<double> q = {-999.0,-999.0,-999.0};
+    // std::vector<double> q = {-999.0,-999.0,-999.0};
+    Vector3 q = Vector3(-999.0,-999.0,-999.0);
     return q;
 }
 
-bool is_point_in_mesh_host(MBBL pumi_obj, std::vector<double> q){
+bool is_point_in_mesh_host(MBBL pumi_obj, Vector3 q){
     if (pumi_obj.mesh.ndim == 1){
         double x1_min = get_global_x1_min_coord(pumi_obj);
         double x1_max = get_global_x1_max_coord(pumi_obj);
