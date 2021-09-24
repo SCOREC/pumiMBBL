@@ -44,7 +44,7 @@ int main( int argc, char* argv[] )
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
-    //         std::vector<double> bn = pumi::get_bdry_normal(pumi_obj, iEdge);
+    //         pumi::Vector3 bn = pumi::get_bdry_normal(pumi_obj, iEdge);
     //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\t start=%d num=%d\n",iEdge,bn[0],bn[1],bn[2],
     //                     pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_bdry(pumi_obj,iEdge));
     //     }
