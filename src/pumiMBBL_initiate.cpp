@@ -98,13 +98,11 @@ void inputs_deallocate(Mesh_Inputs* pumi_inputs){
  * \param[in] mesh object pointer
  * \param[in] host copy of x1-submesh object pointer
  */
-void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
 
     printf("\n\nPUMI mesh parameter info [X1-Direction] :\n\n");
-    printf("\tTotal elements along X1-direction = %d\n\n", h_pumi_mesh(0).Nel_tot_x1);
-    for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
+    printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh.Nel_tot_x1);
+    for (int i=1; i<=pumi_mesh.nsubmesh_x1; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
         if (h_submesh_x1[i]->meshtype & minBL){
@@ -146,13 +144,11 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
  * \param[in] host copy of x1-submesh object pointer
  * \param[in] host copy of x2-submesh object pointer
  */
-void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
 
     printf("\n\nPUMI mesh parameter info [X1-Direction] :\n\n");
-    printf("\tTotal elements along X1-direction = %d\n\n", h_pumi_mesh(0).Nel_tot_x1);
-    for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x1; i++){
+    printf("\tTotal elements along X1-direction = %d\n\n", pumi_mesh.Nel_tot_x1);
+    for (int i=1; i<=pumi_mesh.nsubmesh_x1; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
         if (h_submesh_x1[i]->meshtype & minBL){
@@ -187,8 +183,8 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     }
 
     printf("PUMI mesh parameter info [X2-Direction] :\n\n");
-    printf("\tTotal elements along X2-direction = %d\n\n", h_pumi_mesh(0).Nel_tot_x2);
-    for (int i=1; i<=h_pumi_mesh(0).nsubmesh_x2; i++){
+    printf("\tTotal elements along X2-direction = %d\n\n", pumi_mesh.Nel_tot_x2);
+    for (int i=1; i<=pumi_mesh.nsubmesh_x2; i++){
         printf("\tSUBMESH %d  parameters:\n", i);
         printf("\n\t submesh-type   = ");
         if (h_submesh_x2[i]->meshtype & minBL){
@@ -224,18 +220,18 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     }
 
     printf("PUMI submesh activity info :\n\n");
-    for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
-        if (jsubmesh != h_pumi_mesh(0).nsubmesh_x2){
-            for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1-1; isubmesh++ ){
+    for (int jsubmesh=pumi_mesh.nsubmesh_x2; jsubmesh>=1; jsubmesh--){
+        if (jsubmesh != pumi_mesh.nsubmesh_x2){
+            for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x1-1; isubmesh++ ){
                 printf("_____________");
             }
             printf("__________________\n\n");
         }
-        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++ ){
+        for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x1; isubmesh++ ){
             if (isubmesh-1){
                 printf("|");
             }
-            if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+            if(pumi_mesh.host_isactive[isubmesh][jsubmesh]){
                 printf("    ACTIVE    ");
             }
             else{
@@ -246,9 +242,9 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
     }
     printf("\n\n");
 
-    printf("Total active elements in 2D Mesh = %d\n",h_pumi_mesh(0).Nel_total);
-    printf("Total active nodes in 2D Mesh    = %d\n",h_pumi_mesh(0).Nnp_total);
-    printf("Total boundary faces in 2D Mesh  = %d\n",h_pumi_mesh(0).bdry.Nbdry_faces );
+    printf("Total active elements in 2D Mesh = %d\n",pumi_mesh.Nel_total);
+    printf("Total active nodes in 2D Mesh    = %d\n",pumi_mesh.Nnp_total);
+    printf("Total boundary faces in 2D Mesh  = %d\n",pumi_mesh.bdry.Nbdry_faces );
 
 }
 
@@ -259,9 +255,8 @@ void print_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh
  * \param[in] mesh object pointer
  * \param[in] CPU copy of x1-submesh object pointer
  */
-void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Options pumi_options){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Options pumi_options){
+
     if (pumi_options.print_node_option)
         printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
     FILE *mesh_coords_file;
@@ -269,7 +264,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     sprintf(mesh_coords_filename,"X1_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     int inode=0;
-    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x1; isubmesh++){
         if (pumi_options.print_node_option)
             printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
@@ -314,9 +309,8 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
  * \param[in] CPU copy of x1-submesh object pointer
  * \param[in] CPU copy of x2-submesh object pointer
  */
-void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2, Mesh_Options pumi_options){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2, Mesh_Options pumi_options){
+
     if (pumi_options.print_node_option)
         printf("\nPrinting the coordinates of the nodes in the pumi mesh...\n\n");
     FILE *mesh_coords_file;
@@ -324,7 +318,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     sprintf(mesh_coords_filename,"X1_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     int inode=0;
-    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x1; isubmesh++){
         if (pumi_options.print_node_option)
             printf("X1-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
@@ -363,7 +357,7 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
     sprintf(mesh_coords_filename,"X2_fullmesh_coords.dat");
     mesh_coords_file = fopen(mesh_coords_filename,"w");
     inode = 0;
-    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
+    for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x2; isubmesh++){
         if (pumi_options.print_node_option)
             printf("X2-SUBMESH %d:\n", isubmesh );
         FILE *submesh_coords_file;
@@ -406,13 +400,11 @@ void print_mesh_nodes(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_
  * \param[in] mesh object pointer
  * \param[in] host copy of x1-submesh object pointer
  */
-bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
 
     printf("\n\nNow verifying valdity of pumi mesh parameters for\n");
     int flag = 0;
-    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x1; isubmesh++){
         printf("\tX1-SUBMESH %d:\n", isubmesh );
         if (h_submesh_x1[isubmesh]->meshtype & minBL){
             if (!(h_submesh_x1[isubmesh]->Nel > 0)){
@@ -500,13 +492,11 @@ bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submes
  * \param[in] host copy of x1-submesh object pointer
  * \param[in] host copy of x2-submesh object pointer
  */
-bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_mesh);
+bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
 
     printf("\n\nNow verifying valdity of pumi mesh parameters for\n");
     int flag = 0;
-    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x1; isubmesh++){
         printf("\tX1-SUBMESH %d:\n", isubmesh );
         if (h_submesh_x1[isubmesh]->meshtype & minBL){
             if (!(h_submesh_x1[isubmesh]->Nel > 0)){
@@ -578,7 +568,7 @@ bool verify_mesh_params(MeshDeviceViewPtr pumi_mesh, SubmeshHostViewPtr h_submes
     }
 
 
-    for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x2; isubmesh++){
+    for (int isubmesh=1; isubmesh<=pumi_mesh.nsubmesh_x2; isubmesh++){
         printf("\tX2-SUBMESH %d:\n", isubmesh );
         if (h_submesh_x2[isubmesh]->meshtype & minBL){
             if (!(h_submesh_x2[isubmesh]->Nel > 0)){
@@ -906,18 +896,19 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
  * \param[in] Copy of x1-submesh object pointer on CPU
  * \return Final mesh object pointer
  */
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1){
-    MeshDeviceViewPtr pumi_mesh("1D-meshobj",1);
+Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1){
 
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int Nel_tot_x1;
 
     Nel_tot_x1 = hc_submesh_x1[nsubmesh_x1]->Nel + hc_submesh_x1[nsubmesh_x1]->Nel_cumulative;
-    MeshBdry bdry = MeshBdry(nsubmesh_x1);
+    int num_bdry_faces = 2;
+    MeshBdry bdry = MeshBdry(num_bdry_faces);
 
-    Kokkos::parallel_for("1D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
-        pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, bdry);
-    });
+    // Kokkos::parallel_for("1D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
+    //     pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, bdry);
+    // });
+    Mesh pumi_mesh = Mesh(nsubmesh_x1, Nel_tot_x1, bdry);
     print_mesh_params(pumi_mesh, hc_submesh_x1);
 
     bool mesh_verified = verify_mesh_params(pumi_mesh, hc_submesh_x1);
@@ -942,9 +933,8 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
  * \param[in] Copy of x2-submesh object pointer on CPU
  * \return Final mesh object pointer
  */
-MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1,
+Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1,
                             SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x2){
-    MeshDeviceViewPtr pumi_mesh("2D-meshobj",1);
 
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int nsubmesh_x2 = pumi_inputs->nsubmesh_x2;
@@ -985,10 +975,12 @@ MeshDeviceViewPtr mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_op
     MeshOffsets offsets = MeshOffsets(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
     MeshBdry bdry = MeshBdry(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
 
-    Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
-        pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
-                            isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
-    });
+    // Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
+    //     pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
+    //                         isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
+    // });
+    Mesh pumi_mesh = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
+                        isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
 
@@ -1552,7 +1544,7 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
 
 
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
-    pumi::MeshDeviceViewPtr mesh;
+    pumi::Mesh mesh;
     pumi::SubmeshInit x1_sub_obj;
     pumi::SubmeshInit x2_sub_obj;
 

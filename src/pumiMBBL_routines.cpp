@@ -16,18 +16,17 @@ void check_is_pumi_working(){
  * \return grading ratio about the node in the requested direction
  */
 double return_gradingratio(MBBL pumi_obj, int dir, int node){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+
     SubmeshHostViewPtr h_submesh;
     int nsubmesh, Nel_total;
     if (dir == x1_dir){
-        nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
-        Nel_total = h_pumi_mesh(0).Nel_tot_x1;
+        nsubmesh = pumi_obj.mesh.nsubmesh_x1;
+        Nel_total = pumi_obj.mesh.Nel_tot_x1;
         h_submesh = pumi_obj.host_submesh_x1;
     }
     else{
-        nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
-        Nel_total = h_pumi_mesh(0).Nel_tot_x2;
+        nsubmesh = pumi_obj.mesh.nsubmesh_x2;
+        Nel_total = pumi_obj.mesh.Nel_tot_x2;
         h_submesh = pumi_obj.host_submesh_x2;
     }
     if (node == 0 || node == Nel_total){
@@ -79,18 +78,17 @@ double return_gradingratio(MBBL pumi_obj, int dir, int node){
  * \return element size for the queried element in the queried direction
  */
 double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+
     SubmeshHostViewPtr h_submesh;
     int nsubmesh, Nel_total, elem;
     if (dir == x1_dir){
-        nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
-        Nel_total = h_pumi_mesh(0).Nel_tot_x1;
+        nsubmesh = pumi_obj.mesh.nsubmesh_x1;
+        Nel_total = pumi_obj.mesh.Nel_tot_x1;
         h_submesh = pumi_obj.host_submesh_x1;
     }
     else{
-        nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
-        Nel_total = h_pumi_mesh(0).Nel_tot_x2;
+        nsubmesh = pumi_obj.mesh.nsubmesh_x2;
+        Nel_total = pumi_obj.mesh.Nel_tot_x2;
         h_submesh = pumi_obj.host_submesh_x2;
     }
 
@@ -131,8 +129,6 @@ double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
  * \return covolume for the requested node
  */
 double return_covolume(MBBL pumi_obj, int inode_x1){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
     double covolume, dx1_min, dx1_max;
 
@@ -140,7 +136,7 @@ double return_covolume(MBBL pumi_obj, int inode_x1){
         dx1_min = 0.0;
         dx1_max = return_elemsize(pumi_obj, x1_dir, elem_on_max_side_offset, inode_x1);
     }
-    else if (inode_x1 == h_pumi_mesh(0).Nel_tot_x1){
+    else if (inode_x1 == pumi_obj.mesh.Nel_tot_x1){
         dx1_max = 0.0;
         dx1_min = return_elemsize(pumi_obj, x1_dir, elem_on_min_side_offset, inode_x1);
     }
@@ -164,8 +160,6 @@ double return_covolume(MBBL pumi_obj, int inode_x1){
  * \return covolume for the requested node
  */
 double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
     double covolume, dx1_min, dx1_max, dx2_min, dx2_max;
 
@@ -173,7 +167,7 @@ double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
         dx1_min = 0.0;
         dx1_max = return_elemsize(pumi_obj, x1_dir, elem_on_max_side_offset, inode_x1);
     }
-    else if (inode_x1 == h_pumi_mesh(0).Nel_tot_x1){
+    else if (inode_x1 == pumi_obj.mesh.Nel_tot_x1){
         dx1_max = 0.0;
         dx1_min = return_elemsize(pumi_obj, x1_dir, elem_on_min_side_offset, inode_x1);
     }
@@ -186,7 +180,7 @@ double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
         dx2_min = 0.0;
         dx2_max = return_elemsize(pumi_obj, x2_dir, elem_on_max_side_offset, inode_x2);
     }
-    else if (inode_x2 == h_pumi_mesh(0).Nel_tot_x2){
+    else if (inode_x2 == pumi_obj.mesh.Nel_tot_x2){
         dx2_max = 0.0;
         dx2_min = return_elemsize(pumi_obj, x2_dir, elem_on_min_side_offset, inode_x2);
     }
@@ -208,8 +202,6 @@ double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
  * \return covolume for the requested node
  */
 double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
     int isub_min, jsub_min, isub_max, jsub_max;
     double dx1_min, dx1_max, dx2_min, dx2_max, covolume;
@@ -227,8 +219,8 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
     SubmeshHostViewPtr h_submesh;
     int nsubmesh, Nel_total, elem;
 
-    nsubmesh = h_pumi_mesh(0).nsubmesh_x1;
-    Nel_total = h_pumi_mesh(0).Nel_tot_x1;
+    nsubmesh = pumi_obj.mesh.nsubmesh_x1;
+    Nel_total = pumi_obj.mesh.Nel_tot_x1;
     h_submesh = pumi_obj.host_submesh_x1;
 
     elem = inode_x1-1;
@@ -286,8 +278,8 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
         }
     }
 
-    nsubmesh = h_pumi_mesh(0).nsubmesh_x2;
-    Nel_total = h_pumi_mesh(0).Nel_tot_x2;
+    nsubmesh = pumi_obj.mesh.nsubmesh_x2;
+    Nel_total = pumi_obj.mesh.Nel_tot_x2;
     h_submesh = pumi_obj.host_submesh_x2;
 
     elem = inode_x2-1;
@@ -345,12 +337,11 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
         }
     }
 
-    // printf("(%d,%d) + (%d,%d) + (%d,%d) + (%d,%d)\n",isub_min,jsub_min,isub_max,jsub_min,isub_min,jsub_max,isub_max,jsub_max);
 
-    covolume = (dx1_min*dx2_min*h_pumi_mesh(0).host_isactive[isub_min][jsub_min] +
-                dx1_max*dx2_min*h_pumi_mesh(0).host_isactive[isub_max][jsub_min] +
-                dx1_min*dx2_max*h_pumi_mesh(0).host_isactive[isub_min][jsub_max] +
-                dx1_max*dx2_max*h_pumi_mesh(0).host_isactive[isub_max][jsub_max])/4.0;
+    covolume = (dx1_min*dx2_min*pumi_obj.mesh.host_isactive[isub_min][jsub_min] +
+                dx1_max*dx2_min*pumi_obj.mesh.host_isactive[isub_max][jsub_min] +
+                dx1_min*dx2_max*pumi_obj.mesh.host_isactive[isub_min][jsub_max] +
+                dx1_max*dx2_max*pumi_obj.mesh.host_isactive[isub_max][jsub_max])/4.0;
     return covolume;
 
 }
@@ -369,13 +360,11 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
  * \param[out] integer value for boundary dimension
  */
 void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
 
     int isubmesh, jsubmesh, inp, jnp;
     bool left_edge, right_edge, bottom_edge, top_edge;
 
-    for (isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+    for (isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
         int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
         int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh]->Nel + submesh_min_node;
         left_edge =  false;
@@ -392,7 +381,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
         }
     }
 
-    for (jsubmesh=1; jsubmesh<=h_pumi_mesh(0).nsubmesh_x2; jsubmesh++){
+    for (jsubmesh=1; jsubmesh<=pumi_obj.mesh.nsubmesh_x2; jsubmesh++){
         int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
         int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel + submesh_min_node;
         bottom_edge =  false;
@@ -412,7 +401,7 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     if (!left_edge && !right_edge && !bottom_edge && !top_edge){
         *on_bdry = false;
 
-        if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
             *in_domain = true;
             *bdry_tag = -1;
             *bdry_dim = -1;
@@ -429,10 +418,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     if (left_edge & !top_edge & !bottom_edge){
 
         if (isubmesh==1){
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1;
+                *bdry_tag = (jsubmesh-1)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + pumi_obj.mesh.nsubmesh_x1;
                 *bdry_dim = 1;
                 return;
             }
@@ -445,11 +434,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
                 *in_domain = true;
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] == 1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] + pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1;
+                    *bdry_tag = (jsubmesh-1)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + pumi_obj.mesh.nsubmesh_x1;
                     *bdry_dim = 1;
                     return;
                 }
@@ -472,12 +461,12 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (left_edge & top_edge){
-        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2){
+        if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
             if (isubmesh==1){
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -490,10 +479,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -508,10 +497,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
         }
         else{
             if (isubmesh==1){
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -524,14 +513,14 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if (h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh+1] |
-                    h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh+1] |
+                    pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
-                    int sum = h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh+1] +
-                        h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    int sum = pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh] + pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh+1] +
+                        pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1] + pumi_obj.mesh.host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                        *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -549,11 +538,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (top_edge & !left_edge & !right_edge){
 
-        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2){
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+        if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = (jsubmesh)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                *bdry_tag = (jsubmesh)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                 *bdry_dim = 1;
                 return;
             }
@@ -566,11 +555,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
                 *in_domain = true;
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] == 1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] + pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 1;
                     return;
                 }
@@ -593,12 +582,12 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     }
 
     if (top_edge & right_edge){
-        if (jsubmesh==h_pumi_mesh(0).nsubmesh_x2){
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+        if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                    *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -611,10 +600,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                    *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -628,11 +617,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1]){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                    *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -645,14 +634,14 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh+1] |
-                    h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1] | pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1] |
+                    pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
-                    int sum = h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh+1] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh+1] +
-                            h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    int sum = pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1] + pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1] +
+                            pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh] + pumi_obj.mesh.host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = (jsubmesh)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                        *bdry_tag = (jsubmesh)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -670,11 +659,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (right_edge & !top_edge & !bottom_edge){
 
-        if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+        if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                *bdry_tag = (jsubmesh-1)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + pumi_obj.mesh.nsubmesh_x1 + 1;
                 *bdry_dim = 1;
                 return;
             }
@@ -687,11 +676,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
                 *in_domain = true;
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] == 1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] + pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh] == 1){
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + h_pumi_mesh(0).nsubmesh_x1 + 1;
+                    *bdry_tag = (jsubmesh-1)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + pumi_obj.mesh.nsubmesh_x1 + 1;
                     *bdry_dim = 1;
                     return;
                 }
@@ -715,11 +704,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
 
     if (right_edge & bottom_edge){
         if (jsubmesh==1){
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                    *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -732,10 +721,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh]){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                    *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -749,11 +738,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                    *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -766,14 +755,14 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] |
-                    h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1] | pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh] |
+                    pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh-1] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
-                    int sum = h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh] +
-                            h_pumi_mesh(0).host_isactive[isubmesh+1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    int sum = pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1] + pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh] +
+                            pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh-1] + pumi_obj.mesh.host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1 + 1;
+                        *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1 + 1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -792,10 +781,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     if (bottom_edge & !left_edge & !right_edge){
 
         if (jsubmesh==1){
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                 *in_domain = true;
                 *on_bdry = true;
-                *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                *bdry_tag = (jsubmesh-1)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                 *bdry_dim = 1;
                 return;
             }
@@ -808,11 +797,11 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
             }
         }
         else{
-            if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
                 *in_domain = true;
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] == 1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] + pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1] == 1){
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(2*h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh-1)*(2*pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -837,10 +826,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
     if (bottom_edge & left_edge){
         if (jsubmesh==1){
             if (isubmesh==1){
-                if (h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -853,10 +842,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh]){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -871,10 +860,10 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
         }
         else{
             if (isubmesh==1){
-                if(h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1]){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
                     *in_domain = true;
                     *on_bdry = true;
-                    *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                    *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                     *bdry_dim = 0;
                     return;
                 }
@@ -887,14 +876,14 @@ void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, boo
                 }
             }
             else{
-                if (h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] |
-                    h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] | h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh-1] | pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh] |
+                    pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1] | pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     *in_domain = true;
-                    int sum = h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh-1][jsubmesh] +
-                            h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh-1] + h_pumi_mesh(0).host_isactive[isubmesh][jsubmesh];
+                    int sum = pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh-1] + pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh] +
+                            pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1] + pumi_obj.mesh.host_isactive[isubmesh][jsubmesh];
                     if (sum < 4){
                         *on_bdry = true;
-                        *bdry_tag = (jsubmesh-1)*(h_pumi_mesh(0).nsubmesh_x1 + 1) + isubmesh-1;
+                        *bdry_tag = (jsubmesh-1)*(pumi_obj.mesh.nsubmesh_x1 + 1) + isubmesh-1;
                         *bdry_dim = 0;
                         return;
                     }
@@ -926,7 +915,7 @@ double get_global_x1_min_coord(MBBL pumi_obj){
  * \param[in] Object of the wrapper mesh structure
  */
 double get_global_x1_max_coord(MBBL pumi_obj){
-    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh = pumi_obj.mesh.nsubmesh_x1;
     return pumi_obj.host_submesh_x1[nsubmesh]->xmax;
 }
 
@@ -945,7 +934,7 @@ double get_global_x2_min_coord(MBBL pumi_obj){
  * \param[in] Object of the wrapper mesh structure
  */
 double get_global_x2_max_coord(MBBL pumi_obj){
-    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh = pumi_obj.mesh.nsubmesh_x2;
     return pumi_obj.host_submesh_x2[nsubmesh]->xmax;
 }
 
@@ -955,16 +944,15 @@ double get_global_x2_max_coord(MBBL pumi_obj){
  * \param[in] Object of the wrapper mesh structure
  */
 void print_mesh_skeleton(MBBL pumi_obj){
-    MeshDeviceViewPtr::HostMirror h_pumi_mesh = Kokkos::create_mirror_view(pumi_obj.mesh);
-    Kokkos::deep_copy(h_pumi_mesh, pumi_obj.mesh);
+
     bool on_bdry, in_domain;
     int bdry_tag, bdry_dim;
     printf("\n\nPrinting the skeleton of the mesh\n");
     printf("E --> Boundary block-edge\n");
     printf("V --> Boundary block-vertex\n\n");
-    for (int jsubmesh=h_pumi_mesh(0).nsubmesh_x2; jsubmesh>=1; jsubmesh--){
+    for (int jsubmesh=pumi_obj.mesh.nsubmesh_x2; jsubmesh>=1; jsubmesh--){
         int Jnp = pumi_obj.host_submesh_x2[jsubmesh]->Nel + pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
-        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -991,7 +979,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             else{
                 printf("            ");
             }
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -1004,7 +992,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
         }
         printf("\n");
         Jnp--;
-        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -1022,7 +1010,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
 
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -1034,7 +1022,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
         }
         printf("\n");
-        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -1058,7 +1046,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
 
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -1070,7 +1058,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
             }
         }
         printf("\n");
-        for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+        for (int isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
             int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
             pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
             if (in_domain){
@@ -1088,7 +1076,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 printf("            ");
             }
 
-            if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
                 Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -1103,7 +1091,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
         if (jsubmesh==1){
             printf("\n");
             Jnp = 0;
-            for (int isubmesh=1; isubmesh<=h_pumi_mesh(0).nsubmesh_x1; isubmesh++){
+            for (int isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
                 int Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                 pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                 if (in_domain){
@@ -1125,7 +1113,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
                 else{
                     printf("            ");
                 }
-                if (isubmesh==h_pumi_mesh(0).nsubmesh_x1){
+                if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
                     Inp = pumi_obj.host_submesh_x1[isubmesh]->Nel + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                     pumi::where_is_node(pumi_obj, Inp, Jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
                     if (in_domain){
@@ -1142,7 +1130,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
 }
 
 int get_num_x1_submesh(MBBL pumi_obj){
-    return pumi_obj.host_mesh->nsubmesh_x1;
+    return pumi_obj.mesh.nsubmesh_x1;
 }
 
 int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
@@ -1154,7 +1142,7 @@ int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
 }
 
 int get_num_x2_submesh(MBBL pumi_obj){
-    return pumi_obj.host_mesh->nsubmesh_x2;
+    return pumi_obj.mesh.nsubmesh_x2;
 }
 
 int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
@@ -1166,38 +1154,38 @@ int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
 }
 
 int get_total_mesh_elements(MBBL pumi_obj){
-    return pumi_obj.host_mesh->Nel_total;
+    return pumi_obj.mesh.Nel_total;
 }
 
 int get_total_mesh_nodes(MBBL pumi_obj){
-    return pumi_obj.host_mesh->Nnp_total;
+    return pumi_obj.mesh.Nnp_total;
 }
 
 int get_total_x1_elements(MBBL pumi_obj){
-    return pumi_obj.host_mesh->Nel_tot_x1;
+    return pumi_obj.mesh.Nel_tot_x1;
 }
 
 int get_total_x2_elements(MBBL pumi_obj){
-    return pumi_obj.host_mesh->Nel_tot_x2;
+    return pumi_obj.mesh.Nel_tot_x2;
 }
 
 int get_total_submesh_blocks(MBBL pumi_obj){
-    if (pumi_obj.host_mesh->ndim==1){
-        return pumi_obj.host_mesh->nsubmesh_x1;
+    if (pumi_obj.mesh.ndim==1){
+        return pumi_obj.mesh.nsubmesh_x1;
     }
-    else if (pumi_obj.host_mesh->ndim==2){
-        return pumi_obj.host_mesh->nsubmesh_x1*pumi_obj.host_mesh->nsubmesh_x2;
+    else if (pumi_obj.mesh.ndim==2){
+        return pumi_obj.mesh.nsubmesh_x1*pumi_obj.mesh.nsubmesh_x2;
     }
     return 0;
 }
 
 int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
-    if (pumi_obj.host_mesh->ndim==1){
+    if (pumi_obj.mesh.ndim==1){
         return pumi_obj.host_submesh_x1[flattened_submesh_ID]->Nel;
     }
-    else if (pumi_obj.host_mesh->ndim==2){
-        int jsub = flattened_submesh_ID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
-        int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1 + 1;
+    else if (pumi_obj.mesh.ndim==2){
+        int jsub = flattened_submesh_ID/pumi_obj.mesh.nsubmesh_x1 + 1;
+        int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
         int Nel = pumi_obj.host_submesh_x1[isub]->Nel * pumi_obj.host_submesh_x2[jsub]->Nel;
         return Nel;
     }
@@ -1205,17 +1193,17 @@ int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
 }
 
 double get_mesh_volume(MBBL pumi_obj){
-    if (pumi_obj.host_mesh->ndim==1){
-        double volume = pumi_obj.host_submesh_x1[pumi_obj.host_mesh->nsubmesh_x1]->xmax - pumi_obj.host_submesh_x1[1]->xmin;
+    if (pumi_obj.mesh.ndim==1){
+        double volume = pumi_obj.host_submesh_x1[pumi_obj.mesh.nsubmesh_x1]->xmax - pumi_obj.host_submesh_x1[1]->xmin;
         return volume;
     }
-    else if (pumi_obj.host_mesh->ndim==2){
+    else if (pumi_obj.mesh.ndim==2){
         double volume=0.0;
-        int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-        int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+        int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+        int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
         for (int isubmesh=1; isubmesh<=nsubmesh_x1; isubmesh++){
             for (int jsubmesh=1; jsubmesh<=nsubmesh_x2; jsubmesh++){
-                if (pumi_obj.host_mesh->host_isactive[isubmesh][jsubmesh]){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
                     volume += pumi_obj.host_submesh_x1[isubmesh]->length * pumi_obj.host_submesh_x2[jsubmesh]->length;
                 }
             }
@@ -1228,13 +1216,13 @@ double get_mesh_volume(MBBL pumi_obj){
 }
 
 std::vector<double> get_bdry_normal(MBBL pumi_obj, int iEdge){
-    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        // double nrml = pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][dir];
-        std::vector<double> nrml = {pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][0],
-                                    pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][1],
-                                    pumi_obj.host_mesh->bdry.host_bdry_edge_normal[iEdge][2]};
+        // double nrml = pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][dir];
+        std::vector<double> nrml = {pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][0],
+                                    pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][1],
+                                    pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][2]};
         return nrml;
     }
     else{
@@ -1246,8 +1234,8 @@ std::vector<double> get_bdry_normal(MBBL pumi_obj, int iEdge){
 }
 
 int get_num_faces_on_bdry(MBBL pumi_obj, int iEdge){
-    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
         int num = iEdge/Nx2p1;
@@ -1267,10 +1255,10 @@ int get_num_faces_on_bdry(MBBL pumi_obj, int iEdge){
 }
 
 int get_starting_faceID_on_bdry(MBBL pumi_obj, int iEdge){
-    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        return pumi_obj.host_mesh->bdry.host_edge_to_face[iEdge];
+        return pumi_obj.mesh.bdry.host_edge_to_face[iEdge];
     }
     else{
         std::cout << "Invalid edge ID\n";
@@ -1280,10 +1268,10 @@ int get_starting_faceID_on_bdry(MBBL pumi_obj, int iEdge){
 }
 
 bool is_edge_bdry(MBBL pumi_obj, int iEdge){
-    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        return pumi_obj.host_mesh->bdry.host_is_bdry_edge[iEdge];
+        return pumi_obj.mesh.bdry.host_is_bdry_edge[iEdge];
     }
     else{
         std::cout << "Invalid edge ID\n";
@@ -1293,51 +1281,51 @@ bool is_edge_bdry(MBBL pumi_obj, int iEdge){
 }
 
 bool is_block_active(MBBL pumi_obj, int isub, int jsub){
-    return pumi_obj.host_mesh->host_isactive[isub][jsub];
+    return pumi_obj.mesh.host_isactive[isub][jsub];
 }
 
 bool is_block_active(MBBL pumi_obj, int flattened_submesh_ID){
-    int jsub = flattened_submesh_ID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
-    int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1 + 1;
-    return pumi_obj.host_mesh->host_isactive[isub][jsub];
+    int jsub = flattened_submesh_ID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+    return pumi_obj.mesh.host_isactive[isub][jsub];
 }
 
 int get_total_mesh_block_edges(MBBL pumi_obj){
-    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     return 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2;
 }
 
 int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
     int isubmesh, jsubmesh;
-    jsubmesh = submeshID/pumi_obj.host_mesh->nsubmesh_x1;
-    isubmesh = submeshID - jsubmesh*pumi_obj.host_mesh->nsubmesh_x1;
+    jsubmesh = submeshID/pumi_obj.mesh.nsubmesh_x1;
+    isubmesh = submeshID - jsubmesh*pumi_obj.mesh.nsubmesh_x1;
 
     isubmesh++;
     jsubmesh++;
 
     int Jnp;
-    Jnp = fullmesh_node_id/(pumi_obj.host_mesh->Nel_tot_x1+1);
+    Jnp = fullmesh_node_id/(pumi_obj.mesh.Nel_tot_x1+1);
 
 
     int nodeID = fullmesh_node_id;
     int jnp = Jnp - pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
     // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
     int nodeoffset;
-    nodeoffset = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
-                    +(jnp-1)*pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    nodeoffset = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.mesh.offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
+                    +(jnp-1)*pumi_obj.mesh.offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
     if (jnp==0){
-        nodeoffset = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh];
+        nodeoffset = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh];
     }
     if (jnp==pumi_obj.host_submesh_x2[jsubmesh]->Nel){
-        nodeoffset +=  (pumi_obj.host_mesh->offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh]-pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh]);
+        nodeoffset +=  (pumi_obj.mesh.offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh]-pumi_obj.mesh.offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh]);
     }
     return nodeID-nodeoffset;
 }
 
 void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *submeshID){
-    int nsubmesh_x1 = pumi_obj.host_mesh->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
         if (is_edge_bdry(pumi_obj,iEdge)){
@@ -1351,21 +1339,21 @@ void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *su
                 if (jsubmesh >= nsubmesh_x2){
                     jsubmesh = nsubmesh_x2-1;
                     int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
-                    int Jnp = pumi_obj.host_mesh->Nel_tot_x2;
-                    *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                    int Jnp = pumi_obj.mesh.Nel_tot_x2;
+                    *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
                     *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                     return;
                 }
                 else{
                     int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
                     int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
-                    if (pumi_obj.host_mesh->host_isactive[isubmesh+1][jsubmesh+1]){
-                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                    if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1]){
+                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
                         *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                         return;
                     }
                     else{
-                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
                         jsubmesh--;
                         *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                         return;
@@ -1373,27 +1361,27 @@ void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *su
                 }
             }
             else {
-                *next_offset = pumi_obj.host_mesh->Nel_tot_x1+1;
+                *next_offset = pumi_obj.mesh.Nel_tot_x1+1;
                 jsubmesh = num;
                 isubmesh = rem-nsubmesh_x2;
                 if (isubmesh >= nsubmesh_x1){
                     isubmesh = nsubmesh_x1-1;
                     int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
-                    int Inp = pumi_obj.host_mesh->Nel_tot_x1;
-                    *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                    int Inp = pumi_obj.mesh.Nel_tot_x1;
+                    *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
                     *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                     return;
                 }
                 else{
                     int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
                     int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
-                    if (pumi_obj.host_mesh->host_isactive[isubmesh+1][jsubmesh+1]){
-                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                    if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1]){
+                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
                         *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                         return;
                     }
                     else{
-                        *Knp = (pumi_obj.host_mesh->Nel_tot_x1+1)*Jnp + Inp;
+                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
                         isubmesh--;
                         *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
                         return;
@@ -1417,7 +1405,7 @@ void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *su
 }
 
 std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
-    if (pumi_obj.host_mesh->ndim == 1){
+    if (pumi_obj.mesh.ndim == 1){
         double rand_x1 = (double) rand()/RAND_MAX;
         double x1_min = get_global_x1_min_coord(pumi_obj);
         double x1_max = get_global_x1_max_coord(pumi_obj);
@@ -1425,7 +1413,7 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
         std::vector<double> q = {q1,0.0,0.0};
         return q;
     }
-    else if (pumi_obj.host_mesh->ndim == 2){
+    else if (pumi_obj.mesh.ndim == 2){
         bool part_set = false;
         double x1_min = get_global_x1_min_coord(pumi_obj);
         double x1_max = get_global_x1_max_coord(pumi_obj);
@@ -1441,19 +1429,19 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
             int isub=0;
             int jsub=0;
 
-            for (int i=1; i<=pumi_obj.host_mesh->nsubmesh_x1; i++){
+            for (int i=1; i<=pumi_obj.mesh.nsubmesh_x1; i++){
                 if (pumi_obj.host_submesh_x1[i]->xmin < q1 && pumi_obj.host_submesh_x1[i]->xmax > q1){
                     isub = i;
                     break;
                 }
             }
-            for (int j=1; j<=pumi_obj.host_mesh->nsubmesh_x2; j++){
+            for (int j=1; j<=pumi_obj.mesh.nsubmesh_x2; j++){
                 if (pumi_obj.host_submesh_x2[j]->xmin < q2 && pumi_obj.host_submesh_x2[j]->xmax > q2){
                     jsub = j;
                     break;
                 }
             }
-            if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
+            if (pumi_obj.mesh.host_isactive[isub][jsub]){
                 part_set = true;
             }
         }
@@ -1465,7 +1453,7 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
 }
 
 bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
-    if (pumi_obj.host_mesh->ndim == 1){
+    if (pumi_obj.mesh.ndim == 1){
         double x1_min = get_global_x1_min_coord(pumi_obj);
         double x1_max = get_global_x1_max_coord(pumi_obj);
         if (q[0]>x1_min && q[0]<x1_max){
@@ -1473,23 +1461,23 @@ bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
         }
         return false;
     }
-    else if (pumi_obj.host_mesh->ndim == 2){
+    else if (pumi_obj.mesh.ndim == 2){
         int isub=0;
         int jsub=0;
 
-        for (int i=1; i<=pumi_obj.host_mesh->nsubmesh_x1; i++){
+        for (int i=1; i<=pumi_obj.mesh.nsubmesh_x1; i++){
             if (pumi_obj.host_submesh_x1[i]->xmin < q[0] && pumi_obj.host_submesh_x1[i]->xmax > q[0]){
                 isub = i;
                 break;
             }
         }
-        for (int j=1; j<=pumi_obj.host_mesh->nsubmesh_x2; j++){
+        for (int j=1; j<=pumi_obj.mesh.nsubmesh_x2; j++){
             if (pumi_obj.host_submesh_x2[j]->xmin < q[1] && pumi_obj.host_submesh_x2[j]->xmax > q[1]){
                 jsub = j;
                 break;
             }
         }
-        if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
+        if (pumi_obj.mesh.host_isactive[isub][jsub]){
             return true;
         }
         return false;
@@ -1499,8 +1487,8 @@ bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
 
 void print_nodeIDs(MBBL pumi_obj){
     printf("\nPrinting NodeIDs in each active blocks\n" );
-    int Nx = pumi_obj.host_mesh->nsubmesh_x1;
-    int Ny = pumi_obj.host_mesh->nsubmesh_x2;
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int Ny = pumi_obj.mesh.nsubmesh_x2;
     for (int jsub=Ny; jsub>0; jsub--){
         int nnp_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
         for (int jnp=nnp_y-1; jnp>=0; jnp--){
@@ -1509,8 +1497,8 @@ void print_nodeIDs(MBBL pumi_obj){
                 int nnp_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
                 for (int inp=0; inp<nnp_x; inp++){
                     int Inp = inp+pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
-                    if (pumi_obj.host_mesh->host_isactive[isub][jsub]){
-                        int Knp = Jnp*(pumi_obj.host_mesh->Nel_tot_x1+1)+Inp;
+                    if (pumi_obj.mesh.host_isactive[isub][jsub]){
+                        int Knp = Jnp*(pumi_obj.mesh.Nel_tot_x1+1)+Inp;
                         int Ksub = (jsub-1)*Nx+isub-1;
                         int nodeID = get_global_nodeID(pumi_obj,Ksub,Knp);
                         printf("%5d",nodeID);
@@ -1529,7 +1517,7 @@ void print_nodeIDs(MBBL pumi_obj){
 }
 
 void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
-    *submeshID = (isub-1) + (jsub-1)*pumi_obj.host_mesh->nsubmesh_x1;
+    *submeshID = (isub-1) + (jsub-1)*pumi_obj.mesh.nsubmesh_x1;
     *cellID = icell + jcell*pumi_obj.host_submesh_x1[isub]->Nel;
 }
 
@@ -1545,7 +1533,7 @@ void locate_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int* submeshID, in
     int isubmesh;
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x1.extent(0);
-    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x1;
+    int nsubmesh = pumi_obj.mesh.nsubmesh_x1;
     for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
      if (q < (pumi_obj.host_submesh_x1[isubmesh]->xmin)){
          *submeshID = isubmesh-1;
@@ -1571,7 +1559,7 @@ void locate_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int* submeshID, in
     int isubmesh;
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x2.extent(0);
-    int nsubmesh = pumi_obj.host_mesh->nsubmesh_x2;
+    int nsubmesh = pumi_obj.mesh.nsubmesh_x2;
     for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
      if (q < (pumi_obj.host_submesh_x2[isubmesh]->xmin)){
          *submeshID = isubmesh-1;
@@ -1674,9 +1662,9 @@ void calc_weights_x1_host(MBBL pumi_obj, double q, int isubmesh, int icell, int 
 * \param[out] global node ID of the node in left-top coner
 */
 void calc_global_cellID_and_nodeID_fullmesh_host(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node){
-  *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.host_mesh->Nel_tot_x1;
+  *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.mesh.Nel_tot_x1;
   *bottomleft_node = *global_cell_2D + kcell_x2;
-  *topleft_node = *bottomleft_node + pumi_obj.host_mesh->Nel_tot_x1 + 1;
+  *topleft_node = *bottomleft_node + pumi_obj.mesh.Nel_tot_x1 + 1;
 }
 
 /**
@@ -1691,26 +1679,26 @@ void calc_global_cellID_and_nodeID_fullmesh_host(MBBL pumi_obj, int kcell_x1, in
 void calc_global_cellID_and_nodeID_host(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
                                     int *global_cell_2D, int *bottomleft_node, int *topleft_node){
     int icell_x2 = kcell_x2 - pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
-    int elemoffset = pumi_obj.host_mesh->offsets.host_elemoffset_start[isubmesh][jsubmesh] + icell_x2*pumi_obj.host_mesh->offsets.host_elemoffset_skip[jsubmesh];
-    int fullmesh_elem = kcell_x1 + kcell_x2*pumi_obj.host_mesh->Nel_tot_x1;
+    int elemoffset = pumi_obj.mesh.offsets.host_elemoffset_start[isubmesh][jsubmesh] + icell_x2*pumi_obj.mesh.offsets.host_elemoffset_skip[jsubmesh];
+    int fullmesh_elem = kcell_x1 + kcell_x2*pumi_obj.mesh.Nel_tot_x1;
     *global_cell_2D = fullmesh_elem - elemoffset;
-    int nodeoffset_bottom = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
-                    +(icell_x2-1)*pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
-    int nodeoffset_top = nodeoffset_bottom + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    int nodeoffset_bottom = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.mesh.offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
+                    +(icell_x2-1)*pumi_obj.mesh.offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    int nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh.offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
     if (icell_x2==0){
-        nodeoffset_bottom = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh];
-        nodeoffset_top = pumi_obj.host_mesh->offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh];
+        nodeoffset_bottom = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh];
+        nodeoffset_top = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.mesh.offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh];
     }
     if (icell_x2==pumi_obj.host_submesh_x2[jsubmesh]->Nel-1){
-        nodeoffset_top = nodeoffset_bottom + pumi_obj.host_mesh->offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh];
+        nodeoffset_top = nodeoffset_bottom + pumi_obj.mesh.offsets.host_nodeoffset_skip_top[isubmesh][jsubmesh];
     }
     *bottomleft_node = fullmesh_elem + kcell_x2 - nodeoffset_bottom;
-    *topleft_node = fullmesh_elem + kcell_x2 + pumi_obj.host_mesh->Nel_tot_x1 + 1 - nodeoffset_top;
+    *topleft_node = fullmesh_elem + kcell_x2 + pumi_obj.mesh.Nel_tot_x1 + 1 - nodeoffset_top;
 }
 
 void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
-    *jsub = submeshID/pumi_obj.host_mesh->nsubmesh_x1 + 1;
-    *isub = submeshID - pumi_obj.host_mesh->nsubmesh_x1*(*jsub-1) + 1;
+    *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
     *jcell = cellID/pumi_obj.host_submesh_x1[*isub]->Nel;
     *icell = cellID - pumi_obj.host_submesh_x1[*isub]->Nel*(*jcell);
 }
