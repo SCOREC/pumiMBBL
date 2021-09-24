@@ -465,7 +465,7 @@ double get_mesh_volume(MBBL pumi_obj){
     }
 }
 
-Vector3 get_bdry_normal(MBBL pumi_obj, int iEdge){
+Vector3 get_bdry_edge_normal(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
@@ -480,7 +480,20 @@ Vector3 get_bdry_normal(MBBL pumi_obj, int iEdge){
     }
 }
 
-int get_num_faces_on_bdry(MBBL pumi_obj, int iEdge){
+Vector3 get_bdry_vert_normal(MBBL pumi_obj, int iVert){
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
+    if (iVert>=0 && iVert<nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1){
+        return pumi_obj.mesh.bdry.host_bdry_vert_normal[iVert];
+    }
+    else{
+        std::cout << "Invalid vertex ID\n";
+        std::cout << "Valid VertexIDs = [0,1,..," << nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2 <<"]\n";
+        exit(0);
+    }
+}
+
+int get_num_faces_on_bdry_edge(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
@@ -501,7 +514,7 @@ int get_num_faces_on_bdry(MBBL pumi_obj, int iEdge){
     }
 }
 
-int get_starting_faceID_on_bdry(MBBL pumi_obj, int iEdge){
+int get_starting_faceID_on_bdry_edge(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
@@ -527,6 +540,19 @@ bool is_edge_bdry(MBBL pumi_obj, int iEdge){
     }
 }
 
+bool is_vert_bdry(MBBL pumi_obj, int iVert){
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
+    if (iVert>=0 && iVert<nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1){
+        return pumi_obj.mesh.bdry.host_is_bdry_vert[iVert];
+    }
+    else{
+        std::cout << "Invalid vertex ID\n";
+        std::cout << "Valid VertexIDs = [0,1,..," << nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2 <<"]\n";
+        exit(0);
+    }
+}
+
 bool is_block_active(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.host_isactive[isub][jsub];
 }
@@ -541,6 +567,12 @@ int get_total_mesh_block_edges(MBBL pumi_obj){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     return 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2;
+}
+
+int get_total_mesh_block_verts(MBBL pumi_obj){
+    int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
+    int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
+    return nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1;
 }
 
 int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
