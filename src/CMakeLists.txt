@@ -2,13 +2,17 @@ set(HEADERS
   pumiMBBLGPU.hpp
   pumiMBBLGPU_impl.hpp
   pumiMBBL_utils.hpp
-  pumiMBBL_routines.hpp
+  pumiMBBL_meshinfo.hpp
+  pumiMBBL_meshops.hpp
+  pumiMBBL_meshutils.hpp
   pumiMBBL_initiate.hpp
 )
 
 set(SOURCES
   pumiMBBL_initiate.cpp
-  pumiMBBL_routines.cpp
+  pumiMBBL_meshinfo.cpp
+  pumiMBBL_meshops.cpp
+  pumiMBBL_meshutils.cpp
 )
 
 add_library (pumiMBBL-core ${SOURCES})
