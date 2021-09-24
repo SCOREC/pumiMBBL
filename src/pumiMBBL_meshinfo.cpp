@@ -465,14 +465,11 @@ double get_mesh_volume(MBBL pumi_obj){
     }
 }
 
-std::vector<double> get_bdry_normal(MBBL pumi_obj, int iEdge){
+Vector3 get_bdry_normal(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
-        // double nrml = pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][dir];
-        std::vector<double> nrml = {pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][0],
-                                    pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][1],
-                                    pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge][2]};
+        Vector3 nrml = pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge];
         return nrml;
     }
     else{

@@ -38,7 +38,7 @@ int get_total_x2_elements(MBBL pumi_obj);
 int get_total_submesh_blocks(MBBL pumi_obj);
 int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID);
 double get_mesh_volume(MBBL pumi_obj);
-std::vector<double> get_bdry_normal(MBBL pumi_obj,  int iEdge);
+Vector3 get_bdry_normal(MBBL pumi_obj,  int iEdge);
 int get_num_faces_on_bdry(MBBL pumi_obj,  int iEdge);
 int get_starting_faceID_on_bdry(MBBL pumi_obj,  int iEdge);
 bool is_block_active(MBBL pumi_obj, int isub, int jsub);
