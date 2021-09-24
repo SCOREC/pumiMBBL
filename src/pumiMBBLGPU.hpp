@@ -473,11 +473,11 @@ class MeshBdry{
 public:
 
     Kokkos::View<bool*> is_bdry_edge; //!< bool value stores if an edge is on boundary
-    Kokkos::View<double*[3]> bdry_edge_normal; //!< boundary normal direction
+    Kokkos::View<Vector3*> bdry_edge_normal; //!< boundary normal direction
     Kokkos::View<int*> edge_to_face;
 
     bool* host_is_bdry_edge;
-    double** host_bdry_edge_normal;
+    Vector3* host_bdry_edge_normal;
     int *host_edge_to_face;
 
     int Nbdry_faces; //!< int value storing number of boundary element faces
