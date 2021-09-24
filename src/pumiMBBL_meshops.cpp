@@ -2,7 +2,7 @@
 
 namespace pumi {
 
-std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
+std::vector<double> get_rand_point_in_mesh_host(MBBL pumi_obj){
     if (pumi_obj.mesh.ndim == 1){
         double rand_x1 = (double) rand()/RAND_MAX;
         double x1_min = get_global_x1_min_coord(pumi_obj);
@@ -50,7 +50,7 @@ std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj){
     return q;
 }
 
-bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q){
+bool is_point_in_mesh_host(MBBL pumi_obj, std::vector<double> q){
     if (pumi_obj.mesh.ndim == 1){
         double x1_min = get_global_x1_min_coord(pumi_obj);
         double x1_max = get_global_x1_max_coord(pumi_obj);

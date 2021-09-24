@@ -61,7 +61,7 @@ int main( int argc, char* argv[] )
     if (test0){
         printf("push-test-0\n");
         for (int ipart=0; ipart<N_part; ipart++){
-            std::vector<double> q = pumi::get_rand_point_in_mesh(pumi_obj);
+            std::vector<double> q = pumi::get_rand_point_in_mesh_host(pumi_obj);
             Partdata[ipart] = pumi::ParticleDataCPU(q[0],q[1]);
         }
 

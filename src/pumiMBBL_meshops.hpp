@@ -4,9 +4,9 @@
 
 namespace pumi {
 
-std::vector<double> get_rand_point_in_mesh(MBBL pumi_obj);
+std::vector<double> get_rand_point_in_mesh_host(MBBL pumi_obj);
 
-bool is_point_in_mesh(MBBL pumi_obj, std::vector<double> q);
+bool is_point_in_mesh_host(MBBL pumi_obj, std::vector<double> q);
 
 void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID);
 
