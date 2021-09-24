@@ -1343,15 +1343,21 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                    bool** host_isactive){
 
     is_bdry_edge = Kokkos::View<bool*> ("is_bdry_edge", 2*Nx*Ny+Nx+Ny);
-    bdry_edge_normal = Kokkos::View<Vector3*> ("bdry_edge_normal", 2*Nx*Ny+Nx+Ny);
+    bdry_edge_normal = Kokkos::View<Vector3*> ("bdry_edge_normal", Nx*Ny+Nx+Ny+1);
+    is_bdry_vert = Kokkos::View<bool*> ("is_bdry_vertex", Nx*Ny+Nx+Ny+1);
+    bdry_vert_normal = Kokkos::View<Vector3*> ("bdry_vert_normal", Nx*Ny+Nx+Ny+1);
     edge_to_face = Kokkos::View<int*> ("Edge2Face", 2*Nx*Ny+Nx+Ny);
 
     Kokkos::View<bool*>::HostMirror h_is_bdry_edge = Kokkos::create_mirror_view(is_bdry_edge);
     Kokkos::View<Vector3*>::HostMirror h_bdry_edge_normal = Kokkos::create_mirror_view(bdry_edge_normal);
+    Kokkos::View<bool*>::HostMirror h_is_bdry_vert = Kokkos::create_mirror_view(is_bdry_vert);
+    Kokkos::View<Vector3*>::HostMirror h_bdry_vert_normal = Kokkos::create_mirror_view(bdry_vert_normal);
     Kokkos::View<int*>::HostMirror h_edge_to_face = Kokkos::create_mirror_view(edge_to_face);
 
     host_is_bdry_edge = new bool[2*Nx*Ny+Nx+Ny];
     host_bdry_edge_normal = new Vector3[2*Nx*Ny+Nx+Ny];
+    host_is_bdry_vert = new bool[Nx*Ny+Nx+Ny+1];
+    host_bdry_vert_normal = new Vector3[Nx*Ny+Nx+Ny+1];
     host_edge_to_face = new int[2*Nx*Ny+Nx+Ny];
 
     for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
@@ -1470,8 +1476,192 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
         }
     }
 
+    for (int jvert=0; jvert<Ny+1; jvert++){
+        for (int ivert=0; ivert<Nx+1; ivert++){
+            int VertID = jvert*(Nx+1)+ivert;
+            int jsub = VertID/(Nx+1) + 1;
+            int isub = VertID - (jsub-1)*(Nx+1) + 1;
+            if (ivert==0){
+                if (jvert==0){
+                    if (host_isactive[isub][jsub]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,-1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+                else if (jvert==Ny){
+                    if (host_isactive[isub][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+                else{
+                    if (host_isactive[isub][jsub] && host_isactive[isub][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,0.0,0.0);
+                    }
+                    else if (host_isactive[isub][jsub] && !host_isactive[isub][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,-1.0,0.0);
+                    }
+                    else if (!host_isactive[isub][jsub] && host_isactive[isub][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+            }
+            else if (ivert==Nx){
+                if (jvert==0){
+                    if (host_isactive[isub-1][jsub]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,-1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+                else if (jvert==Ny){
+                    if (host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+                else{
+                    if (host_isactive[isub-1][jsub] && host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,0.0,0.0);
+                    }
+                    else if (host_isactive[isub-1][jsub] && !host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,-1.0,0.0);
+                    }
+                    else if (!host_isactive[isub-1][jsub] && host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+            }
+            else{
+                if (jvert==0){
+                    if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,-1.0,0.0);
+                    }
+                    else if (host_isactive[isub][jsub] && !host_isactive[isub-1][jsub]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,-1.0,0.0);
+                    }
+                    else if (!host_isactive[isub][jsub] && host_isactive[isub-1][jsub]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,-1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+                else if (jvert==Ny){
+                    if (host_isactive[isub][jsub-1] && host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,1.0,0.0);
+                    }
+                    else if (host_isactive[isub][jsub-1] && !host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(-1.0,1.0,0.0);
+                    }
+                    else if (!host_isactive[isub][jsub-1] && host_isactive[isub-1][jsub-1]){
+                        h_is_bdry_vert(VertID) = true;
+                        h_bdry_vert_normal(VertID) = Vector3(1.0,1.0,0.0);
+                    }
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+                else{
+                    // # 1
+                    if (!host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
+                        host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(1.0,0.0,0.0);
+                    }
+                    // # 2
+                    else if (!host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
+                        host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(1.0,1.0,0.0);
+                    }
+                    // # 3
+                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
+                        !host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(0.0,1.0,0.0);
+                    }
+                    // # 4
+                    else if (host_isactive[isub][jsub] && !host_isactive[isub-1][jsub] &&
+                        host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(-1.0,1.0,0.0);
+                    }
+                    // # 5
+                    else if (host_isactive[isub][jsub] && !host_isactive[isub-1][jsub] &&
+                        !host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(-1.0,0.0,0.0);
+                    }
+                    // # 6
+                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
+                        !host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(-1.0,-1.0,0.0);
+                    }
+                    // # 7
+                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
+                        !host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(0.0,-1.0,0.0);
+                    }
+                    // # 8
+                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
+                        host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
+                            h_is_bdry_vert(VertID) = true;
+                            h_bdry_vert_normal(VertID) = Vector3(1.0,-1.0,0.0);
+                    }
+                    // # 1
+                    else{
+                        h_is_bdry_vert(VertID) = false;
+                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
+                    }
+                }
+            }
+        }
+    }
+
+
     Kokkos::deep_copy(is_bdry_edge, h_is_bdry_edge);
     Kokkos::deep_copy(bdry_edge_normal, h_bdry_edge_normal);
+    Kokkos::deep_copy(is_bdry_vert, h_is_bdry_vert);
+    Kokkos::deep_copy(bdry_vert_normal, h_bdry_vert_normal);
 
     Nbdry_faces = 0;
     for (int iedge=0; iedge<2*Nx*Ny+Nx+Ny; iedge++){
@@ -1493,6 +1683,8 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
         host_edge_to_face[iedge] = h_edge_to_face(iedge);
         host_is_bdry_edge[iedge] = h_is_bdry_edge(iedge);
         host_bdry_edge_normal[iedge] = h_bdry_edge_normal(iedge);
+        host_is_bdry_vert[iedge] = h_is_bdry_vert(iedge);
+        host_bdry_vert_normal[iedge] = h_bdry_vert_normal(iedge);
     }
     Kokkos::deep_copy(edge_to_face, h_edge_to_face);
 }
