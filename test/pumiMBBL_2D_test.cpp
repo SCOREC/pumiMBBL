@@ -51,6 +51,14 @@ int main( int argc, char* argv[] )
     //
     // }
 
+    // for (int iVert=0; iVert<pumi::get_total_mesh_block_verts(pumi_obj); iVert++){
+    //     if (pumi::is_vert_bdry(pumi_obj,iVert)){
+    //         pumi::Vector3 bn = pumi::get_bdry_vert_normal(pumi_obj, iVert);
+    //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\n",iVert,bn[0],bn[1],bn[2]);
+    //     }
+    //
+    // }
+
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
     //         int Knp, subID, offset;
