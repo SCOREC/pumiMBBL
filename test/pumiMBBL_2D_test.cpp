@@ -122,7 +122,7 @@ int main( int argc, char* argv[] )
     // }
     // printf("domain area is %2.4f\n",integral_tot );
 
-    int N_part = 100000;
+    int N_part = 1000;
     int N_step = 10;
     // Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
     Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part);
@@ -616,7 +616,7 @@ void write2file(Kokkos::View<pumi::ParticleData*>::HostMirror hp, int N_part, in
     char part_filename[30];
     sprintf(part_filename,"part_coords_t%d.dat",nstep);
     part_file = fopen(part_filename,"w");
-    int skip = 50;
+    int skip = 1;
     for (int i=0; i<N_part; i=i+skip){
         int part_active = hp(i).part_active;
         int subID = hp(i).submeshID;
