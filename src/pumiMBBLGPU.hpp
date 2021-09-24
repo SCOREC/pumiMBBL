@@ -484,7 +484,11 @@ public:
 
     MeshBdry(){};
 
-    MeshBdry(int):Nbdry_faces(2){};
+    MeshBdry(int Nbdry_faces_):Nbdry_faces(Nbdry_faces_){
+        host_is_bdry_edge = NULL;
+        host_bdry_edge_normal = NULL;
+        host_edge_to_face = NULL;
+    };
 
     MeshBdry(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 };
@@ -525,7 +529,6 @@ public:
     * \param[in] pointer object for x1-submesh blocks
     * \param[in] total number of elements along x1-direction
     */
-    KOKKOS_INLINE_FUNCTION
     Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
          MeshBdry bdry_):
@@ -550,7 +553,6 @@ public:
      * \param[in] total number of elements along x2-direction
      * \param[in] submesh activity info
      */
-     KOKKOS_INLINE_FUNCTION
      Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
          int nsubmesh_x2_,
@@ -577,51 +579,15 @@ public:
              Nel_tot_x3 = 0;
          };
 
-         /**
-         * @brief Constructor for 2D Mesh
-         * \param[in] number of x1-submesh blocks
-         * \param[in] pointer object for x1-submesh blocks
-         * \param[in] total number of elements along x1-direction
-         * \param[in] number of x2-submesh blocks
-         * \param[in] pointer object for x2-submesh blocks
-         * \param[in] total number of elements along x2-direction
-         * \param[in] submesh activity info
-         */
-         Mesh(int nsubmesh_x1_,
-             int Nel_tot_x1_,
-             int nsubmesh_x2_,
-             int Nel_tot_x2_,
-             bool** host_isactive_,
-             MeshOffsets offsets_,
-             MeshBdry bdry_,
-             int Nel_total_,
-             int Nnp_total_):
-             ndim(2),
-             nsubmesh_x1(nsubmesh_x1_),
-             Nel_tot_x1(Nel_tot_x1_),
-             nsubmesh_x2(nsubmesh_x2_),
-             Nel_tot_x2(Nel_tot_x2_),
-             host_isactive(host_isactive_),
-             offsets(offsets_),
-             bdry(bdry_),
-             Nel_total(Nel_total_),
-             Nnp_total(Nnp_total_)
-             {
-                 nsubmesh_x3 = 0;
-                 Nel_tot_x3 = 0;
-             };
 };
 
-using MeshDeviceViewPtr = Kokkos::View<Mesh*>;
-using MeshHostViewPtr = Mesh*;
 /**
  * @brief Wrapper structure containing mesh and submesh objects
  *
  * Object of this class will be used to call all mesh related APIs
  */
 struct MBBL{
-    MeshDeviceViewPtr mesh; //!< Mesh object allocated in device space
-    MeshHostViewPtr host_mesh; //!< Mesh object allocated in host space
+    Mesh mesh;
     SubmeshDeviceViewPtr submesh_x1;//!< X1-Submesh object allocated in device space
     SubmeshHostViewPtr host_submesh_x1;//!< COPY of X1-Submesh object allocated in host space
     SubmeshDeviceViewPtr submesh_x2;//!< X1-Submesh object allocated in device space
@@ -638,16 +604,12 @@ struct MBBL{
     * \param[in] x1-submesh object in GPU
     * \param[in] copy of x1-submesh object in CPU
     */
-    MBBL(MeshDeviceViewPtr mesh_,
+    MBBL(Mesh mesh_,
          SubmeshDeviceViewPtr submesh_x1_,
          SubmeshHostViewPtr host_submesh_x1_):
          mesh(mesh_),
          submesh_x1(submesh_x1_),
-         host_submesh_x1(host_submesh_x1_){
-             MeshDeviceViewPtr::HostMirror h_mesh_ = Kokkos::create_mirror_view(mesh_);
-             Kokkos::deep_copy(h_mesh_, mesh_);
-             host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1,h_mesh_(0).bdry);
-         };
+         host_submesh_x1(host_submesh_x1_){};
 
     /**
     * @brief Constructor for 2D Wrapper structure
@@ -657,7 +619,7 @@ struct MBBL{
     * \param[in] x2-submesh object in GPU
     * \param[in] copy of x2-submesh object in CPU
     */
-    MBBL(MeshDeviceViewPtr mesh_,
+    MBBL(Mesh mesh_,
          SubmeshDeviceViewPtr submesh_x1_,
          SubmeshHostViewPtr host_submesh_x1_,
          SubmeshDeviceViewPtr submesh_x2_,
@@ -666,12 +628,7 @@ struct MBBL{
          submesh_x1(submesh_x1_),
          host_submesh_x1(host_submesh_x1_),
          submesh_x2(submesh_x2_),
-         host_submesh_x2(host_submesh_x2_){
-             MeshDeviceViewPtr::HostMirror h_mesh_ = Kokkos::create_mirror_view(mesh_);
-             Kokkos::deep_copy(h_mesh_, mesh_);
-             host_mesh = new Mesh(h_mesh_(0).nsubmesh_x1,h_mesh_(0).Nel_tot_x1,h_mesh_(0).nsubmesh_x2,h_mesh_(0).Nel_tot_x2,
-                                  h_mesh_(0).host_isactive,h_mesh_(0).offsets,h_mesh_(0).bdry,h_mesh_(0).Nel_total,h_mesh_(0).Nnp_total);
-         };
+         host_submesh_x2(host_submesh_x2_){};
 };
 
 KOKKOS_FUNCTION
