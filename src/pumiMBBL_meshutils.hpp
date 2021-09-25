@@ -7,6 +7,7 @@ namespace pumi {
 void check_is_pumi_working();
 void print_mesh_skeleton(MBBL pumi_obj);
 void print_nodeIDs(MBBL pumi_obj);
+void print_node_submeshID(MBBL pumi_obj);
 
 } // namespace pumi
 #endif

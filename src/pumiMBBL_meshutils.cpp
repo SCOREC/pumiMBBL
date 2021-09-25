@@ -227,4 +227,33 @@ void print_nodeIDs(MBBL pumi_obj){
     }
 }
 
+void print_node_submeshID(MBBL pumi_obj){
+    printf("\nPrinting NodeIDs in each active blocks\n" );
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int Ny = pumi_obj.mesh.nsubmesh_x2;
+    for (int jsub=Ny; jsub>0; jsub--){
+        int nnp_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
+        for (int jnp=nnp_y-1; jnp>=0; jnp--){
+            int Jnp = jnp+pumi_obj.host_submesh_x2[jsub]->Nel_cumulative;
+            for (int isub=1; isub<=Nx; isub++){
+                int nnp_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
+                for (int inp=0; inp<nnp_x; inp++){
+                    int Inp = inp+pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
+                    if (pumi_obj.mesh.host_isactive[isub][jsub]){
+                        int subID = get_node_submeshID(pumi_obj,Inp,Jnp);
+                        printf("%5d",subID);
+                    }
+                    else{
+                        printf("     ");
+                    }
+                }
+                if (isub<Nx)
+                    printf(" || " );
+            }
+            printf("\n");
+        }
+        printf("\n\n");
+    }
+}
+
 } // namespace pumi

@@ -41,6 +41,7 @@ int main( int argc, char* argv[] )
     pumi::print_mesh_skeleton(pumi_obj);
 
     // pumi::print_nodeIDs(pumi_obj);
+    // pumi::print_node_submeshID(pumi_obj);
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
