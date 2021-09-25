@@ -273,4 +273,9 @@ void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int
     *icell = cellID - pumi_obj.host_submesh_x1[*isub]->Nel*(*jcell);
 }
 
+void get_directional_submeshID_host(MBBL pumi_obj, int submeshID, int* isub, int* jsub){
+    *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
+}
+
 } // namespace pumi

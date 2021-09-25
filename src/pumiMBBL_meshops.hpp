@@ -29,5 +29,7 @@ void calc_global_cellID_and_nodeID_host(MBBL pumi_obj, int isubmesh, int jsubmes
 
 void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell);
 
+void get_directional_submeshID_host(MBBL pumi_obj, int submeshID, int* isub, int* jsub);
+
 } // namespace pumi
 #endif
