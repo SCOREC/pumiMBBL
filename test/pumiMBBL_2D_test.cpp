@@ -351,10 +351,10 @@ int main( int argc, char* argv[] )
         printf("Total number of particle pushes executed in Test-1 = %d\n",num_push );
     }
     // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
-    //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-    //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
+    //     int Nx = pumi_obj.mesh.nsubmesh_x1;
+    //     int Ny = pumi_obj.mesh.nsubmesh_x2;
     //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-    //         printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh(0).is_bdry(i) );
+    //         printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh.bdry.is_bdry_edge(i) );
     //     }
     // });
 
