@@ -1343,7 +1343,7 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                    bool** host_isactive){
 
     is_bdry_edge = Kokkos::View<bool*> ("is_bdry_edge", 2*Nx*Ny+Nx+Ny);
-    bdry_edge_normal = Kokkos::View<Vector3*> ("bdry_edge_normal", Nx*Ny+Nx+Ny+1);
+    bdry_edge_normal = Kokkos::View<Vector3*> ("bdry_edge_normal", 2*Nx*Ny+Nx+Ny);
     is_bdry_vert = Kokkos::View<bool*> ("is_bdry_vertex", Nx*Ny+Nx+Ny+1);
     bdry_vert_normal = Kokkos::View<Vector3*> ("bdry_vert_normal", Nx*Ny+Nx+Ny+1);
     edge_to_face = Kokkos::View<int*> ("Edge2Face", 2*Nx*Ny+Nx+Ny);
@@ -1599,59 +1599,34 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                     }
                 }
                 else{
-                    // # 1
-                    if (!host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
-                        host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(1.0,0.0,0.0);
-                    }
-                    // # 2
-                    else if (!host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
-                        host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(1.0,1.0,0.0);
-                    }
-                    // # 3
-                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
-                        !host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(0.0,1.0,0.0);
-                    }
-                    // # 4
-                    else if (host_isactive[isub][jsub] && !host_isactive[isub-1][jsub] &&
-                        host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(-1.0,1.0,0.0);
-                    }
-                    // # 5
-                    else if (host_isactive[isub][jsub] && !host_isactive[isub-1][jsub] &&
-                        !host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(-1.0,0.0,0.0);
-                    }
-                    // # 6
-                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
-                        !host_isactive[isub-1][jsub-1] && host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(-1.0,-1.0,0.0);
-                    }
-                    // # 7
-                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
-                        !host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(0.0,-1.0,0.0);
-                    }
-                    // # 8
-                    else if (host_isactive[isub][jsub] && host_isactive[isub-1][jsub] &&
-                        host_isactive[isub-1][jsub-1] && !host_isactive[isub][jsub-1]){
-                            h_is_bdry_vert(VertID) = true;
-                            h_bdry_vert_normal(VertID) = Vector3(1.0,-1.0,0.0);
-                    }
-                    // # 1
-                    else{
+                    bool tr = host_isactive[isub][jsub];
+                    bool tl = host_isactive[isub-1][jsub];
+                    bool bl = host_isactive[isub-1][jsub-1];
+                    bool br = host_isactive[isub][jsub-1];
+                    int sum = bl+br+tl+tr;
+                    if (sum==0 || sum==4) {
                         h_is_bdry_vert(VertID) = false;
-                        h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);
                     }
+                    else{
+                        h_is_bdry_vert(VertID) = true;
+                    }
+
+                    if      ( tr &&  tl &&  bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//1
+                    else if (!tr &&  tl &&  bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//2
+                    else if ( tr && !tl &&  bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//3
+                    else if ( tr &&  tl && !bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//4
+                    else if ( tr &&  tl &&  bl && !br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//5
+                    else if ( tr && !tl &&  bl && !br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//6
+                    else if (!tr &&  tl && !bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//7
+                    else if ( tr &&  tl && !bl && !br ) h_bdry_vert_normal(VertID) = Vector3(0.0,-1.0,0.0);//8
+                    else if (!tr && !tl &&  bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(0.0,1.0,0.0);//9
+                    else if (!tr &&  tl &&  bl && !br ) h_bdry_vert_normal(VertID) = Vector3(1.0,0.0,0.0);//10
+                    else if ( tr && !tl && !bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(-1.0,0.0,0.0);//11
+                    else if ( tr && !tl && !bl && !br ) h_bdry_vert_normal(VertID) = Vector3(-1.0,-1.0,0.0);//12
+                    else if (!tr &&  tl && !bl && !br ) h_bdry_vert_normal(VertID) = Vector3(1.0,-1.0,0.0);//13
+                    else if (!tr && !tl &&  bl && !br ) h_bdry_vert_normal(VertID) = Vector3(1.0,1.0,0.0);//14
+                    else if (!tr && !tl && !bl &&  br ) h_bdry_vert_normal(VertID) = Vector3(-1.0,1.0,0.0);//15
+                    else h_bdry_vert_normal(VertID) = Vector3(0.0,0.0,0.0);//16
                 }
             }
         }
@@ -1683,10 +1658,15 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
         host_edge_to_face[iedge] = h_edge_to_face(iedge);
         host_is_bdry_edge[iedge] = h_is_bdry_edge(iedge);
         host_bdry_edge_normal[iedge] = h_bdry_edge_normal(iedge);
-        host_is_bdry_vert[iedge] = h_is_bdry_vert(iedge);
-        host_bdry_vert_normal[iedge] = h_bdry_vert_normal(iedge);
     }
     Kokkos::deep_copy(edge_to_face, h_edge_to_face);
+
+    for (int ivert=0; ivert<Nx*Ny+Nx+Ny+1; ivert++){
+        host_is_bdry_vert[ivert] = h_is_bdry_vert(ivert);
+        host_bdry_vert_normal[ivert] = Vector3(h_bdry_vert_normal(ivert)[0],
+                                               h_bdry_vert_normal(ivert)[1],
+                                               h_bdry_vert_normal(ivert)[2]);
+    }
 }
 
 
