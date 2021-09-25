@@ -696,6 +696,379 @@ void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *su
  * \param[out] integer value of boundary tag
  * \param[out] integer value for boundary dimension
  */
+int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2){
+
+    int isubmesh, jsubmesh, inp, jnp;
+    bool left_edge, right_edge, bottom_edge, top_edge;
+
+    for (isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
+        int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+        int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh]->Nel + submesh_min_node;
+        left_edge =  false;
+        right_edge = false;
+        if (knode_x1 >= submesh_min_node && knode_x1 <= submesh_max_node){
+            inp = knode_x1 - submesh_min_node;
+            if (inp == 0){
+                left_edge = true;
+            }
+            if (inp == pumi_obj.host_submesh_x1[isubmesh]->Nel){
+                right_edge = true;
+            }
+            break;
+        }
+    }
+
+    for (jsubmesh=1; jsubmesh<=pumi_obj.mesh.nsubmesh_x2; jsubmesh++){
+        int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+        int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel + submesh_min_node;
+        bottom_edge =  false;
+        top_edge = false;
+        if (knode_x2 >= submesh_min_node && knode_x2 <= submesh_max_node){
+            jnp = knode_x2 - submesh_min_node;
+            if (jnp == 0){
+                bottom_edge = true;
+            }
+            if (jnp == pumi_obj.host_submesh_x2[jsubmesh]->Nel){
+                top_edge = true;
+            }
+            break;
+        }
+    }
+
+    if (!left_edge && !right_edge && !bottom_edge && !top_edge){
+        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+            return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+        }
+        else{
+            return -1;
+        }
+    }
+
+    if (left_edge & !top_edge & !bottom_edge){
+
+        if (isubmesh==1){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]) {
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                return (isubmesh-2)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+
+    }
+
+    if (left_edge & top_edge){
+        if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+            if (isubmesh==1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                    return (isubmesh-2)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+        else{
+            if (isubmesh==1){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                    return (isubmesh-1)+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                    return (isubmesh-2)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh+1]){
+                    return (isubmesh-2)+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                    return (isubmesh-1)+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+    }
+
+    if (top_edge & !left_edge & !right_edge){
+
+        if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                return (isubmesh-1)+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+    }
+
+    if (top_edge & right_edge){
+        if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                    return isubmesh+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+        else{
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                    return (isubmesh-1)+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                    return (isubmesh-1)+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1]){
+                    return isubmesh+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                    return isubmesh+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+    }
+
+    if (right_edge & !top_edge & !bottom_edge){
+
+        if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                return isubmesh+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+
+    }
+
+    if (right_edge & bottom_edge){
+        if (jsubmesh==1){
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                    return isubmesh+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+        else{
+            if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                    return (isubmesh-1)+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                    return (isubmesh-1)+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                    return isubmesh+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh-1]){
+                    return isubmesh+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+    }
+
+    if (bottom_edge & !left_edge & !right_edge){
+
+        if (jsubmesh==1){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                return (isubmesh-1)+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+            }
+            else{
+                return -1;
+            }
+        }
+    }
+
+    if (bottom_edge & left_edge){
+        if (jsubmesh==1){
+            if (isubmesh==1){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                    return (isubmesh-2)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+        else{
+            if (isubmesh==1){
+                if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                    return (isubmesh-1)+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+            else{
+                if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh-1]){
+                    return (isubmesh-2)+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                    return (isubmesh-2)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                    return (isubmesh-1)+(jsubmesh-2)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+                }
+                else{
+                    return -1;
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
+/**
+ * @brief Returns node info such as if node is in active domain, if node is on a boundary
+ * and boundary entity dimension (boundary vertex (dim=0) or edge (dim=1)) and entity tag
+ * of the boundary
+ *
+ * \param[in] Object of the wrapper mesh structure
+ * \param[in] global node IDs along x1-direction
+ * \param[in] global node IDs along x2-direction
+ * \param[out] boolean value if node is on boundary
+ * \param[out] boolean value if node is on active block
+ * \param[out] integer value of boundary tag
+ * \param[out] integer value for boundary dimension
+ */
 void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim){
 
     int isubmesh, jsubmesh, inp, jnp;
