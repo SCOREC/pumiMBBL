@@ -196,7 +196,7 @@ void print_mesh_skeleton(MBBL pumi_obj){
     }
 }
 
-void print_nodeIDs(MBBL pumi_obj){
+void print_blockwise_nodeIDs(MBBL pumi_obj){
     printf("\nPrinting NodeIDs in each active blocks\n" );
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     int Ny = pumi_obj.mesh.nsubmesh_x2;
@@ -253,6 +253,25 @@ void print_node_submeshID(MBBL pumi_obj){
             printf("\n");
         }
         printf("\n\n");
+    }
+}
+
+void print_fullmesh_nodeIDs(MBBL pumi_obj){
+    int Nnp_y = pumi_obj.mesh.Nel_tot_x2;
+    int Nnp_x = pumi_obj.mesh.Nel_tot_x1;
+    for (int jnode=Nnp_y; jnode>=0; jnode--){
+        for (int inode=0; inode<=Nnp_x; inode++){
+            int subID = get_node_submeshID(pumi_obj,inode,jnode);
+            if (subID+1){
+                int Knp = jnode*(Nnp_x+1)+inode;
+                int nodeID = get_global_nodeID(pumi_obj,subID,Knp);
+                printf("%5d", nodeID);
+            }
+            else{
+                printf("     ");
+            }
+        }
+        printf("\n");
     }
 }
 
