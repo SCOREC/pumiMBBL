@@ -73,6 +73,11 @@ void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int 
 }
 
 KOKKOS_INLINE_FUNCTION
+bool is_block_active(MBBL pumi_obj, int isub, int jsub){
+    return pumi_obj.mesh.isactive(isub,jsub);
+}
+
+KOKKOS_INLINE_FUNCTION
 double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
     return elem_size(pumi_obj.submesh_x1(isub),icell);
 }

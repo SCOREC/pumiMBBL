@@ -553,11 +553,11 @@ bool is_vert_bdry(MBBL pumi_obj, int iVert){
     }
 }
 
-bool is_block_active(MBBL pumi_obj, int isub, int jsub){
+bool is_block_active_host(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.host_isactive[isub][jsub];
 }
 
-bool is_block_active(MBBL pumi_obj, int flattened_submesh_ID){
+bool is_block_active_host(MBBL pumi_obj, int flattened_submesh_ID){
     int jsub = flattened_submesh_ID/pumi_obj.mesh.nsubmesh_x1 + 1;
     int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
     return pumi_obj.mesh.host_isactive[isub][jsub];
