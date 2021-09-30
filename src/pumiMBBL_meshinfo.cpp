@@ -341,6 +341,11 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
 
 }
 
+
+bool is_fullmesh(MBBL pumi_obj){
+    return pumi_obj.mesh.offsets.is_fullmesh;
+}
+
 /**
  * @brief Returns x1-coordinate of left end of the domain
  *

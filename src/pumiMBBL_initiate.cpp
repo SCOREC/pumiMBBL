@@ -1004,7 +1004,7 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                          SubmeshHostViewPtr hc_submesh_x2,
                          int Ny,
                          bool** host_isactive){
-    bool is_fullmesh = true;
+    is_fullmesh = true;
     for (int isubmesh=1; isubmesh<=Nx; isubmesh++ ){
         for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
             if (!host_isactive[isubmesh][jsubmesh]){

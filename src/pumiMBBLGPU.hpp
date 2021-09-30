@@ -447,6 +447,8 @@ public:
 
 class MeshOffsets{
 public:
+    bool is_fullmesh;
+    
     Kokkos::View<int**> nodeoffset_start; //!< aux data structure to compute nodeoffset
     Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
     Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset

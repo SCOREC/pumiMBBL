@@ -21,6 +21,7 @@ double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2);
 double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2);
 double return_elemsize(MBBL pumi_obj, int dir, int index, int offset);
 void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim);
+bool is_fullmesh(MBBL pumi_obj);
 double get_global_x1_min_coord(MBBL pumi_obj);
 double get_global_x1_max_coord(MBBL pumi_obj);
 double get_global_x2_min_coord(MBBL pumi_obj);
