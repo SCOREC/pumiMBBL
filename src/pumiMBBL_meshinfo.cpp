@@ -532,6 +532,23 @@ int get_starting_faceID_on_bdry_edge(MBBL pumi_obj, int iEdge){
     }
 }
 
+int get_west_edgeID(MBBL pumi_obj, int isub, int jsub){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    return (jsub-1)*(2*Nx+1)+(isub-1)+Nx;
+}
+int get_east_edgeID(MBBL pumi_obj, int isub, int jsub){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    return (jsub-1)*(2*Nx+1)+isub+Nx;
+}
+int get_north_edgeID(MBBL pumi_obj, int isub, int jsub){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    return jsub*(2*Nx+1)+(isub-1);
+}
+int get_south_edgeID(MBBL pumi_obj, int isub, int jsub){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    return (jsub-1)*(2*Nx+1)+(isub-1);
+}
+
 bool is_edge_bdry(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
