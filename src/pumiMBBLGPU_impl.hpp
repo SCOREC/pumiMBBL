@@ -125,15 +125,17 @@ void locate_submesh_and_cell_x1(MBBL pumi_obj, double q, int* submeshID, int *ce
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x1.extent(0);
     int nsubmesh = pumi_obj.mesh.nsubmesh_x1;
-    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
-     if (q < (pumi_obj.submesh_x1(isubmesh)()->xmin)){
-         *submeshID = isubmesh-1;
+    for (isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
+     if (q >= (pumi_obj.submesh_x1(isubmesh)()->xmin) && q <= (pumi_obj.submesh_x1(isubmesh)()->xmax)){
+         *submeshID = isubmesh;
          submesh_located++;
          break;
      }
     }
     if (!(submesh_located)){
-     *submeshID = nsubmesh;
+     *submeshID = -1;
+     *cellID = -1;
+     return;
     }
     // *cellID  = pumi_obj.submesh_x1(*submeshID)()->locate_cell(q);
     *cellID = locate_cell(pumi_obj.submesh_x1(*submeshID),q);
@@ -153,15 +155,17 @@ void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *ce
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x2.extent(0);
     int nsubmesh = pumi_obj.mesh.nsubmesh_x2;
-    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
-     if (q < (pumi_obj.submesh_x2(isubmesh)()->xmin)){
-         *submeshID = isubmesh-1;
+    for (isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
+     if (q >= (pumi_obj.submesh_x2(isubmesh)()->xmin) && q <= (pumi_obj.submesh_x2(isubmesh)()->xmax)){
+         *submeshID = isubmesh;
          submesh_located++;
          break;
      }
     }
     if (!(submesh_located)){
-     *submeshID = nsubmesh;
+        *submeshID = -1;
+        *cellID = -1;
+        return;
     }
     // *cellID  = pumi_obj.submesh_x2(*submeshID)()->locate_cell(q);
     *cellID  = locate_cell(pumi_obj.submesh_x2(*submeshID),q);
@@ -377,12 +381,19 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
 }
 
 KOKKOS_INLINE_FUNCTION
-void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
+Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
                    int *bdry_hit, double *fraction_done, int *faceID_on_bdry){
 
+    double q1 = q[0];
+    double q2 = q[1];
+    double q3 = q[2];
+    double dq1 = dq[0];
+    double dq2 = dq[1];
+    double dq3 = dq[2];
     double q1_new = q1+dq1;
     double q2_new = q2+dq2;
+    double q3_new = q3+dq3;
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     int Nxx = 2*Nx+1;
     // int Ny = pumi_obj.mesh.nsubmesh_x2;
@@ -390,17 +401,16 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
     int isub = *isubmesh;
     int jsub = *jsubmesh;
     *in_domain = true;
+    double eps = 1e-9;
     if ( q1_new > pumi_obj.submesh_x1(isub)()->xmin && q1_new < pumi_obj.submesh_x1(isub)()->xmax
         && q2_new > pumi_obj.submesh_x2(jsub)()->xmin && q2_new < pumi_obj.submesh_x2(jsub)()->xmax){
 
-        // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
         *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
-        // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
         *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
         *bdry_hit = -1;
         *faceID_on_bdry = -1;
         *fraction_done = 1.0;
-        return;
+        return Vector3(q1_new, q2_new, q3_new);
     }
     else{
         double del1, del2;
@@ -425,10 +435,6 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 while (!located && in_domain){
                     if (pumi_obj.mesh.bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        // *isubmesh=-1;
-                        // *icell=-1;
-                        // *jsubmesh=-1;
-                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
@@ -437,6 +443,8 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *jsubmesh = jsub+1;
                             *jcell = 0;
                             q1_new = q1+(*fraction_done)*dq1;
+                            q2_new = pumi_obj.submesh_x2(*jsubmesh)()->xmin + eps;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *icell;
                         }
@@ -445,26 +453,26 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *isubmesh = isub+1;
                             *jsubmesh = jsub;
                             *icell = 0;
+                            q1_new = pumi_obj.submesh_x1(*isubmesh)()->xmin+eps;
                             q2_new = q2+(*fraction_done)*dq2;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
-                        return;
+                        return Vector3(q1_new, q2_new, q3_new);
                     }
                     else{
                         if ( q1_new > pumi_obj.submesh_x1(isub)()->xmin && q1_new < pumi_obj.submesh_x1(isub)()->xmax
                             && q2_new > pumi_obj.submesh_x2(jsub)()->xmin && q2_new < pumi_obj.submesh_x2(jsub)()->xmax){
                             *isubmesh = isub;
                             *jsubmesh = jsub;
-                            // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
-                            // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             *faceID_on_bdry = -1;
                             *fraction_done = 1.0;
                             located = true;
-                            return;
+                            return Vector3(q1_new, q2_new, q3_new);
                         }
                         else{
                             del1 = (q1-pumi_obj.submesh_x1(isub)()->xmin);
@@ -502,10 +510,6 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 while (!located && in_domain){
                     if (pumi_obj.mesh.bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        // *isubmesh=-1;
-                        // *icell=-1;
-                        // *jsubmesh=-1;
-                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
@@ -514,6 +518,8 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *jsubmesh = jsub-1;
                             *jcell = pumi_obj.submesh_x2(*jsubmesh)()->Nel-1;
                             q1_new = q1+(*fraction_done)*dq1;
+                            q2_new = pumi_obj.submesh_x2(*jsubmesh)()->xmax - eps;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *icell;
                         }
@@ -522,26 +528,26 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *isubmesh = isub+1;
                             *jsubmesh = jsub;
                             *icell = 0;
+                            q1_new = pumi_obj.submesh_x1(*isubmesh)()->xmin+eps ;
                             q2_new = q2+(*fraction_done)*dq2;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
-                        return;
+                        return Vector3(q1_new, q2_new, q3_new);
                     }
                     else{
                         if ( q1_new > pumi_obj.submesh_x1(isub)()->xmin && q1_new < pumi_obj.submesh_x1(isub)()->xmax
                             && q2_new > pumi_obj.submesh_x2(jsub)()->xmin && q2_new < pumi_obj.submesh_x2(jsub)()->xmax){
                             *isubmesh = isub;
                             *jsubmesh = jsub;
-                            // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
-                            // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             *faceID_on_bdry = -1;
                             located = true;
                             *fraction_done = 1.0;
-                            return;
+                            return Vector3(q1_new, q2_new, q3_new);
                         }
                         else{
                             del1 = (q1-pumi_obj.submesh_x1(isub)()->xmin);
@@ -579,10 +585,6 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 while (!located && in_domain){
                     if (pumi_obj.mesh.bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        // *isubmesh=-1;
-                        // *icell=-1;
-                        // *jsubmesh=-1;
-                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
@@ -590,7 +592,9 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *isubmesh = isub;
                             *jsubmesh = jsub+1;
                             *jcell = 0;
-                            q1_new=q1+(*fraction_done)*dq1;
+                            q1_new = q1+(*fraction_done)*dq1;
+                            q2_new = pumi_obj.submesh_x2(*jsubmesh)()->xmin + eps;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *icell;
                         }
@@ -599,26 +603,26 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *isubmesh = isub-1;
                             *jsubmesh = jsub;
                             *icell = pumi_obj.submesh_x1(*isubmesh)()->Nel-1;
-                            q2_new=q2+(*fraction_done)*dq2;
+                            q1_new = pumi_obj.submesh_x1(*isubmesh)()->xmax - eps;
+                            q2_new = q2+(*fraction_done)*dq2;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
-                        return;
+                        return Vector3(q1_new, q2_new, q3_new);
                     }
                     else{
                         if ( q1_new > pumi_obj.submesh_x1(isub)()->xmin && q1_new < pumi_obj.submesh_x1(isub)()->xmax
                             && q2_new > pumi_obj.submesh_x2(jsub)()->xmin && q2_new < pumi_obj.submesh_x2(jsub)()->xmax){
                             *isubmesh = isub;
                             *jsubmesh = jsub;
-                            // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
-                            // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             *faceID_on_bdry = -1;
                             located = true;
                             *fraction_done = 1.0;
-                            return;
+                            return Vector3(q1_new, q2_new, q3_new);
                         }
                         else{
                             del1 = (pumi_obj.submesh_x1(isub)()->xmax-q1);
@@ -656,10 +660,6 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                 while (!located && in_domain){
                     if (pumi_obj.mesh.bdry.is_bdry_edge(*bdry_hit)){
                         *in_domain = false;
-                        // *isubmesh=-1;
-                        // *icell=-1;
-                        // *jsubmesh=-1;
-                        // *jcell=-1;
                         int num = *bdry_hit/Nxx;
                         int rem = *bdry_hit - num*Nxx;
                         if (rem < Nx){
@@ -668,6 +668,8 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *jsubmesh = jsub-1;
                             *jcell = pumi_obj.submesh_x2(*jsubmesh)()->Nel-1;
                             q1_new = q1+(*fraction_done)*dq1;
+                            q2_new = pumi_obj.submesh_x2(*jsubmesh)()->xmax - eps;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *icell;
                         }
@@ -676,26 +678,26 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
                             *isubmesh = isub-1;
                             *jsubmesh = jsub;
                             *icell = pumi_obj.submesh_x1(*isubmesh)()->Nel-1;
+                            q1_new = pumi_obj.submesh_x1(*isubmesh)()->xmax - eps;
                             q2_new = q2+(*fraction_done)*dq2;
+                            q3_new = q3+(*fraction_done)*dq3;
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *faceID_on_bdry = pumi_obj.mesh.bdry.edge_to_face(*bdry_hit) + *jcell;
                         }
-                        return;
+                        return Vector3(q1_new, q2_new, q3_new);
                     }
                     else{
                         if ( q1_new > pumi_obj.submesh_x1(isub)()->xmin && q1_new < pumi_obj.submesh_x1(isub)()->xmax
                             && q2_new > pumi_obj.submesh_x2(jsub)()->xmin && q2_new < pumi_obj.submesh_x2(jsub)()->xmax){
                             *isubmesh = isub;
                             *jsubmesh = jsub;
-                            // *icell = pumi_obj.submesh_x1(isub)()->update_cell(q1_new, *icell);
                             *icell = update_cell(pumi_obj.submesh_x1(isub),q1_new,*icell);
-                            // *jcell = pumi_obj.submesh_x2(jsub)()->update_cell(q2_new, *jcell);
                             *jcell = update_cell(pumi_obj.submesh_x2(jsub),q2_new,*jcell);
                             *bdry_hit = -1;
                             *faceID_on_bdry = -1;
                             located = true;
                             *fraction_done = 1.0;
-                            return;
+                            return Vector3(q1_new, q2_new, q3_new);
                         }
                         else{
                             del1 = (pumi_obj.submesh_x1(isub)()->xmax-q1);
@@ -717,6 +719,8 @@ void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
         }
 
     }
+
+    return Vector3(-999.0,-999.0,-999.0);
 
 }
 
