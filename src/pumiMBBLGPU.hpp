@@ -163,7 +163,10 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
-        return (q - this->xmin)/this->t0;
+        if (q==this->xmax)
+            return this->Nel-1;
+        else
+            return (q - this->xmin)/this->t0;
     }
 
     KOKKOS_INLINE_FUNCTION
@@ -183,7 +186,10 @@ public:
     }
 
     int locate_cell_host(double q) {
-        return (q - this->xmin)/this->t0;
+        if (q==this->xmax)
+            return this->Nel-1;
+        else
+            return (q - this->xmin)/this->t0;
     }
 
     int update_cell_host(double q, int ) {
@@ -235,8 +241,13 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
-        int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
-        return cell;
+        if (q==this->xmax){
+            return this->Nel-1;
+        }
+        else{
+            int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
+            return cell;
+        }
     }
 
     KOKKOS_INLINE_FUNCTION
@@ -265,8 +276,13 @@ public:
     }
 
     int locate_cell_host(double q) {
-        int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
-        return cell;
+        if (q==this->xmax){
+            return this->Nel-1;
+        }
+        else{
+            int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
+            return cell;
+        }
     }
 
     int update_cell_host(double q, int icell) {
@@ -325,8 +341,13 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
-        int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
-        return this->Nel - cell - 1;
+        if (q==this->xmin){
+            return 0;
+        }
+        else{
+            int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
+            return this->Nel - cell - 1;
+        }
     }
 
     KOKKOS_INLINE_FUNCTION
@@ -356,8 +377,13 @@ public:
     }
 
     int locate_cell_host(double q) {
-        int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
-        return this->Nel - cell - 1;
+        if (q==this->xmin){
+            return 0;
+        }
+        else{
+            int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
+            return this->Nel - cell - 1;
+        }
     }
 
     int update_cell_host(double q, int icell) {
@@ -448,7 +474,7 @@ public:
 class MeshOffsets{
 public:
     bool is_fullmesh;
-    
+
     Kokkos::View<int**> nodeoffset_start; //!< aux data structure to compute nodeoffset
     Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
     Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset
@@ -687,9 +713,9 @@ KOKKOS_FUNCTION
 int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int Jnp);
 
 KOKKOS_FUNCTION
-void push_particle(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell,
-                    bool *in_domain, int *bdry_hit, int *fraction_done, int* faceID_on_bdry);
+Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
+                   int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
+                   int *bdry_hit, double *fraction_done, int *faceID_on_bdry);
 
 KOKKOS_FUNCTION
 void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
