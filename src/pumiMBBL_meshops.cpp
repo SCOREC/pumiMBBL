@@ -104,15 +104,17 @@ void locate_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int* submeshID, in
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x1.extent(0);
     int nsubmesh = pumi_obj.mesh.nsubmesh_x1;
-    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
-     if (q < (pumi_obj.host_submesh_x1[isubmesh]->xmin)){
-         *submeshID = isubmesh-1;
+    for (isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
+     if (q >= (pumi_obj.host_submesh_x1[isubmesh]->xmin) && q <= (pumi_obj.host_submesh_x1[isubmesh]->xmax)){
+         *submeshID = isubmesh;
          submesh_located++;
          break;
      }
     }
     if (!(submesh_located)){
-     *submeshID = nsubmesh;
+     *submeshID = -1;
+     *cellID = -1;
+     return;
     }
     *cellID  = pumi_obj.host_submesh_x1[*submeshID]->locate_cell_host(q);
 }
@@ -130,15 +132,17 @@ void locate_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int* submeshID, in
     int submesh_located = 0;
     // int nsubmesh = pumi_obj.submesh_x2.extent(0);
     int nsubmesh = pumi_obj.mesh.nsubmesh_x2;
-    for (isubmesh=2; isubmesh<=nsubmesh; isubmesh++){
-     if (q < (pumi_obj.host_submesh_x2[isubmesh]->xmin)){
-         *submeshID = isubmesh-1;
+    for (isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
+     if (q >= (pumi_obj.host_submesh_x2[isubmesh]->xmin) && q <= (pumi_obj.host_submesh_x2[isubmesh]->xmax)){
+         *submeshID = isubmesh;
          submesh_located++;
          break;
      }
     }
     if (!(submesh_located)){
-     *submeshID = nsubmesh;
+        *submeshID = -1;
+        *cellID = -1;
+        return;
     }
     *cellID  = pumi_obj.host_submesh_x2[*submeshID]->locate_cell_host(q);
 }
