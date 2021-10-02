@@ -323,18 +323,17 @@ int main( int argc, char* argv[] )
                         pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                         double dq1 = L_x1/dist_factor;
                         double dq2 = L_x2/dist_factor;
-
-
-
-                        pumi::push_particle(pumi_obj, q1, q2, dq1, dq2, &isub, &jsub, &icell, &jcell,
+                        pumi::Vector3 qnew = pumi::push_particle(pumi_obj, pumi::Vector3(q1,q2,0.0), pumi::Vector3(dq1,dq2,0.0), &isub, &jsub, &icell, &jcell,
                                             &in_domain, &bdry_hit, &fraction_done, &bdry_faceID);
                         if (!in_domain){
-                            q1 += dq1*fraction_done;
-                            q2 += dq2*fraction_done;
+                            q1 = qnew[0];
+                            q2 = qnew[1];
                             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
                             Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false,bdry_faceID);
                         }
                         else{
+                            q1 = qnew[0];
+                            q2 = qnew[1];
                             pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
                             pumi::calc_weights_x2(pumi_obj, q2, jsub, jcell, &kcell_x2, &Wgh2_x2);
                             Wgh1_x1 = 1.0-Wgh2_x1;
