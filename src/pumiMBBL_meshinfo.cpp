@@ -89,7 +89,7 @@ double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
 
     elem = index + offset;
     if (elem >= Nel_total){
-        elem = Nel_total;
+        elem = Nel_total-1;
     }
     else if (elem < 0){
         elem = 0;
