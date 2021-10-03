@@ -401,7 +401,7 @@ Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
     int isub = *isubmesh;
     int jsub = *jsubmesh;
     *in_domain = true;
-    double eps = 1e-9;
+    double eps = 1e-12;
     if ( q1_new > pumi_obj.submesh_x1(isub)()->xmin && q1_new < pumi_obj.submesh_x1(isub)()->xmax
         && q2_new > pumi_obj.submesh_x2(jsub)()->xmin && q2_new < pumi_obj.submesh_x2(jsub)()->xmax){
 
