@@ -201,12 +201,12 @@ void print_blockwise_nodeIDs(MBBL pumi_obj){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     int Ny = pumi_obj.mesh.nsubmesh_x2;
     for (int jsub=Ny; jsub>0; jsub--){
-        int nnp_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
-        for (int jnp=nnp_y-1; jnp>=0; jnp--){
+        int Nel_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
+        for (int jnp=Nel_y-1; jnp>=0; jnp--){
             int Jnp = jnp+pumi_obj.host_submesh_x2[jsub]->Nel_cumulative;
             for (int isub=1; isub<=Nx; isub++){
-                int nnp_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
-                for (int inp=0; inp<nnp_x; inp++){
+                int Nel_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
+                for (int inp=0; inp<Nel_x; inp++){
                     int Inp = inp+pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
                     if (pumi_obj.mesh.host_isactive[isub][jsub]){
                         int Knp = Jnp*(pumi_obj.mesh.Nel_tot_x1+1)+Inp;
@@ -232,12 +232,12 @@ void print_node_submeshID(MBBL pumi_obj){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     int Ny = pumi_obj.mesh.nsubmesh_x2;
     for (int jsub=Ny; jsub>0; jsub--){
-        int nnp_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
-        for (int jnp=nnp_y-1; jnp>=0; jnp--){
+        int Nel_y = pumi_obj.host_submesh_x2[jsub]->Nel+1;
+        for (int jnp=Nel_y-1; jnp>=0; jnp--){
             int Jnp = jnp+pumi_obj.host_submesh_x2[jsub]->Nel_cumulative;
             for (int isub=1; isub<=Nx; isub++){
-                int nnp_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
-                for (int inp=0; inp<nnp_x; inp++){
+                int Nel_x = pumi_obj.host_submesh_x1[isub]->Nel+1;
+                for (int inp=0; inp<Nel_x; inp++){
                     int Inp = inp+pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
                     if (pumi_obj.mesh.host_isactive[isub][jsub]){
                         int subID = get_node_submeshID(pumi_obj,Inp,Jnp);
@@ -257,13 +257,13 @@ void print_node_submeshID(MBBL pumi_obj){
 }
 
 void print_fullmesh_nodeIDs(MBBL pumi_obj){
-    int Nnp_y = pumi_obj.mesh.Nel_tot_x2;
-    int Nnp_x = pumi_obj.mesh.Nel_tot_x1;
-    for (int jnode=Nnp_y; jnode>=0; jnode--){
-        for (int inode=0; inode<=Nnp_x; inode++){
+    int Nel_y = pumi_obj.mesh.Nel_tot_x2;
+    int Nel_x = pumi_obj.mesh.Nel_tot_x1;
+    for (int jnode=Nel_y; jnode>=0; jnode--){
+        for (int inode=0; inode<=Nel_x; inode++){
             int subID = get_node_submeshID(pumi_obj,inode,jnode);
             if (subID+1){
-                int Knp = jnode*(Nnp_x+1)+inode;
+                int Knp = jnode*(Nel_x+1)+inode;
                 int nodeID = get_global_nodeID(pumi_obj,subID,Knp);
                 printf("%5d", nodeID);
             }
@@ -273,6 +273,59 @@ void print_fullmesh_nodeIDs(MBBL pumi_obj){
         }
         printf("\n");
     }
+}
+
+void print_2D_node_coordinates(MBBL pumi_obj){
+    int Nel_y = pumi_obj.mesh.Nel_tot_x2;
+    int Nel_x = pumi_obj.mesh.Nel_tot_x1;
+
+    FILE *node_coords_file;
+    char node_coords_filename[30];
+    sprintf(node_coords_filename,"node_coordinates.dat");
+    node_coords_file = fopen(node_coords_filename,"w");
+
+    for (int jnode=0; jnode<=Nel_y; jnode++){
+        for (int inode=0; inode<=Nel_x; inode++){
+            int subID = get_node_submeshID(pumi_obj,inode,jnode);
+            if (subID+1){
+                int jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
+                int isub = subID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+                int inp = inode - pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
+                int jnp = jnode - pumi_obj.host_submesh_x2[jsub]->Nel_cumulative;
+                double icoord = pumi_obj.host_submesh_x1[isub]->node_coords(inp);
+                double jcoord = pumi_obj.host_submesh_x2[jsub]->node_coords(jnp);
+                fprintf(node_coords_file, "%.16e %.16e\n",icoord, jcoord );
+            }
+        }
+    }
+    fclose(node_coords_file);
+}
+
+void print_2D_node_elem_connectivity(MBBL pumi_obj){
+    int Nel_y = pumi_obj.mesh.Nel_tot_x2;
+    int Nel_x = pumi_obj.mesh.Nel_tot_x1;
+
+    FILE *elem_conn_file;
+    char elem_conn_filename[30];
+    sprintf(elem_conn_filename,"elem_node_connectivity.dat");
+    elem_conn_file = fopen(elem_conn_filename,"w");
+    for (int jcell=0; jcell<Nel_y; jcell++){
+        for (int icell=0; icell<Nel_x; icell++){
+            int subID = get_elem_submeshID(pumi_obj, icell, jcell);
+            if (subID+1){
+                int jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
+                int isub = subID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+                int inp1, inp2, inp3, inp4, global_cell;
+                calc_global_cellID_and_nodeID_host(pumi_obj, isub, jsub, icell, jcell,
+                                                    &global_cell, &inp1, &inp4);
+                inp2 = inp1+1;
+                inp3 = inp4+1;
+                fprintf(elem_conn_file, "%4d %4d %4d %4d\n",inp1, inp2, inp3, inp4 );
+            }
+        }
+    }
+    fclose(elem_conn_file);
+
 }
 
 } // namespace pumi
