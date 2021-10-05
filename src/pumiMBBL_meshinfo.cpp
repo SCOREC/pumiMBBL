@@ -1078,6 +1078,33 @@ int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2){
     return -1;
 }
 
+int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2){
+    int isubmesh, jsubmesh;
+
+    for (isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
+        int submesh_min_elem = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+        int submesh_max_elem = pumi_obj.host_submesh_x1[isubmesh]->Nel - 1 + submesh_min_elem;
+        if (kcell_x1 >= submesh_min_elem && kcell_x1 <= submesh_max_elem){
+            break;
+        }
+    }
+
+    for (jsubmesh=1; jsubmesh<=pumi_obj.mesh.nsubmesh_x2; jsubmesh++){
+        int submesh_min_elem = pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+        int submesh_max_elem = pumi_obj.host_submesh_x2[jsubmesh]->Nel - 1 + submesh_min_elem;
+        if (kcell_x2 >= submesh_min_elem && kcell_x2 <= submesh_max_elem){
+            break;
+        }
+    }
+
+    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+        return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
+    }
+    else{
+        return -1;
+    }
+
+}
 /**
  * @brief Returns node info such as if node is in active domain, if node is on a boundary
  * and boundary entity dimension (boundary vertex (dim=0) or edge (dim=1)) and entity tag

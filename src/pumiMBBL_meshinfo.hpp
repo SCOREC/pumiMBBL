@@ -55,6 +55,7 @@ int get_total_mesh_block_edges(MBBL pumi_obj);
 int get_total_mesh_block_verts(MBBL pumi_obj);
 int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id);
 int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2);
+int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2);
 void get_edge_info(MBBL pumi_obj,  int iEdge, int *Knp, int *next_offset, int *submeshID);
 } // namespace pumi
 #endif
