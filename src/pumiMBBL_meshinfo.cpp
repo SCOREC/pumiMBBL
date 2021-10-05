@@ -960,7 +960,7 @@ int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2){
                     return (isubmesh-1)+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
                 }
                 else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
-                    return isubmesh+(jsubmesh)*pumi_obj.mesh.nsubmesh_x1;
+                    return isubmesh+(jsubmesh-1)*pumi_obj.mesh.nsubmesh_x1;
                 }
                 else{
                     return -1;
