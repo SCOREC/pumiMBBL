@@ -40,6 +40,8 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
+    pumi::print_2D_node_coordinates(pumi_obj);
+    pumi::print_2D_node_elem_connectivity(pumi_obj);
     // pumi::print_blockwise_nodeIDs(pumi_obj);
     // pumi::print_node_submeshID(pumi_obj);
     // pumi::print_fullmesh_nodeIDs(pumi_obj);
