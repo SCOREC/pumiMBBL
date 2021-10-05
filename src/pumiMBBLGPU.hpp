@@ -123,6 +123,7 @@ public:
         *global_cell = -1;
         *Wgh2 = -999.0;
     }
+    virtual double node_coords(int) {return -999.0;}
 
 };
 
@@ -203,6 +204,10 @@ public:
     void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = ((q - this->xmin) - local_cell*this->t0)/this->t0;
         *global_cell = local_cell + this->Nel_cumulative;
+    }
+
+    double node_coords(int inode) {
+        return this->xmin + inode*this->t0;
     }
 
 };
@@ -304,6 +309,10 @@ public:
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    double node_coords(int inode) {
+        return this->host_BL_coords[inode];
+    }
+
 };
 
 /**
@@ -403,6 +412,10 @@ public:
     void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
         *global_cell = local_cell + this->Nel_cumulative;
+    }
+
+    double node_coords(int inode) {
+        return this->host_BL_coords[inode];
     }
 
 };
