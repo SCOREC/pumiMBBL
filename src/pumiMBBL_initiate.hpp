@@ -43,16 +43,24 @@ enum print_node_coords{
     print_node_coords_ON  = 1, //!< option to enable printing node coords
 };
 
+enum print_mesh_connectivity{
+    print_mesh_connectivity_OFF = 0,
+    print_mesh_connectivity_ON  = 1,
+};
+
 /*!
 * \brief struct of mesh options
 */
 struct Mesh_Options{
     store_BL_coords BL_storage_option;
     print_node_coords print_node_option;
+    print_mesh_connectivity print_mesh_connectivity_option;
     /*!
     * \brief Struct default constructor
     */
-    Mesh_Options():BL_storage_option(store_BL_coords_ON),print_node_option(print_node_coords_OFF){};
+    Mesh_Options():BL_storage_option(store_BL_coords_ON),
+                   print_node_option(print_node_coords_OFF),
+                   print_mesh_connectivity_option(print_mesh_connectivity_ON){};
 };
 
 class SubmeshInit{

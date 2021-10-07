@@ -1687,6 +1687,10 @@ MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
         x2_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir);
         mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
         pumi_obj = MBBL(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+        if (pumi_options.print_mesh_connectivity_option){
+            pumi::print_2D_node_coordinates(pumi_obj);
+            pumi::print_2D_node_elem_connectivity(pumi_obj);
+        }
     }
     return pumi_obj;
 }

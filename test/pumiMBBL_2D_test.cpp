@@ -32,6 +32,7 @@ int main( int argc, char* argv[] )
     pumi::Mesh_Options pumi_options;
     pumi_options.BL_storage_option = pumi::store_BL_coords_ON;
     pumi_options.print_node_option = pumi::print_node_coords_OFF;
+    pumi_options.print_mesh_connectivity_option = pumi::print_mesh_connectivity_ON;
 
     pumi::MBBL pumi_obj = pumi::initialize_MBBL_mesh(pumi_inputs, pumi_options);
 
@@ -40,8 +41,6 @@ int main( int argc, char* argv[] )
 
     pumi::print_mesh_skeleton(pumi_obj);
 
-    pumi::print_2D_node_coordinates(pumi_obj);
-    pumi::print_2D_node_elem_connectivity(pumi_obj);
     // pumi::print_blockwise_nodeIDs(pumi_obj);
     // pumi::print_node_submeshID(pumi_obj);
     // pumi::print_fullmesh_nodeIDs(pumi_obj);
