@@ -498,7 +498,7 @@ Vector3 get_bdry_vert_normal(MBBL pumi_obj, int iVert){
     }
 }
 
-int get_num_faces_on_bdry_edge(MBBL pumi_obj, int iEdge){
+int get_num_faces_on_edge(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     int Nx2p1 = 2*nsubmesh_x1+1;
@@ -597,24 +597,28 @@ int get_total_mesh_block_verts(MBBL pumi_obj){
     return nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1;
 }
 
-int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
-    int isubmesh, jsubmesh;
-    jsubmesh = submeshID/pumi_obj.mesh.nsubmesh_x1;
-    isubmesh = submeshID - jsubmesh*pumi_obj.mesh.nsubmesh_x1;
+bool check_edge_index_bounds(MBBL pumi_obj, int iEdge){
+    bool valid = true;
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int Ny = pumi_obj.mesh.nsubmesh_x2;
+    if (iEdge < 0 || iEdge >= 2*Nx*Ny+Nx+Ny)
+        valid = false;
 
-    isubmesh++;
-    jsubmesh++;
+    return valid;
+}
 
+int compute_global_nodeID_2D(MBBL pumi_obj, int isubmesh, int jsubmesh, int fullmesh_node_id){
     int Jnp;
     Jnp = fullmesh_node_id/(pumi_obj.mesh.Nel_tot_x1+1);
 
 
     int nodeID = fullmesh_node_id;
     int jnp = Jnp - pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
-    // int nodeoffset = pumi_obj.mesh(0).nodeoffset(isubmesh,Jnp);
+
     int nodeoffset;
-    nodeoffset = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh] + pumi_obj.mesh.offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh]
-                    +(jnp-1)*pumi_obj.mesh.offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
+    nodeoffset = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh] +
+                 pumi_obj.mesh.offsets.host_nodeoffset_skip_bot[isubmesh][jsubmesh] +
+                 (jnp-1)*pumi_obj.mesh.offsets.host_nodeoffset_skip_mid[isubmesh][jsubmesh];
     if (jnp==0){
         nodeoffset = pumi_obj.mesh.offsets.host_nodeoffset_start[isubmesh][jsubmesh];
     }
@@ -624,100 +628,474 @@ int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id){
     return nodeID-nodeoffset;
 }
 
-void get_edge_info(MBBL pumi_obj, int iEdge, int *Knp, int *next_offset, int *submeshID){
+std::vector<int> get_nodes_on_bdry_edge(MBBL pumi_obj, int iEdge){
+    bool validID = check_edge_index_bounds(pumi_obj, iEdge);
+    std::vector<int> nodeIDs;
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
-    int Nx2p1 = 2*nsubmesh_x1+1;
-    if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
+    if (validID){
+        int Nx2p1 = 2*nsubmesh_x1+1;
+
         if (is_edge_bdry(pumi_obj,iEdge)){
             int num = iEdge/Nx2p1;
             int rem = iEdge-num*Nx2p1;
             int isubmesh, jsubmesh;
             if (rem < nsubmesh_x1){
-                *next_offset = 1;
                 isubmesh = rem;
                 jsubmesh = num;
                 if (jsubmesh >= nsubmesh_x2){
-                    jsubmesh = nsubmesh_x2-1;
                     int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
                     int Jnp = pumi_obj.mesh.Nel_tot_x2;
-                    *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
-                    *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
-                    return;
+                    nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
+                    for (int i=0; i<get_num_faces_on_edge(pumi_obj, iEdge); i++){
+                        Inp++;
+                        nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
+                    }
+                    return nodeIDs;
                 }
                 else{
                     int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
                     int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
-                    if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1]){
-                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
-                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
-                        return;
+                    nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
+                    for (int i=0; i<get_num_faces_on_edge(pumi_obj, iEdge); i++){
+                        Inp++;
+                        nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
                     }
-                    else{
-                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
-                        jsubmesh--;
-                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
-                        return;
-                    }
+                    return nodeIDs;
                 }
             }
             else {
-                *next_offset = pumi_obj.mesh.Nel_tot_x1+1;
                 jsubmesh = num;
                 isubmesh = rem-nsubmesh_x2;
                 if (isubmesh >= nsubmesh_x1){
-                    isubmesh = nsubmesh_x1-1;
                     int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
                     int Inp = pumi_obj.mesh.Nel_tot_x1;
-                    *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
-                    *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
-                    return;
+                    nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
+                    for (int i=0; i<get_num_faces_on_edge(pumi_obj, iEdge); i++){
+                        Jnp++;
+                        nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
+                    }
+                    return nodeIDs;
                 }
                 else{
                     int Inp = pumi_obj.host_submesh_x1[isubmesh+1]->Nel_cumulative;
                     int Jnp = pumi_obj.host_submesh_x2[jsubmesh+1]->Nel_cumulative;
-                    if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1]){
-                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
-                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
-                        return;
+                    nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
+                    for (int i=0; i<get_num_faces_on_edge(pumi_obj, iEdge); i++){
+                        Jnp++;
+                        nodeIDs.push_back(get_global_nodeID_2D(pumi_obj, Inp, Jnp));
                     }
-                    else{
-                        *Knp = (pumi_obj.mesh.Nel_tot_x1+1)*Jnp + Inp;
-                        isubmesh--;
-                        *submeshID = jsubmesh*nsubmesh_x1+isubmesh;
-                        return;
-                    }
+                    return nodeIDs;
                 }
             }
         }
         else{
-            *Knp=-1;
-            *next_offset=-1;
-            *submeshID=-1;
-            return;
+            return nodeIDs;
         }
-
     }
     else{
         std::cout << "Invalid edge ID\n";
         std::cout << "Valid EdgeIDs = [0,1,..," << 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2-1 <<"]\n";
         exit(0);
     }
+
+    return nodeIDs;
 }
 
-/**
- * @brief Returns node info such as if node is in active domain, if node is on a boundary
- * and boundary entity dimension (boundary vertex (dim=0) or edge (dim=1)) and entity tag
- * of the boundary
- *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] global node IDs along x1-direction
- * \param[in] global node IDs along x2-direction
- * \param[out] boolean value if node is on boundary
- * \param[out] boolean value if node is on active block
- * \param[out] integer value of boundary tag
- * \param[out] integer value for boundary dimension
- */
+bool check_node_index_bounds(MBBL pumi_obj, int knode_x1, int knode_x2){
+    bool valid = true;
+    if (knode_x1 < 0 || knode_x1 > pumi_obj.mesh.Nel_tot_x1){
+        valid = false;
+    }
+    if (knode_x2 < 0 || knode_x2 > pumi_obj.mesh.Nel_tot_x2){
+        valid = false;
+    }
+    return valid;
+}
+
+int get_global_nodeID_2D(MBBL pumi_obj, int knode_x1, int knode_x2){
+
+    bool validID = check_node_index_bounds(pumi_obj, knode_x1, knode_x2);
+
+    if (validID){
+        int isubmesh, jsubmesh, inp, jnp;
+        bool left_edge, right_edge, bottom_edge, top_edge, on_edge;
+        int fullmesh_node_id = knode_x1 + knode_x2*(pumi_obj.mesh.Nel_tot_x1+1);
+        on_edge = false;
+        for (isubmesh=1; isubmesh<=pumi_obj.mesh.nsubmesh_x1; isubmesh++){
+            int submesh_min_node = pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+            int submesh_max_node = pumi_obj.host_submesh_x1[isubmesh]->Nel + submesh_min_node;
+            left_edge =  false;
+            right_edge = false;
+            if (knode_x1 >= submesh_min_node && knode_x1 <= submesh_max_node){
+                inp = knode_x1 - submesh_min_node;
+                if (inp == 0){
+                    left_edge = true;
+                    on_edge = true;
+                }
+                if (inp == pumi_obj.host_submesh_x1[isubmesh]->Nel){
+                    right_edge = true;
+                    on_edge = true;
+                }
+                break;
+            }
+        }
+
+        for (jsubmesh=1; jsubmesh<=pumi_obj.mesh.nsubmesh_x2; jsubmesh++){
+            int submesh_min_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+            int submesh_max_node = pumi_obj.host_submesh_x2[jsubmesh]->Nel + submesh_min_node;
+            bottom_edge =  false;
+            top_edge = false;
+            if (knode_x2 >= submesh_min_node && knode_x2 <= submesh_max_node){
+                jnp = knode_x2 - submesh_min_node;
+                if (jnp == 0){
+                    bottom_edge = true;
+                    on_edge = true;
+                }
+                if (jnp == pumi_obj.host_submesh_x2[jsubmesh]->Nel){
+                    top_edge = true;
+                    on_edge = true;
+                }
+                break;
+            }
+        }
+
+        if (!on_edge){
+            if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+            }
+            else{
+                return -1;
+            }
+        }
+        else{
+            if (!left_edge && !right_edge && !bottom_edge && !top_edge){
+                if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                    return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                }
+                else{
+                    return -1;
+                }
+            }
+
+            if (left_edge & !top_edge & !bottom_edge){
+
+                if (isubmesh==1){
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+                else{
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]) {
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+
+            }
+
+            if (left_edge & top_edge){
+                if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+                    if (isubmesh==1){
+                        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==1){
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh+1, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh+1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh+1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh+1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+            }
+
+            if (top_edge & !left_edge & !right_edge){
+
+                if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+                else{
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh+1, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+            }
+
+            if (top_edge & right_edge){
+                if (jsubmesh==pumi_obj.mesh.nsubmesh_x2){
+                    if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh+1, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh+1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh+1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh+1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh+1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+            }
+
+            if (right_edge & !top_edge & !bottom_edge){
+
+                if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+                else{
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+
+            }
+
+            if (right_edge & bottom_edge){
+                if (jsubmesh==1){
+                    if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==pumi_obj.mesh.nsubmesh_x1){
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh-1, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh-1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh+1][jsubmesh-1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh+1, jsubmesh-1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+            }
+
+            if (bottom_edge & !left_edge & !right_edge){
+
+                if (jsubmesh==1){
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);            }
+                    else{
+                        return -1;
+                    }
+                }
+                else{
+                    if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                    }
+                    else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                        return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh-1, fullmesh_node_id);
+                    }
+                    else{
+                        return -1;
+                    }
+                }
+            }
+
+            if (bottom_edge & left_edge){
+                if (jsubmesh==1){
+                    if (isubmesh==1){
+                        if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+                else{
+                    if (isubmesh==1){
+                        if(pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh-1, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                    else{
+                        if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh-1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh-1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh-1][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh-1, jsubmesh, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh-1]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh-1, fullmesh_node_id);
+                        }
+                        else if (pumi_obj.mesh.host_isactive[isubmesh][jsubmesh]){
+                            return compute_global_nodeID_2D(pumi_obj, isubmesh, jsubmesh, fullmesh_node_id);
+                        }
+                        else{
+                            return -1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else{
+        std::cout << "Invalid node index\n";
+        exit(0);
+    }
+
+    return -1;
+}
+
 int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2){
 
     int isubmesh, jsubmesh, inp, jnp;

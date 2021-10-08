@@ -41,7 +41,7 @@ int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID);
 double get_mesh_volume(MBBL pumi_obj);
 Vector3 get_bdry_edge_normal(MBBL pumi_obj,  int iEdge);
 Vector3 get_bdry_vert_normal(MBBL pumi_obj,  int iEdge);
-int get_num_faces_on_bdry_edge(MBBL pumi_obj,  int iEdge);
+int get_num_faces_on_edge(MBBL pumi_obj,  int iEdge);
 int get_starting_faceID_on_bdry_edge(MBBL pumi_obj,  int iEdge);
 int get_west_edgeID(MBBL pumi_obj, int isub, int jsub);
 int get_east_edgeID(MBBL pumi_obj, int isub, int jsub);
@@ -53,9 +53,13 @@ bool is_edge_bdry(MBBL pumi_obj,  int iEdge);
 bool is_vert_bdry(MBBL pumi_obj,  int iVert);
 int get_total_mesh_block_edges(MBBL pumi_obj);
 int get_total_mesh_block_verts(MBBL pumi_obj);
-int get_global_nodeID(MBBL pumi_obj, int submeshID, int fullmesh_node_id);
 int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2);
 int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2);
-void get_edge_info(MBBL pumi_obj,  int iEdge, int *Knp, int *next_offset, int *submeshID);
+bool check_edge_index_bounds(MBBL pumi_obj, int iEdge);
+int compute_global_nodeID_2D(MBBL pumi_obj, int isubmesh, int jsubmesh, int fullmesh_node_id);
+std::vector<int> get_nodes_on_bdry_edge(MBBL pumi_obj, int iEdge);
+bool check_node_index_bounds(MBBL pumi_obj, int knode_x1, int knode_x2);
+int get_global_nodeID_2D(MBBL pumi_obj, int knode_x1, int knode_x2);
+
 } // namespace pumi
 #endif
