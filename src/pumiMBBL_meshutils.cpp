@@ -209,9 +209,10 @@ void print_blockwise_nodeIDs(MBBL pumi_obj){
                 for (int inp=0; inp<Nel_x; inp++){
                     int Inp = inp+pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
                     if (pumi_obj.mesh.host_isactive[isub][jsub]){
-                        int Knp = Jnp*(pumi_obj.mesh.Nel_tot_x1+1)+Inp;
-                        int Ksub = (jsub-1)*Nx+isub-1;
-                        int nodeID = get_global_nodeID(pumi_obj,Ksub,Knp);
+                        // int Knp = Jnp*(pumi_obj.mesh.Nel_tot_x1+1)+Inp;
+                        // int Ksub = (jsub-1)*Nx+isub-1;
+                        // int nodeID = get_global_nodeID(pumi_obj,Ksub,Knp);
+                        int nodeID = get_global_nodeID_2D(pumi_obj, Inp, Jnp);
                         printf("%5d",nodeID);
                     }
                     else{
@@ -261,10 +262,8 @@ void print_fullmesh_nodeIDs(MBBL pumi_obj){
     int Nel_x = pumi_obj.mesh.Nel_tot_x1;
     for (int jnode=Nel_y; jnode>=0; jnode--){
         for (int inode=0; inode<=Nel_x; inode++){
-            int subID = get_node_submeshID(pumi_obj,inode,jnode);
-            if (subID+1){
-                int Knp = jnode*(Nel_x+1)+inode;
-                int nodeID = get_global_nodeID(pumi_obj,subID,Knp);
+            int nodeID = get_global_nodeID_2D(pumi_obj, inode, jnode);
+            if (nodeID+1){
                 printf("%5d", nodeID);
             }
             else{

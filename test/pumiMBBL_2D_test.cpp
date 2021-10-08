@@ -49,7 +49,7 @@ int main( int argc, char* argv[] )
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
     //         pumi::Vector3 bn = pumi::get_bdry_normal(pumi_obj, iEdge);
     //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\t start=%d num=%d\n",iEdge,bn[0],bn[1],bn[2],
-    //                     pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_bdry(pumi_obj,iEdge));
+    //                     pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_edge(pumi_obj,iEdge));
     //     }
     //
     // }
@@ -64,14 +64,11 @@ int main( int argc, char* argv[] )
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
-    //         int Knp, subID, offset;
-    //         pumi::get_edge_info(pumi_obj, iEdge, &Knp, &offset, &subID);
-    //         int Nnp = pumi::get_num_faces_on_bdry(pumi_obj, iEdge)+1;
-    //         for (int inp=0; inp<Nnp; inp++){
-    //             int Inp = Knp + inp*offset;
-    //             int global_node_ID = pumi::get_global_nodeID(pumi_obj, subID, Inp);
-    //             printf("Bdry-%2d \t nodeID=%3d\n",iEdge,global_node_ID);
+    //         std::vector<int> v = pumi::get_bdry_edge_nodes(pumi_obj, iEdge);
+    //         for (int i=0; i<v.size(); i++){
+    //             printf("%3d ",v[i]);
     //         }
+    //         printf("\n");
     //     }
     // }
 
