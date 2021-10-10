@@ -246,12 +246,20 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
-        if (q==this->xmax){
-            return this->Nel-1;
+        if (r != 1.0){
+            if (q==this->xmax){
+                return this->Nel-1;
+            }
+            else{
+                int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
+                return cell;
+            }
         }
         else{
-            int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
-            return cell;
+            if (q==this->xmax)
+                return this->Nel-1;
+            else
+                return (q - this->xmin)/this->t0;
         }
     }
 
@@ -281,12 +289,20 @@ public:
     }
 
     int locate_cell_host(double q) {
-        if (q==this->xmax){
-            return this->Nel-1;
+        if (r != 1.0){
+            if (q==this->xmax){
+                return this->Nel-1;
+            }
+            else{
+                int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
+                return cell;
+            }
         }
         else{
-            int cell = log(1.0 + (q - this->xmin)*this->r_by_t0)/this->log_r;
-            return cell;
+            if (q==this->xmax)
+                return this->Nel-1;
+            else
+                return (q - this->xmin)/this->t0;
         }
     }
 
@@ -350,12 +366,20 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
-        if (q==this->xmin){
-            return 0;
+        if (r != 1.0){
+            if (q==this->xmin){
+                return 0;
+            }
+            else{
+                int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
+                return this->Nel - cell - 1;
+            }
         }
         else{
-            int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
-            return this->Nel - cell - 1;
+            if (q==this->xmax)
+                return this->Nel-1;
+            else
+                return (q - this->xmin)/this->t0;
         }
     }
 
@@ -386,12 +410,20 @@ public:
     }
 
     int locate_cell_host(double q) {
-        if (q==this->xmin){
-            return 0;
+        if (r != 1.0){
+            if (q==this->xmin){
+                return 0;
+            }
+            else{
+                int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
+                return this->Nel - cell - 1;
+            }
         }
         else{
-            int cell = log(1.0 + (this->xmax - q)*this->r_by_t0)/this->log_r;
-            return this->Nel - cell - 1;
+            if (q==this->xmax)
+                return this->Nel-1;
+            else
+                return (q - this->xmin)/this->t0;
         }
     }
 

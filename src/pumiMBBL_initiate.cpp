@@ -426,7 +426,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
                 printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length >= min_computed_T)){
                 printf("\t\t left_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
                 h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
@@ -455,7 +455,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
                 printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length >= min_computed_T)){
                 printf("\t\t right_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
                 h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
@@ -518,7 +518,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
                 printf("\t\t left_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length >= min_computed_T)){
                 printf("\t\t left_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
                 h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
@@ -547,7 +547,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
                 printf("\t\t right_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x1[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x1[isubmesh]->length > min_computed_T)){
+            else if (!(h_submesh_x1[isubmesh]->length >= min_computed_T)){
                 printf("\t\t right_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
                 h_submesh_x1[isubmesh]->length, min_computed_T);
                 flag++;
@@ -590,7 +590,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
                 printf("\t\t bottom_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x2[isubmesh]->length > min_computed_T)){
+            else if (!(h_submesh_x2[isubmesh]->length >= min_computed_T)){
                 printf("\t\t bottom_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
                 h_submesh_x2[isubmesh]->length, min_computed_T);
                 flag++;
@@ -619,7 +619,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
                 printf("\t\t top_T   = %2.4f is not a valid input. It has to be postive\n", h_submesh_x2[isubmesh]->length);
                 flag++;
             }
-            else if (!(h_submesh_x2[isubmesh]->length > min_computed_T)){
+            else if (!(h_submesh_x2[isubmesh]->length >= min_computed_T)){
                 printf("\t\t top_T   = %2.4f is not a valid input. It is smaller than the minimum computed BL length %2.4f\n",
                 h_submesh_x2[isubmesh]->length, min_computed_T);
                 flag++;
