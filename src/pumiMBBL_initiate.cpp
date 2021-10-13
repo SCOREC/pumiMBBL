@@ -131,6 +131,7 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
         }
         if (h_submesh_x1[i]->meshtype & uniform){
             printf("uniform\n");
+            printf("\t uniform_T      = %2.4e \t [m] Uniform block thickness\n", h_submesh_x1[i]->length);
             printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i]->t0);
             printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i]->Nel);
         }
@@ -177,6 +178,7 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshH
         }
         if (h_submesh_x1[i]->meshtype & uniform){
             printf("uniform\n");
+            printf("\t uniform_T      = %2.4e \t [m] Uniform block thickness\n", h_submesh_x1[i]->length);
             printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i]->t0);
             printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i]->Nel);
         }
@@ -214,6 +216,7 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshH
         }
         if (h_submesh_x2[i]->meshtype & uniform){
             printf("uniform\n");
+            printf("\t uniform_T      = %2.4e \t [m] Uniform block thickness\n", h_submesh_x2[i]->length);
             printf("\t uniform_dx2    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x2[i]->t0);
             printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x2[i]->Nel);
         }
@@ -795,7 +798,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 
         if (type & uniform){
             r = 1.0;
-            Nel = floor(xlength/t0);
+            Nel = ceil(xlength/t0);
             t0 = xlength/Nel;
             r_t0_ratio = (r-1.0)/t0;
             logr = log(r);
