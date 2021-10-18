@@ -798,7 +798,12 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 
         if (type & uniform){
             r = 1.0;
-            Nel = ceil(xlength/t0);
+            double Nel_dbl = xlength/t0;
+            int Nel_int = (int) Nel_dbl;
+            double diff = Nel_dbl-Nel_int;
+            if (1.0-diff < 1e-3)
+                Nel_int++;
+            Nel = Nel_int;
             t0 = xlength/Nel;
             r_t0_ratio = (r-1.0)/t0;
             logr = log(r);
