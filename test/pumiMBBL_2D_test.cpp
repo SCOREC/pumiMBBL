@@ -320,7 +320,7 @@ int main( int argc, char* argv[] )
                         Wgh1_x2 = 1.0-Wgh2_x2;
                         pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                         double dq1 = L_x1/dist_factor;
-                        double dq2 = L_x2/dist_factor;
+                        double dq2 = -L_x2/dist_factor;
                         pumi::Vector3 qnew = pumi::push_particle(pumi_obj, pumi::Vector3(q1,q2,0.0), pumi::Vector3(dq1,dq2,0.0), &isub, &jsub, &icell, &jcell,
                                             &in_domain, &bdry_hit, &fraction_done, &bdry_faceID);
                         if (!in_domain){
@@ -338,7 +338,7 @@ int main( int argc, char* argv[] )
                             Wgh1_x2 = 1.0-Wgh2_x2;
                             pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                            Partdata(ipart) = pumi::ParticleData(q1+dq1,q2+dq2,submeshID,cellID,true,-1);
+                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
                         }
                     }
                 }
