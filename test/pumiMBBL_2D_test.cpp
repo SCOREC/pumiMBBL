@@ -177,7 +177,7 @@ int main( int argc, char* argv[] )
     // });
 
     bool test0 = true;
-    bool test1 = true;
+    bool test1 = false;
 
     std::srand((unsigned)(std::time(nullptr)));
 
@@ -211,7 +211,7 @@ int main( int argc, char* argv[] )
             Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
         });
         Kokkos::deep_copy(h_Partdata,Partdata);
-        write2file(h_Partdata, N_part, 0);
+        // write2file(h_Partdata, N_part, 0);
 
         Kokkos::Profiling::pushRegion("push_test_0");
         for (int istep=0; istep<N_step; istep++){
@@ -265,7 +265,7 @@ int main( int argc, char* argv[] )
                 }
             });
             Kokkos::deep_copy(h_Partdata,Partdata);
-            write2file(h_Partdata, N_part, istep+1);
+            // write2file(h_Partdata, N_part, istep+1);
         }
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-0 = %d\n",num_push );
