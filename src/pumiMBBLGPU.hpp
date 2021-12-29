@@ -572,6 +572,27 @@ public:
     MeshBdry(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 };
 
+class BlockInterface{
+public:
+    // 1D
+    Kokkos::View<double*> if_x1_r;
+    Kokkos::View<int*> if_x1_node;
+    Kokkos::View<double*> if_x2_r;
+    Kokkos::View<int*> if_x2_node;
+
+    double *host_if_x1_r;
+    int *host_if_x1_node;
+    double *host_if_x2_r;
+    int *host_if_x2_node;
+    // 2D
+
+    // Constructors
+    BlockInterface(){};
+
+    BlockInterface(SubmeshHostViewPtr hc_submesh_x1,int Nx);
+
+};
+
 /**
  * @brief Mesh class
  *
@@ -589,6 +610,7 @@ public:
 
     MeshOffsets offsets;
     MeshBdry bdry;
+    BlockInterface blkif;
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
@@ -610,11 +632,13 @@ public:
     */
     Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
-         MeshBdry bdry_):
+         MeshBdry bdry_,
+         BlockInterface blkif_):
          ndim(1),
          nsubmesh_x1(nsubmesh_x1_),
          Nel_tot_x1(Nel_tot_x1_),
-         bdry(bdry_){
+         bdry(bdry_),
+         blkif(blkif_){
              Nel_total = Nel_tot_x1_;
              Nnp_total = Nel_tot_x1_+1;
              nsubmesh_x2 = 0;
