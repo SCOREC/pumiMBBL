@@ -78,6 +78,26 @@ bool is_block_active(MBBL pumi_obj, int isub, int jsub){
 }
 
 KOKKOS_INLINE_FUNCTION
+int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.submesh_x1(isubmesh)()->Nel;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.submesh_x1(isubmesh)()->Nel;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
+    return pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
+}
+
+KOKKOS_INLINE_FUNCTION
 double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
     return elem_size(pumi_obj.submesh_x1(isub),icell);
 }
@@ -85,6 +105,16 @@ double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
 KOKKOS_INLINE_FUNCTION
 double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
     return elem_size(pumi_obj.submesh_x2(isub),icell);
+}
+
+KOKKOS_INLINE_FUNCTION
+double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub){
+    return pumi_obj.submesh_x1(isub)()->r;
+}
+
+KOKKOS_INLINE_FUNCTION
+double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub){
+    return pumi_obj.submesh_x2(isub)()->r;
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -98,22 +128,22 @@ int get_x2_cellID(MBBL pumi_obj, int isub, int icell){
 }
 
 KOKKOS_INLINE_FUNCTION
-int get_x1_interface_directional_nodeID(MBBL pumi_obj, int isub){
+int get_x1_nodeID_at_interface(MBBL pumi_obj, int isub){
     return pumi_obj.mesh.blkif.if_x1_node(isub);
 }
 
 KOKKOS_INLINE_FUNCTION
-int get_x2_interface_directional_nodeID(MBBL pumi_obj, int isub){
+int get_x2_nodeID_at_interface(MBBL pumi_obj, int isub){
     return pumi_obj.mesh.blkif.if_x2_node(isub);
 }
 
 KOKKOS_INLINE_FUNCTION
-int get_x1_interface_gradingratio(MBBL pumi_obj, int isub){
+int get_x1_gradingratio_at_interface(MBBL pumi_obj, int isub){
     return pumi_obj.mesh.blkif.if_x1_r(isub);
 }
 
 KOKKOS_INLINE_FUNCTION
-int get_x2_interface_gradingratio(MBBL pumi_obj, int isub){
+int get_x2_gadingratio_at_interface(MBBL pumi_obj, int isub){
     return pumi_obj.mesh.blkif.if_x2_r(isub);
 }
 

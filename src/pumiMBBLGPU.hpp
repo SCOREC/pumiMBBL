@@ -807,22 +807,40 @@ KOKKOS_FUNCTION
 void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID);
 
 KOKKOS_FUNCTION
+int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh);
+
+KOKKOS_FUNCTION
+int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh);
+
+KOKKOS_FUNCTION
+int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh);
+
+KOKKOS_FUNCTION
+int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh);
+
+KOKKOS_FUNCTION
 double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 
 KOKKOS_FUNCTION
 double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 
 KOKKOS_FUNCTION
-int get_x1_interface_directional_nodeID(MBBL pumi_obj, int isub);
+int get_x1_nodeID_at_interface(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
-int get_x2_interface_directional_nodeID(MBBL pumi_obj, int isub);
+int get_x2_nodeID_at_interface(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
-int get_x1_interface_gradingratio(MBBL pumi_obj, int isub);
+int get_x1_gradingratio_at_interface(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
-int get_x2_interface_gradingratio(MBBL pumi_obj, int isub);
+int get_x2_gradingratio_at_interface(MBBL pumi_obj, int isub);
+
+KOKKOS_FUNCTION
+double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub);
+
+KOKKOS_FUNCTION
+double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub);
 
 //For 1D and 2D tests ONLY -- NOT TO BE USED IN HPIC2
 class ParticleData{

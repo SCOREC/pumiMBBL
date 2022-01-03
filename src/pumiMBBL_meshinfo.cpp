@@ -388,24 +388,56 @@ int get_num_x1_submesh(MBBL pumi_obj){
     return pumi_obj.mesh.nsubmesh_x1;
 }
 
-int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
+int get_num_x1_elems_in_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x1[isubmesh]->Nel;
 }
 
-int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
+int get_num_x1_elems_before_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+}
+
+double get_x1_elem_size_in_submesh_host(MBBL pumi_obj, int isubmesh, int icell){
+    return pumi_obj.host_submesh_x1[isubmesh]->elem_size_host(icell);
 }
 
 int get_num_x2_submesh(MBBL pumi_obj){
     return pumi_obj.mesh.nsubmesh_x2;
 }
 
-int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
+int get_num_x2_elems_in_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x2[isubmesh]->Nel;
 }
 
-int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
+int get_num_x2_elems_before_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x2[isubmesh]->Nel_cumulative;
+}
+
+double get_x2_elem_size_in_submesh_host(MBBL pumi_obj, int isubmesh, int icell){
+    return pumi_obj.host_submesh_x2[isubmesh]->elem_size_host(icell);
+}
+
+double get_x1_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
+    return pumi_obj.host_submesh_x1[isub]->r;
+}
+
+double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
+    return pumi_obj.host_submesh_x2[isub]->r;
+}
+
+int get_x1_nodeID_at_interface_host(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.host_if_x1_node[isub];
+}
+
+int get_x2_nodeID_at_interface_host(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.host_if_x2_node[isub];
+}
+
+int get_x1_gradingratio_at_interface_host(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.host_if_x1_r[isub];
+}
+
+int get_x2_gadingratio_at_interface_host(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.host_if_x2_r[isub];
 }
 
 int get_total_mesh_elements(MBBL pumi_obj){
