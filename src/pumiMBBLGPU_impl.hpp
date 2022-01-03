@@ -98,6 +98,26 @@ int get_x2_cellID(MBBL pumi_obj, int isub, int icell){
 }
 
 KOKKOS_INLINE_FUNCTION
+int get_x1_interface_directional_nodeID(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.if_x1_node(isub);
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x2_interface_directional_nodeID(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.if_x2_node(isub);
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x1_interface_gradingratio(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.if_x1_r(isub);
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x2_interface_gradingratio(MBBL pumi_obj, int isub){
+    return pumi_obj.mesh.blkif.if_x2_r(isub);
+}
+
+KOKKOS_INLINE_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;

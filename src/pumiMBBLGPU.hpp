@@ -812,6 +812,18 @@ double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 KOKKOS_FUNCTION
 double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
 
+KOKKOS_FUNCTION
+int get_x1_interface_directional_nodeID(MBBL pumi_obj, int isub);
+
+KOKKOS_FUNCTION
+int get_x2_interface_directional_nodeID(MBBL pumi_obj, int isub);
+
+KOKKOS_FUNCTION
+int get_x1_interface_gradingratio(MBBL pumi_obj, int isub);
+
+KOKKOS_FUNCTION
+int get_x2_interface_gradingratio(MBBL pumi_obj, int isub);
+
 //For 1D and 2D tests ONLY -- NOT TO BE USED IN HPIC2
 class ParticleData{
 public:
