@@ -424,20 +424,20 @@ double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
     return pumi_obj.host_submesh_x2[isub]->r;
 }
 
-int get_x1_nodeID_at_interface_host(MBBL pumi_obj, int isub){
-    return pumi_obj.mesh.blkif.host_if_x1_node[isub];
+int get_x1_nodeID_at_interface_host(MBBL pumi_obj, int if_node){
+    return pumi_obj.mesh.blkif.host_if_x1_node[if_node];
 }
 
-int get_x2_nodeID_at_interface_host(MBBL pumi_obj, int isub){
-    return pumi_obj.mesh.blkif.host_if_x2_node[isub];
+int get_x2_nodeID_at_interface_host(MBBL pumi_obj, int if_node){
+    return pumi_obj.mesh.blkif.host_if_x2_node[if_node];
 }
 
-int get_x1_gradingratio_at_interface_host(MBBL pumi_obj, int isub){
-    return pumi_obj.mesh.blkif.host_if_x1_r[isub];
+int get_x1_gradingratio_at_interface_host(MBBL pumi_obj, int if_node){
+    return pumi_obj.mesh.blkif.host_if_x1_r[if_node-1];
 }
 
-int get_x2_gadingratio_at_interface_host(MBBL pumi_obj, int isub){
-    return pumi_obj.mesh.blkif.host_if_x2_r[isub];
+int get_x2_gadingratio_at_interface_host(MBBL pumi_obj, int if_node){
+    return pumi_obj.mesh.blkif.host_if_x2_r[if_node-1];
 }
 
 int get_total_mesh_elements(MBBL pumi_obj){
