@@ -985,12 +985,13 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
     MeshOffsets offsets = MeshOffsets(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
     MeshBdry bdry = MeshBdry(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
 
+    BlockInterface blk_if = BlockInterface(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
     // Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
     //     pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
     //                         isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
     // });
     Mesh pumi_mesh = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
-                        isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
+                        isactive, host_isactive, offsets, bdry, blk_if, offsets.Nel_total, offsets.Nnp_total);
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
 
@@ -1723,6 +1724,166 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
 
     Kokkos::deep_copy(if_x1_r,h_if_x1_r);
     Kokkos::deep_copy(if_x1_node,h_if_x1_node);
+}
+
+BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
+                               int Nx,
+                               SubmeshHostViewPtr hc_submesh_x2,
+                               int Ny,
+                               bool** host_isactive){
+    host_if_x1_r = new double[Nx-1];
+    host_if_x1_node = new int[Nx+1];
+    host_if_x2_r = new double[Ny-1];
+    host_if_x2_node = new int[Ny+1];
+
+    if_x1_r = Kokkos::View<double*> ("interface_x1_grading", Nx-1);
+    if_x1_node = Kokkos::View<int*> ("interface_x1_node", Nx+1);
+    if_x2_r = Kokkos::View<double*> ("interface_x2_grading", Ny-1);
+    if_x2_node = Kokkos::View<int*> ("interface_x2_node", Ny+1);
+
+    host_if_x1_node[0] = 0;
+    for (int i=1; i<Nx; i++){
+       double min_elem = 999.0;
+       double max_elem = 999.0;
+       if (hc_submesh_x1[i]->meshtype & minBL)
+           min_elem = (hc_submesh_x1[i]->t0)*pow(hc_submesh_x1[i]->r,hc_submesh_x1[i]->Nel-1);
+       if (hc_submesh_x1[i]->meshtype & maxBL)
+           min_elem = hc_submesh_x1[i]->t0;
+       if (hc_submesh_x1[i]->meshtype & uniform)
+           min_elem = hc_submesh_x1[i]->t0;
+
+       if (hc_submesh_x1[i+1]->meshtype & minBL)
+           max_elem = hc_submesh_x1[i]->t0;
+       if (hc_submesh_x1[i+1]->meshtype & maxBL)
+           max_elem = (hc_submesh_x1[i]->t0)*pow(hc_submesh_x1[i]->r,hc_submesh_x1[i]->Nel-1);
+       if (hc_submesh_x1[i+1]->meshtype & uniform)
+           max_elem = hc_submesh_x1[i]->t0;
+
+       host_if_x1_r[i-1] = max_elem/min_elem;
+       host_if_x1_node[i] = hc_submesh_x1[i+1]->Nel_cumulative;
+    }
+    host_if_x1_node[Nx] = host_if_x1_node[Nx-1] + hc_submesh_x1[Nx]->Nel;
+
+    host_if_x2_node[0] = 0;
+    for (int i=1; i<Ny; i++){
+       double min_elem = 999.0;
+       double max_elem = 999.0;
+       if (hc_submesh_x2[i]->meshtype & minBL)
+           min_elem = (hc_submesh_x2[i]->t0)*pow(hc_submesh_x2[i]->r,hc_submesh_x2[i]->Nel-1);
+       if (hc_submesh_x2[i]->meshtype & maxBL)
+           min_elem = hc_submesh_x2[i]->t0;
+       if (hc_submesh_x2[i]->meshtype & uniform)
+           min_elem = hc_submesh_x2[i]->t0;
+
+       if (hc_submesh_x2[i+1]->meshtype & minBL)
+           max_elem = hc_submesh_x2[i]->t0;
+       if (hc_submesh_x2[i+1]->meshtype & maxBL)
+           max_elem = (hc_submesh_x2[i]->t0)*pow(hc_submesh_x2[i]->r,hc_submesh_x2[i]->Nel-1);
+       if (hc_submesh_x2[i+1]->meshtype & uniform)
+           max_elem = hc_submesh_x2[i]->t0;
+
+       host_if_x2_r[i-1] = max_elem/min_elem;
+       host_if_x2_node[i] = hc_submesh_x2[i+1]->Nel_cumulative;
+    }
+    host_if_x2_node[Ny] = host_if_x2_node[Ny-1] + hc_submesh_x2[Ny]->Nel;
+
+    Kokkos::View<double*>::HostMirror h_if_x1_r = Kokkos::create_mirror_view(if_x1_r);
+    Kokkos::View<int*>::HostMirror h_if_x1_node = Kokkos::create_mirror_view(if_x1_node);
+    h_if_x1_node(0) = host_if_x1_node[0];
+    for (int i=1; i<Nx; i++){
+       h_if_x1_node(i) = host_if_x1_node[i];
+       h_if_x1_r(i-1) = host_if_x1_r[i-1];
+    }
+    h_if_x1_node(Nx) = host_if_x1_node[Nx];
+
+    Kokkos::deep_copy(if_x1_r,h_if_x1_r);
+    Kokkos::deep_copy(if_x1_node,h_if_x1_node);
+
+    Kokkos::View<double*>::HostMirror h_if_x2_r = Kokkos::create_mirror_view(if_x2_r);
+    Kokkos::View<int*>::HostMirror h_if_x2_node = Kokkos::create_mirror_view(if_x2_node);
+    h_if_x2_node(0) = host_if_x2_node[0];
+    for (int i=1; i<Nx; i++){
+       h_if_x2_node(i) = host_if_x2_node[i];
+       h_if_x2_r(i-1) = host_if_x2_r[i-1];
+    }
+    h_if_x2_node(Nx) = host_if_x2_node[Nx];
+
+    Kokkos::deep_copy(if_x2_r,h_if_x2_r);
+    Kokkos::deep_copy(if_x2_node,h_if_x2_node);
+
+    // block-vertices
+    host_vert_subID = new int[Nx*Ny+Nx+Ny+1];
+    vert_subID = Kokkos::View<int*>("vert_subID",Nx*Ny+Nx+Ny+1);
+    Kokkos::View<int*>::HostMirror h_vert_subID = Kokkos::create_mirror_view(vert_subID);
+    // host_vert_nodeID = new int[Nx*Ny+Nx+Ny+1];
+
+    for (int vertID=0; vertID<Nx*Ny+Nx+Ny+1; vertID++){
+        int jsub = 1 + vertID/(Nx+1);
+        int isub = vertID - (Nx+1)*(jsub-1) + 1;
+
+        if (host_isactive[isub-1][jsub-1]){ // bottom-left
+            host_vert_subID[vertID] = (isub-2) + (jsub-2)*Nx;
+        }
+        else if (host_isactive[isub][jsub-1]){// bottom-right
+            host_vert_subID[vertID] = (isub-1) + (jsub-2)*Nx;
+        }
+        else if (host_isactive[isub-1][jsub]){// top-left
+            host_vert_subID[vertID] = (isub-2) + (jsub-1)*Nx;
+        }
+        else if (host_isactive[isub][jsub]){
+            host_vert_subID[vertID] = (isub-1) + (jsub-1)*Nx;
+        }
+        else {
+            host_vert_subID[vertID] = -1;
+        }
+
+        h_vert_subID(vertID) = host_vert_subID[vertID];
+    }
+    Kokkos::deep_copy(vert_subID,h_vert_subID);
+
+    // block-edges
+    host_edge_subID = new int[2*Nx*Ny+Nx+Ny];
+    edge_subID = Kokkos::View<int*>("edge_subID",2*Nx*Ny+Nx+Ny);
+    Kokkos::View<int*>::HostMirror h_edge_subID = Kokkos::create_mirror_view(edge_subID);
+    // host_edge_nodeID = new int[2*Nx*Ny+Nx+Ny];
+
+    for (int edgeID=0; edgeID<2*Nx*Ny+Nx+Ny; edgeID++){
+        int num = edgeID/(2*Nx+1);
+        int rem = edgeID - num*(2*Nx+1);
+
+        if (rem < Nx){
+            int jsub = 1 + edgeID/(2*Nx+1);
+            int isub = edgeID - (2*Nx+1)*(jsub-1) + 1;
+
+            if (host_isactive[isub][jsub-1]){ // bottom
+                host_edge_subID[edgeID] = (isub-1) + (jsub-2)*Nx;
+            }
+            else if (host_isactive[isub][jsub]){// top
+                host_edge_subID[edgeID] = (isub-1) + (jsub-1)*Nx;
+            }
+            else {
+                host_edge_subID[edgeID] = -1;
+            }
+        }
+        else{
+            int jsub = 1 + edgeID/(2*Nx+1);
+            int isub = edgeID - (2*Nx+1)*(jsub-1) - Nx + 1;
+
+            if (host_isactive[isub-1][jsub]){ // left
+                host_edge_subID[edgeID] = (isub-2) + (jsub-1)*Nx;
+            }
+            else if (host_isactive[isub][jsub]){// right
+                host_edge_subID[edgeID] = (isub-1) + (jsub-1)*Nx;
+            }
+            else {
+                host_edge_subID[edgeID] = -1;
+            }
+        }
+
+        h_edge_subID(edgeID) = host_edge_subID[edgeID];
+    }
+    Kokkos::deep_copy(edge_subID,h_edge_subID);
+
 }
 
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
