@@ -586,14 +586,14 @@ public:
     int *host_if_x2_node;
 
     // 2D
-    // Kokkos::View<int*> vert_nodeID;
+    Kokkos::View<int*> vert_nodeID;
     Kokkos::View<int*> vert_subID;
-    // Kokkos::View<int*> edge_first_nodeID;
+    Kokkos::View<int*> edge_first_nodeID;
     Kokkos::View<int*> edge_subID;
 
-    // int *host_vert_nodeID;
+    int *host_vert_nodeID;
     int *host_vert_subID;
-    // int *host_edge_first_nodeID;
+    int *host_edge_first_nodeID;
     int *host_edge_subID;
 
     // Constructors
@@ -603,6 +603,7 @@ public:
 
     BlockInterface(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 
+    void set_interface_nodeIDs(int *vert_nodeIDs, int *edge_first_nodeIDs, int Nx, int Ny);
 };
 
 /**
