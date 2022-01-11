@@ -607,6 +607,18 @@ bool is_vert_bdry(MBBL pumi_obj, int iVert){
     }
 }
 
+void get_block_vert_submeshIDs_host(MBBL pumi_obj, int iVert, int *isub, int *jsub){
+    int subID = pumi_obj.mesh.blkif.host_vert_subID[iVert];
+    *jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = subID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+}
+
+void get_block_edge_submeshIDs_host(MBBL pumi_obj, int iEdge, int *isub, int *jsub){
+    int subID = pumi_obj.mesh.blkif.host_edge_subID[iEdge];
+    *jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = subID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+}
+
 bool is_block_active_host(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.host_isactive[isub][jsub];
 }

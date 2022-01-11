@@ -61,6 +61,8 @@ bool is_edge_bdry(MBBL pumi_obj,  int iEdge);
 bool is_vert_bdry(MBBL pumi_obj,  int iVert);
 int get_total_mesh_block_edges(MBBL pumi_obj);
 int get_total_mesh_block_verts(MBBL pumi_obj);
+void get_block_vert_submeshIDs_host(MBBL pumi_obj, int iVert, int *isub, int *jsub);
+void get_block_edge_submeshIDs_host(MBBL pumi_obj, int iEdge, int *isub, int *jsub);
 int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2);
 int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2);
 bool check_edge_index_bounds(MBBL pumi_obj, int iEdge);
