@@ -36,7 +36,7 @@ int main( int argc, char* argv[] )
 
     pumi::MBBL pumi_obj = pumi::initialize_MBBL_mesh(pumi_inputs, pumi_options);
 
-    printf("Mesh volume = %2.2f\n",pumi::get_mesh_volume(pumi_obj) );
+    printf("Mesh volume = %2.2e\n",pumi::get_mesh_volume(pumi_obj) );
     pumi::inputs_deallocate(pumi_inputs);
 
     pumi::print_mesh_skeleton(pumi_obj);
@@ -110,6 +110,38 @@ int main( int argc, char* argv[] )
     //     }
     // });
 
+    for (int vertID=0; vertID<pumi::get_total_mesh_block_verts(pumi_obj); vertID++){
+        int Nx = nsubmesh_x1;
+
+        int subID = pumi_obj.mesh.blkif.host_vert_subID[vertID];
+
+        int jsub = subID/Nx + 1;
+        int isub = subID - Nx*(jsub-1) + 1;
+
+        if (subID+1){
+            printf("vert %3d -- isub=%d   jsub=%d\n", vertID, isub, jsub);
+        }
+        else{
+            printf("vert %3d -- INACTIVE\n", vertID);
+        }
+    }
+    printf("\n\n");
+    for (int edgeID=0; edgeID<pumi::get_total_mesh_block_edges(pumi_obj); edgeID++){
+        int Nx = nsubmesh_x1;
+
+        int subID = pumi_obj.mesh.blkif.host_edge_subID[edgeID];
+
+        int jsub = subID/Nx + 1;
+        int isub = subID - Nx*(jsub-1) + 1;
+
+        if (subID+1){
+            printf("edge %3d -- isub=%d   jsub=%d\n", edgeID, isub, jsub);
+        }
+        else{
+            printf("edge %3d -- INACTIVE\n", edgeID);
+        }
+    }
+
     // double integral_tot = 0.0;
     // int Nblk = pumi::get_total_submesh_blocks(pumi_obj);
     // for (int isubmesh=0; isubmesh<Nblk; isubmesh++){
@@ -129,7 +161,7 @@ int main( int argc, char* argv[] )
     //     }
     // }
     // printf("domain area is %2.4f\n",integral_tot );
-
+    /*
     int N_part = 1000;
     int N_step = 10;
     // Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
@@ -348,7 +380,7 @@ int main( int argc, char* argv[] )
         }
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-1 = %d\n",num_push );
-    }
+    }*/
     // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
     //     int Nx = pumi_obj.mesh.nsubmesh_x1;
     //     int Ny = pumi_obj.mesh.nsubmesh_x2;
