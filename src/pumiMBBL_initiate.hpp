@@ -90,6 +90,6 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
                             SubmeshDeviceViewPtr submesh_x2, SubmeshHostViewPtr hc_submesh_x2);
 
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options);
-
+MBBL initialize_interface_nodeIDs(MBBL pumi_obj);
 } // namespace pumi
 #endif

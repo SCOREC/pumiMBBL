@@ -1886,6 +1886,91 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
 
 }
 
+void BlockInterface::set_interface_nodeIDs(int *vert_nodeIDs,
+                                           int *edge_first_nodeIDs,
+                                           int Nx,
+                                           int Ny){
+    host_vert_nodeID = new int[Nx*Ny+Nx+Ny+1];
+    host_edge_first_nodeID = new int[2*Nx*Ny+Nx+Ny];
+    vert_nodeID = Kokkos::View<int*>("vert_nodeID",Nx*Ny+Nx+Ny+1);
+    Kokkos::View<int*>::HostMirror h_vert_nodeID = Kokkos::create_mirror_view(vert_nodeID);
+    edge_first_nodeID = Kokkos::View<int*>("edge_first_nodeID",2*Nx*Ny+Nx+Ny);
+    Kokkos::View<int*>::HostMirror h_edge_first_nodeID = Kokkos::create_mirror_view(edge_first_nodeID);
+
+    for (int vertID=0; vertID < Nx*Ny+Nx+Ny+1; vertID++){
+        host_vert_nodeID[vertID] = vert_nodeIDs[vertID];
+        h_vert_nodeID(vertID) = vert_nodeIDs[vertID];
+    }
+    Kokkos::deep_copy(vert_nodeID,h_vert_nodeID);
+    for (int edgeID=0; edgeID < 2*Nx*Ny+Nx+Ny; edgeID++){
+        host_edge_first_nodeID[edgeID] = edge_first_nodeIDs[edgeID];
+        h_edge_first_nodeID(edgeID) = edge_first_nodeIDs[edgeID];
+    }
+    Kokkos::deep_copy(edge_first_nodeID,h_edge_first_nodeID);
+
+}
+
+MBBL initialize_interface_nodeIDs(MBBL pumi_obj){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int Ny = pumi_obj.mesh.nsubmesh_x2;
+
+    int *vert_nodeIDs = new int[Nx*Ny+Nx+Ny+1];
+    int *edge_nodeIDs = new int[2*Nx*Ny+Nx+Ny];
+
+    for (int jvert=0; jvert<Ny+1; jvert++){
+        for (int ivert=0; ivert<Nx+1; ivert++){
+            int vertID = ivert + jvert*(Nx+1);
+
+            int inp = get_x1_nodeID_at_interface_host(pumi_obj,ivert);
+            int jnp = get_x2_nodeID_at_interface_host(pumi_obj,jvert);
+
+            if (pumi_obj.mesh.blkif.host_vert_subID[vertID]+1){
+                vert_nodeIDs[vertID] = get_global_nodeID_2D(pumi_obj,inp,jnp);
+            }
+            else{
+                vert_nodeIDs[vertID] = -1;
+            }
+        }
+    }
+
+    //horizontal block-edges
+    for (int jvert=0; jvert<Ny+1; jvert++){
+        for (int iedge=0; iedge<Nx; iedge++){
+            int edgeID = iedge + jvert*(2*Nx+1);
+            int inp = get_x1_nodeID_at_interface_host(pumi_obj,iedge);
+            int jnp = get_x2_nodeID_at_interface_host(pumi_obj,jvert);
+            if (pumi_obj.mesh.blkif.host_edge_subID[edgeID]+1){
+                edge_nodeIDs[edgeID] = get_global_nodeID_2D(pumi_obj,inp+1,jnp);
+            }
+            else{
+                edge_nodeIDs[edgeID] = -1;
+            }
+        }
+    }
+
+    //vertical block-edges
+    for (int jedge=0; jedge<Ny; jedge++){
+        for (int ivert=0; ivert<Nx+1; ivert++){
+            int edgeID = Nx + jedge*(2*Nx+1) + ivert;
+            int inp = get_x1_nodeID_at_interface_host(pumi_obj,ivert);
+            int jnp = get_x2_nodeID_at_interface_host(pumi_obj,jedge);
+            if (pumi_obj.mesh.blkif.host_edge_subID[edgeID]+1){
+                edge_nodeIDs[edgeID] = get_global_nodeID_2D(pumi_obj,inp,jnp+1);
+            }
+            else{
+                edge_nodeIDs[edgeID] = -1;
+            }
+        }
+    }
+
+    pumi_obj.mesh.blkif.set_interface_nodeIDs(vert_nodeIDs,edge_nodeIDs,Nx,Ny);
+
+    delete vert_nodeIDs;
+    delete edge_nodeIDs;
+
+    return pumi_obj;
+}
+
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
     pumi::Mesh mesh;
     pumi::SubmeshInit x1_sub_obj;
@@ -1907,6 +1992,7 @@ MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
             pumi::print_2D_node_coordinates(pumi_obj);
             pumi::print_2D_node_elem_connectivity(pumi_obj);
         }
+        pumi_obj = initialize_interface_nodeIDs(pumi_obj);
     }
     return pumi_obj;
 }
