@@ -584,12 +584,24 @@ public:
     int *host_if_x1_node;
     double *host_if_x2_r;
     int *host_if_x2_node;
+
     // 2D
+    // Kokkos::View<int*> vert_nodeID;
+    Kokkos::View<int*> vert_subID;
+    // Kokkos::View<int*> edge_first_nodeID;
+    Kokkos::View<int*> edge_subID;
+
+    // int *host_vert_nodeID;
+    int *host_vert_subID;
+    // int *host_edge_first_nodeID;
+    int *host_edge_subID;
 
     // Constructors
     BlockInterface(){};
 
-    BlockInterface(SubmeshHostViewPtr hc_submesh_x1,int Nx);
+    BlockInterface(SubmeshHostViewPtr , int);
+
+    BlockInterface(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 
 };
 
@@ -664,6 +676,7 @@ public:
          bool** host_isactive_,
          MeshOffsets offsets_,
          MeshBdry bdry_,
+         BlockInterface blkif_,
          int Nel_total_,
          int Nnp_total_):
          ndim(2),
@@ -675,6 +688,7 @@ public:
          host_isactive(host_isactive_),
          offsets(offsets_),
          bdry(bdry_),
+         blkif(blkif_),
          Nel_total(Nel_total_),
          Nnp_total(Nnp_total_)
          {
