@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
 
     // pumi::print_blockwise_nodeIDs(pumi_obj);
     // pumi::print_node_submeshID(pumi_obj);
-    // pumi::print_fullmesh_nodeIDs(pumi_obj);
+    pumi::print_fullmesh_nodeIDs(pumi_obj);
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
@@ -114,12 +114,13 @@ int main( int argc, char* argv[] )
         int Nx = nsubmesh_x1;
 
         int subID = pumi_obj.mesh.blkif.host_vert_subID[vertID];
+        int nodeID = pumi_obj.mesh.blkif.host_vert_nodeID[vertID];
 
         int jsub = subID/Nx + 1;
         int isub = subID - Nx*(jsub-1) + 1;
 
         if (subID+1){
-            printf("vert %3d -- isub=%d   jsub=%d\n", vertID, isub, jsub);
+            printf("vert %3d -- isub=%d   jsub=%d  nodeID=%d\n", vertID, isub, jsub, nodeID);
         }
         else{
             printf("vert %3d -- INACTIVE\n", vertID);
@@ -130,12 +131,13 @@ int main( int argc, char* argv[] )
         int Nx = nsubmesh_x1;
 
         int subID = pumi_obj.mesh.blkif.host_edge_subID[edgeID];
+        int nodeID = pumi_obj.mesh.blkif.host_edge_first_nodeID[edgeID];
 
         int jsub = subID/Nx + 1;
         int isub = subID - Nx*(jsub-1) + 1;
 
         if (subID+1){
-            printf("edge %3d -- isub=%d   jsub=%d\n", edgeID, isub, jsub);
+            printf("edge %3d -- isub=%d   jsub=%d nodeID=%d\n", edgeID, isub, jsub, nodeID);
         }
         else{
             printf("edge %3d -- INACTIVE\n", edgeID);
