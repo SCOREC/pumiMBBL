@@ -705,7 +705,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 
         type = unassigned;
         xlength = 1000.0*total_length;
-        DoubleViewPtr BLcoords;
+        DoubleView BLcoords;
         double *host_BLcoords = NULL;
         // padding submesh to min-side
         xmax = pumi_inputs->domain_x1_min;
@@ -731,7 +731,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
         }
         type = unassigned;
         xlength = 1000.0*total_length;
-        DoubleViewPtr BLcoords;
+        DoubleView BLcoords;
         double *host_BLcoords = NULL;
         // padding submesh to min-side
         xmax = pumi_inputs->domain_x2_min;
@@ -753,7 +753,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 
 
     for (int isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
-        DoubleViewPtr BLcoords;
+        DoubleView BLcoords;
         double *host_BLcoords;
         std::string BLcoordsname;
 
@@ -828,9 +828,9 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
             r_t0_ratio = (r-1.0)/t0;
             logr = log(r);
             if (pumi_options.BL_storage_option){
-                BLcoords = DoubleViewPtr (BLcoordsname, Nel+1);
+                BLcoords = DoubleView (BLcoordsname, Nel+1);
                 host_BLcoords = new double[Nel+1];
-                DoubleViewPtr::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
+                DoubleView::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
                 h_BLcoords(0) = xmin;
                 host_BLcoords[0] = xmin;
                 double cell_size = t0;
@@ -863,9 +863,9 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
             r_t0_ratio = (r-1.0)/t0;
             logr = log(r);
             if (pumi_options.BL_storage_option){
-                BLcoords = DoubleViewPtr (BLcoordsname, Nel+1);
+                BLcoords = DoubleView (BLcoordsname, Nel+1);
                 host_BLcoords = new double[Nel+1];
-                DoubleViewPtr::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
+                DoubleView::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
                 h_BLcoords(0) = xmin;
                 host_BLcoords[0] = xmin;
                 double cell_size = t0*pow(r,Nel-1);

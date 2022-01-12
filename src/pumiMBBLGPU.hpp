@@ -48,7 +48,7 @@ enum Meshtype{
 
 ///////// PUMI-MBBL-GPU Data-Structures ////////////////////////////////////////////////////
 
-using DoubleViewPtr = Kokkos::View<double*>;
+using DoubleView = Kokkos::View<double*>;
 
 /**
  * @brief Base class for submesh-blocks which stores parameters defining the mesh in a block
@@ -70,7 +70,7 @@ public:
 
     double r_by_t0; //!< value of (r-1.0)/t0 -- value needed in analytical cell-locate functions
     double log_r; //!< value of log(r) -- value needed in analtyical cell-locate functions
-    DoubleViewPtr BL_coords; //<! BL coords to be stored (optional) for BL blocks for faster particle search
+    DoubleView BL_coords; //<! BL coords to be stored (optional) for BL blocks for faster particle search
     double *host_BL_coords;
     /**
     * @brief Default constructor.
@@ -101,7 +101,7 @@ public:
             int Nel_cumulative_,
             double r_by_t0_,
             double log_r_,
-            DoubleViewPtr BL_coords_,
+            DoubleView BL_coords_,
             double* host_BL_coords_):
             xmin(xmin_),
             xmax(xmax_),
@@ -158,7 +158,7 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_,
+                    DoubleView BL_coords_,
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,uniform,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
@@ -240,7 +240,7 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_,
+                    DoubleView BL_coords_,
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,minBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
@@ -360,7 +360,7 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_,
+                    DoubleView BL_coords_,
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,maxBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
@@ -481,7 +481,7 @@ public:
                     int Nel_cumulative_,
                     double r_by_t0_,
                     double log_r_,
-                    DoubleViewPtr BL_coords_,
+                    DoubleView BL_coords_,
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,unassigned,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
