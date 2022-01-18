@@ -45,7 +45,7 @@ int main( int argc, char* argv[] )
 
     // pumi::print_blockwise_nodeIDs(pumi_obj);
     // pumi::print_node_submeshID(pumi_obj);
-    pumi::print_fullmesh_nodeIDs(pumi_obj);
+    // pumi::print_fullmesh_nodeIDs(pumi_obj);
 
     // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
     //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
@@ -142,7 +142,7 @@ int main( int argc, char* argv[] )
 
     Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
         for (int i=0; i<Nnp_total; i++){
-            printf("%.16e %.16e\n",phi_grad(i)[0],phi_grad(i)[1] );
+            // printf("%.16e %.16e\n",phi_grad(i)[0],phi_grad(i)[1] );
         }
     });
 

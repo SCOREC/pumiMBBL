@@ -986,12 +986,14 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
     MeshBdry bdry = MeshBdry(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
 
     BlockInterface blk_if = BlockInterface(hc_submesh_x1, nsubmesh_x1, hc_submesh_x2, nsubmesh_x2, host_isactive);
+    MeshBST bst;
+    bst.initialize_MeshBST(blk_if,hc_submesh_x1,nsubmesh_x1,hc_submesh_x2,nsubmesh_x2,host_isactive);
     // Kokkos::parallel_for("2D-meshobj-init", 1, KOKKOS_LAMBDA (const int) {
     //     pumi_mesh(0) = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
     //                         isactive, host_isactive, offsets, bdry, offsets.Nel_total, offsets.Nnp_total);
     // });
     Mesh pumi_mesh = Mesh(nsubmesh_x1, Nel_tot_x1, nsubmesh_x2, Nel_tot_x2,
-                        isactive, host_isactive, offsets, bdry, blk_if, offsets.Nel_total, offsets.Nnp_total);
+                        isactive, host_isactive, offsets, bdry, blk_if, bst, offsets.Nel_total, offsets.Nnp_total);
 
     print_mesh_params(pumi_mesh, hc_submesh_x1, hc_submesh_x2);
 
@@ -1969,6 +1971,94 @@ MBBL initialize_interface_nodeIDs(MBBL pumi_obj){
     delete edge_nodeIDs;
 
     return pumi_obj;
+}
+
+void MeshBST::initialize_MeshBST(BlockInterface blkif,
+                                    SubmeshHostViewPtr hc_submesh_x1,
+                                    int Nx,
+                                    SubmeshHostViewPtr hc_submesh_x2,
+                                    int Ny,
+                                    bool **host_isactive){
+
+    total_active_blocks = 0;
+    for (int jsub=1; jsub<=Ny; jsub++){
+        for (int isub=1; isub<=Nx; isub++){
+            if (host_isactive[isub][jsub]){
+                total_active_blocks++;
+            }
+        }
+    }
+    host_active_blockID = new int[total_active_blocks];
+    host_block_nodes_cumulative = new int[total_active_blocks];
+    active_blockID = Kokkos::View<int*>("active-blockIDs",total_active_blocks);
+    block_nodes_cumulative = Kokkos::View<int*>("block-nodes-cumulative",total_active_blocks);
+    Kokkos::View<int*>::HostMirror h_active_blockID = Kokkos::create_mirror_view(active_blockID);
+    Kokkos::View<int*>::HostMirror h_block_nodes_cumulative = Kokkos::create_mirror_view(block_nodes_cumulative);
+
+    int blkID = 0;
+    for (int jsub=1; jsub<=Ny; jsub++){
+        for (int isub=1; isub<=Nx; isub++){
+            if (host_isactive[isub][jsub]){
+                host_active_blockID[blkID] = (isub-1) + (jsub-1)*Nx;
+                if (blkID==0){
+                    host_block_nodes_cumulative[blkID] = (hc_submesh_x1[isub]->Nel-1)*(hc_submesh_x2[jsub]->Nel-1);
+                }
+                else{
+                    host_block_nodes_cumulative[blkID] = host_block_nodes_cumulative[blkID-1] +
+                                                        (hc_submesh_x1[isub]->Nel-1)*(hc_submesh_x2[jsub]->Nel-1);
+                }
+                h_block_nodes_cumulative(blkID) = host_block_nodes_cumulative[blkID];
+                h_active_blockID(blkID) = (isub-1) + (jsub-1)*Nx;
+                blkID++;
+            }
+        }
+    }
+    Kokkos::deep_copy(active_blockID, h_active_blockID);
+    Kokkos::deep_copy(block_nodes_cumulative, h_block_nodes_cumulative);
+
+    total_active_edges = 0;
+    for(int iEdge=0; iEdge<2*Nx*Ny+Nx+Ny; iEdge++){
+        if (blkif.host_edge_subID[iEdge]+1){
+            total_active_edges++;
+        }
+    }
+
+    host_active_edgeID = new int[total_active_edges];
+    host_edge_nodes_cumulative = new int[total_active_edges];
+    active_edgeID = Kokkos::View<int*>("active-edgeIDs",total_active_edges);
+    edge_nodes_cumulative = Kokkos::View<int*>("edge-nodes-cumulative",total_active_edges);
+    Kokkos::View<int*>::HostMirror h_active_edgeID = Kokkos::create_mirror_view(active_edgeID);
+    Kokkos::View<int*>::HostMirror h_edge_nodes_cumulative = Kokkos::create_mirror_view(edge_nodes_cumulative);
+
+
+    int edgeID = 0;
+    for(int iEdge=0; iEdge<2*Nx*Ny+Nx+Ny; iEdge++){
+        if (blkif.host_edge_subID[iEdge]+1){
+            host_active_edgeID[edgeID] = iEdge;
+
+            int num = iEdge/(2*Nx+1);
+            int rem = iEdge - num*(2*Nx+1);
+            int nel_edge;
+            if (rem < Nx){
+                nel_edge = hc_submesh_x1[rem+1]->Nel-1;
+            }
+            else{
+                nel_edge = hc_submesh_x2[num+1]->Nel-1;
+            }
+            if (edgeID==0){
+                host_edge_nodes_cumulative[edgeID] = nel_edge;
+            }
+            else{
+                host_edge_nodes_cumulative[edgeID] = host_edge_nodes_cumulative[edgeID-1] +
+                                                    nel_edge;
+            }
+            h_edge_nodes_cumulative(edgeID) = host_edge_nodes_cumulative[edgeID];
+            h_active_edgeID(edgeID) = iEdge;
+            edgeID++;
+        }
+    }
+    Kokkos::deep_copy(active_edgeID,h_active_edgeID);
+    Kokkos::deep_copy(edge_nodes_cumulative,h_edge_nodes_cumulative);
 }
 
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){

@@ -592,7 +592,6 @@ int calc_first_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     int im1 = iVert - jm1*(Nx+1);
     int iEdge = (jm1-1)*(2*Nx+1)+im1+Nx;
     int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jm1);
-    printf("ivert=%d s1 edge=%d nel=%d\n",iVert,iEdge,nel_blk );
     return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,nel_blk-2);
 }
 

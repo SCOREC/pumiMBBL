@@ -606,6 +606,26 @@ public:
     void set_interface_nodeIDs(int *vert_nodeIDs, int *edge_first_nodeIDs, int Nx, int Ny);
 };
 
+class MeshBST{
+public:
+    int total_active_blocks;
+    int total_active_edges;
+
+    Kokkos::View<int*> active_blockID;
+    Kokkos::View<int*> block_nodes_cumulative;
+    Kokkos::View<int*> active_edgeID;
+    Kokkos::View<int*> edge_nodes_cumulative;
+
+    int* host_active_blockID;
+    int* host_block_nodes_cumulative;
+    int* host_active_edgeID;
+    int* host_edge_nodes_cumulative;
+
+    MeshBST(){};
+    // MeshBST(SubmeshHostViewPtr, int, SubmeshHostViewPtr, int, bool**);
+    void initialize_MeshBST(BlockInterface blkif, SubmeshHostViewPtr, int, SubmeshHostViewPtr, int, bool**);
+};
+
 /**
  * @brief Mesh class
  *
@@ -624,6 +644,7 @@ public:
     MeshOffsets offsets;
     MeshBdry bdry;
     BlockInterface blkif;
+    MeshBST bst;
 
     int Nel_tot_x1; //!< Total number of elements in x1-direction
     int Nel_tot_x2; //!< Total number of elements in x2-direction
@@ -678,6 +699,7 @@ public:
          MeshOffsets offsets_,
          MeshBdry bdry_,
          BlockInterface blkif_,
+         MeshBST bst_,
          int Nel_total_,
          int Nnp_total_):
          ndim(2),
@@ -690,6 +712,7 @@ public:
          offsets(offsets_),
          bdry(bdry_),
          blkif(blkif_),
+         bst(bst_),
          Nel_total(Nel_total_),
          Nnp_total(Nnp_total_)
          {
