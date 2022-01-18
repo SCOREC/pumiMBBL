@@ -3,6 +3,8 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs);
 void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
 void write2file(Kokkos::View<pumi::ParticleData*>::HostMirror hp, int N_part, int nstep);
+void write2file_2(pumi::DoubleView::HostMirror hp, int N_part);
+void write2file_3(pumi::DoubleView::HostMirror hp, int N_part);
 
 int main( int argc, char* argv[] )
 {
@@ -110,39 +112,70 @@ int main( int argc, char* argv[] )
     //     }
     // });
 
-    for (int vertID=0; vertID<pumi::get_total_mesh_block_verts(pumi_obj); vertID++){
-        int Nx = nsubmesh_x1;
-
-        int subID = pumi_obj.mesh.blkif.host_vert_subID[vertID];
-        int nodeID = pumi_obj.mesh.blkif.host_vert_nodeID[vertID];
-
-        int jsub = subID/Nx + 1;
-        int isub = subID - Nx*(jsub-1) + 1;
-
-        if (subID+1){
-            printf("vert %3d -- isub=%d   jsub=%d  nodeID=%d\n", vertID, isub, jsub, nodeID);
-        }
-        else{
-            printf("vert %3d -- INACTIVE\n", vertID);
-        }
-    }
-    printf("\n\n");
-    for (int edgeID=0; edgeID<pumi::get_total_mesh_block_edges(pumi_obj); edgeID++){
-        int Nx = nsubmesh_x1;
-
-        int subID = pumi_obj.mesh.blkif.host_edge_subID[edgeID];
-        int nodeID = pumi_obj.mesh.blkif.host_edge_first_nodeID[edgeID];
-
-        int jsub = subID/Nx + 1;
-        int isub = subID - Nx*(jsub-1) + 1;
-
-        if (subID+1){
-            printf("edge %3d -- isub=%d   jsub=%d nodeID=%d\n", edgeID, isub, jsub, nodeID);
-        }
-        else{
-            printf("edge %3d -- INACTIVE\n", edgeID);
+    int Nnp_total = pumi_obj.mesh.Nnp_total;
+    pumi::DoubleView phi = pumi::DoubleView("phi",Nnp_total);
+    pumi::DoubleView::HostMirror h_phi = Kokkos::create_mirror_view(phi);
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int Ny = pumi_obj.mesh.nsubmesh_x2;
+    for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+        for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
+            if (is_block_active_host(pumi_obj,isubmesh,jsubmesh)){
+                int Nnp_y = pumi_obj.host_submesh_x2[jsubmesh]->Nel+1;
+                int Nnp_x = pumi_obj.host_submesh_x1[isubmesh]->Nel+1;
+                for (int inp=0; inp<Nnp_x; inp++){
+                    for (int jnp=0; jnp<Nnp_y; jnp++){
+                        int Inp = inp + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+                        int Jnp = jnp + pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+                        double x1_coord = pumi_obj.host_submesh_x1[isubmesh]->node_coords(inp);
+                        double x2_coord = pumi_obj.host_submesh_x2[jsubmesh]->node_coords(jnp);
+                        int nodeID = pumi::get_global_nodeID_2D(pumi_obj,Inp,Jnp);
+                        h_phi(nodeID) = x1_coord*x2_coord;
+                    }
+                }
+            }
         }
     }
+    Kokkos::deep_copy(phi,h_phi);
+    write2file_2(h_phi,Nnp_total);
+
+    pumi::Vector3View phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
+
+    // pumi::Vector3View::HostMirror h_phi_grad = Kokkos::create_mirror_view(phi_grad);
+    // Kokkos::deep_copy(h_phi_grad,phi_grad);
+    // write2file_3(h_phi_grad,Nnp_total);
+    // for (int vertID=0; vertID<pumi::get_total_mesh_block_verts(pumi_obj); vertID++){
+    //     int Nx = nsubmesh_x1;
+    //
+    //     int subID = pumi_obj.mesh.blkif.host_vert_subID[vertID];
+    //     int nodeID = pumi_obj.mesh.blkif.host_vert_nodeID[vertID];
+    //
+    //     int jsub = subID/Nx + 1;
+    //     int isub = subID - Nx*(jsub-1) + 1;
+    //
+    //     if (subID+1){
+    //         printf("vert %3d -- isub=%d   jsub=%d  nodeID=%d\n", vertID, isub, jsub, nodeID);
+    //     }
+    //     else{
+    //         printf("vert %3d -- INACTIVE\n", vertID);
+    //     }
+    // }
+    // printf("\n\n");
+    // for (int edgeID=0; edgeID<pumi::get_total_mesh_block_edges(pumi_obj); edgeID++){
+    //     int Nx = nsubmesh_x1;
+    //
+    //     int subID = pumi_obj.mesh.blkif.host_edge_subID[edgeID];
+    //     int nodeID = pumi_obj.mesh.blkif.host_edge_first_nodeID[edgeID];
+    //
+    //     int jsub = subID/Nx + 1;
+    //     int isub = subID - Nx*(jsub-1) + 1;
+    //
+    //     if (subID+1){
+    //         printf("edge %3d -- isub=%d   jsub=%d nodeID=%d\n", edgeID, isub, jsub, nodeID);
+    //     }
+    //     else{
+    //         printf("edge %3d -- INACTIVE\n", edgeID);
+    //     }
+    // }
 
     // double integral_tot = 0.0;
     // int Nblk = pumi::get_total_submesh_blocks(pumi_obj);
@@ -663,6 +696,30 @@ void write2file(Kokkos::View<pumi::ParticleData*>::HostMirror hp, int N_part, in
         int subID = hp(i).submeshID;
         int exit_faceID = hp(i).exit_faceID;
         fprintf(part_file, "%d %.5e %.5e %d %d\n", part_active, hp(i).x1, hp(i).x2, subID, exit_faceID);
+    }
+
+    fclose(part_file);
+}
+
+void write2file_2(pumi::DoubleView::HostMirror hp, int N_part){
+    FILE *part_file;
+    char part_filename[30];
+    sprintf(part_filename,"phi_data.dat");
+    part_file = fopen(part_filename,"w");
+    for (int i=0; i<N_part; i=i+1){
+        fprintf(part_file, "%.16e\n", hp(i));
+    }
+
+    fclose(part_file);
+}
+
+void write2file_3(pumi::Vector3View::HostMirror hp, int N_part){
+    FILE *part_file;
+    char part_filename[30];
+    sprintf(part_filename,"phi_grad_data.dat");
+    part_file = fopen(part_filename,"w");
+    for (int i=0; i<N_part; i=i+1){
+        fprintf(part_file, "%.16e %.16e\n", hp(i)[0],hp(i)[1]);
     }
 
     fclose(part_file);
