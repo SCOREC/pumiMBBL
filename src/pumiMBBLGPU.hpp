@@ -797,6 +797,12 @@ KOKKOS_FUNCTION
 int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int Jnp);
 
 KOKKOS_FUNCTION
+int calc_global_nodeID_on_horizontal_edge(MBBL pumi_obj, int iEdge, int inode);
+
+KOKKOS_FUNCTION
+int calc_global_nodeID_on_vertical_edge(MBBL pumi_obj, int iEdge, int inode);
+
+KOKKOS_FUNCTION
 Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
                    int *bdry_hit, double *fraction_done, int *faceID_on_bdry);
@@ -808,6 +814,9 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
 
 KOKKOS_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell);
+
+KOKKOS_FUNCTION
+void get_directional_interior_nodeIDs(MBBL pumi_obj, int isub, int jsub, int inode, int *inp, int *jnp);
 
 KOKKOS_FUNCTION
 bool is_block_active(MBBL pumi_obj, int isub, int jsub);
@@ -856,6 +865,12 @@ double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
 double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub);
+
+KOKKOS_FUNCTION
+Vector3 get_edge_normal(MBBL pumi_obj, int iEdge);
+
+KOKKOS_FUNCTION
+Vector3 get_vert_normal(MBBL pumi_obj, int iVert);
 
 //For 1D and 2D tests ONLY -- NOT TO BE USED IN HPIC2
 class ParticleData{

@@ -84,7 +84,7 @@ int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
 
 KOKKOS_INLINE_FUNCTION
 int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
-    return pumi_obj.submesh_x1(isubmesh)()->Nel;
+    return pumi_obj.submesh_x2(isubmesh)()->Nel;
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -94,7 +94,7 @@ int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
 
 KOKKOS_INLINE_FUNCTION
 int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
-    return pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
+    return pumi_obj.submesh_x2(isubmesh)()->Nel_cumulative;
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -109,12 +109,22 @@ double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
 
 KOKKOS_INLINE_FUNCTION
 double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub){
-    return pumi_obj.submesh_x1(isub)()->r;
+    if (pumi_obj.submesh_x1(isub)()-> meshtype & maxBL){
+        return 1.0/pumi_obj.submesh_x1(isub)()->r;
+    }
+    else{
+        return pumi_obj.submesh_x1(isub)()->r;
+    }
 }
 
 KOKKOS_INLINE_FUNCTION
 double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub){
-    return pumi_obj.submesh_x2(isub)()->r;
+    if (pumi_obj.submesh_x2(isub)()-> meshtype & maxBL){
+        return 1.0/pumi_obj.submesh_x2(isub)()->r;
+    }
+    else{
+        return pumi_obj.submesh_x2(isub)()->r;
+    }
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -148,6 +158,12 @@ int get_x2_gadingratio_at_interface(MBBL pumi_obj, int if_node){
 }
 
 KOKKOS_INLINE_FUNCTION
+void get_directional_submeshID(MBBL pumi_obj, int submeshID, int *isub, int *jsub){
+    *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
+}
+
+KOKKOS_INLINE_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
@@ -156,9 +172,35 @@ void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cell
 }
 
 KOKKOS_INLINE_FUNCTION
+void get_directional_interior_nodeIDs(MBBL pumi_obj, int isub, int , int inode, int *inp, int *jnp){
+    *jnp = inode/(pumi_obj.submesh_x1(isub)()->Nel-1) + 1;
+    *inp = inode - (*jnp-1)*(pumi_obj.submesh_x1(isub)()->Nel-1) + 1;
+}
+
+KOKKOS_INLINE_FUNCTION
 void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
     *submeshID = (isub-1) + (jsub-1)*pumi_obj.mesh.nsubmesh_x1;
     *cellID = icell + jcell*pumi_obj.submesh_x1(isub)()->Nel;
+}
+
+KOKKOS_INLINE_FUNCTION
+Vector3 get_edge_normal(MBBL pumi_obj, int iEdge){
+    return pumi_obj.mesh.bdry.bdry_edge_normal(iEdge);
+}
+
+KOKKOS_INLINE_FUNCTION
+Vector3 get_vert_normal(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.bdry.bdry_vert_normal(iVert);
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_block_vert_nodeID(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.vert_nodeID(iVert);
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_block_vert_submeshID(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.vert_subID(iVert);
 }
 
 /**
@@ -414,10 +456,13 @@ void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, in
 
 
 KOKKOS_INLINE_FUNCTION
-int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int Jnp){
-    int nodeID = Jnp*(pumi_obj.mesh.Nel_tot_x1+1) + Inp;
-    int jnp = Jnp - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
+int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int inp, int jnp){
+    // int nodeID = Jnp*(pumi_obj.mesh.Nel_tot_x1+1) + Inp;
+    // int jnp = Jnp - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
     // int nodeoffset = pumi_obj.mesh.nodeoffset(isubmesh,Jnp);
+    int Inp = inp + pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
+    int Jnp = jnp + pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
+    int nodeID = Jnp*(pumi_obj.mesh.Nel_tot_x1+1) + Inp;
     int nodeoffset;
     nodeoffset = pumi_obj.mesh.offsets.nodeoffset_start(isubmesh,jsubmesh) + pumi_obj.mesh.offsets.nodeoffset_skip_bot(isubmesh,jsubmesh)
                     +(jnp-1)*pumi_obj.mesh.offsets.nodeoffset_skip_mid(isubmesh,jsubmesh);
@@ -428,6 +473,187 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int J
         nodeoffset +=  (pumi_obj.mesh.offsets.nodeoffset_skip_top(isubmesh,jsubmesh)-pumi_obj.mesh.offsets.nodeoffset_skip_mid(isubmesh,jsubmesh));
     }
     return nodeID-nodeoffset;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_global_nodeID_on_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
+    int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID[iEdge]+inode;
+    return nodeID;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_north_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jsub = iEdge/(2*Nx+1) + 1;
+    int isub = iEdge - (jsub-1)*(2*Nx+1) + 1;
+    int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID[iEdge]+inode;
+    int nodeoffset = pumi_obj.mesh.Nel_tot_x1+1-pumi_obj.mesh.offsets.nodeoffset_skip_bot(isub,jsub);
+    return nodeID+nodeoffset;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_second_north_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jsub = iEdge/(2*Nx+1) + 1;
+    int isub = iEdge - (jsub-1)*(2*Nx+1) + 1;
+    int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID[iEdge]+inode;
+    int nodeoffset = 2*(pumi_obj.mesh.Nel_tot_x1+1)
+                    -pumi_obj.mesh.offsets.nodeoffset_skip_bot(isub,jsub)
+                    -pumi_obj.mesh.offsets.nodeoffset_skip_mid(isub,jsub);
+    return nodeID+nodeoffset;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_south_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jsub = iEdge/(2*Nx+1) + 1;
+    int isub = iEdge - (jsub-1)*(2*Nx+1) + 1;
+    int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID[iEdge]+inode;
+    int nodeoffset = pumi_obj.mesh.Nel_tot_x1+1-pumi_obj.mesh.offsets.nodeoffset_skip_top(isub,jsub-1);
+    return nodeID-nodeoffset;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_second_south_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jsub = iEdge/(2*Nx+1) + 1;
+    int isub = iEdge - (jsub-1)*(2*Nx+1) + 1;
+    int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID[iEdge]+inode;
+    int nodeoffset = 2*(pumi_obj.mesh.Nel_tot_x1+1)
+                    -pumi_obj.mesh.offsets.nodeoffset_skip_top(isub,jsub-1)
+                    -pumi_obj.mesh.offsets.nodeoffset_skip_mid(isub,jsub-1);
+    return nodeID-nodeoffset;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_global_nodeID_on_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
+    int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID(iEdge);
+    int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
+    int jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    int isub = subID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+    nodeID += inode*(pumi_obj.mesh.Nel_tot_x1+1-pumi_obj.mesh.offsets.nodeoffset_skip_mid(isub,jsub));
+    return nodeID;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_north_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
+    int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jsub = subID/Nx + 1;
+    int nel_blk = pumi_obj.submesh_x2(jsub)()->Nel;
+    if (inode==nel_blk-2){
+        int jm1 = iEdge/(2*Nx+1);
+        int im1 = iEdge - jm1*(2*Nx+1) - Nx;
+        int iVert = (jm1+1)*(Nx+1)+im1;
+        return pumi_obj.mesh.blkif.vert_nodeID(iVert);
+    }
+    else {
+        return calc_global_nodeID_on_vertical_edge(pumi_obj, iEdge, inode+1);
+    }
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_south_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
+    int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    if (inode==0){
+        int jm1 = iEdge/(2*Nx+1);
+        int im1 = iEdge - jm1*(2*Nx+1) - Nx;
+        int iVert = jm1*(Nx+1)+im1;
+        return pumi_obj.mesh.blkif.vert_nodeID(iVert);
+    }
+    else {
+        return calc_global_nodeID_on_vertical_edge(pumi_obj, iEdge, inode-1);
+    }
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_north_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    int im1 = iVert - jm1*(Nx+1);
+    int iEdge = jm1*(2*Nx+1)+im1+Nx;
+    return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,0);
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_second_north_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    int im1 = iVert - jm1*(Nx+1);
+    int iEdge = jm1*(2*Nx+1)+im1+Nx;
+    return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,1);
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    int im1 = iVert - jm1*(Nx+1);
+    int iEdge = (jm1-1)*(2*Nx+1)+im1+Nx;
+    int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jm1);
+    printf("ivert=%d s1 edge=%d nel=%d\n",iVert,iEdge,nel_blk );
+    return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,nel_blk-2);
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_second_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    int im1 = iVert - jm1*(Nx+1);
+    int iEdge = (jm1-1)*(2*Nx+1)+im1+Nx;
+    int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jm1);
+    return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,nel_blk-3);
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_east_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.vert_nodeID(iVert)+1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_second_east_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.vert_nodeID(iVert)+2;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_first_west_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.vert_nodeID(iVert)-1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int calc_second_west_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.vert_nodeID(iVert)-2;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x1_submeshID_west_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    int im1 = iVert - jm1*(Nx+1);
+    return im1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x1_submeshID_east_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    int im1 = iVert - jm1*(Nx+1);
+    return im1+1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x2_submeshID_south_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    return jm1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x2_submeshID_north_to_vertex(MBBL pumi_obj, int iVert){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iVert/(Nx+1);
+    return jm1+1;
 }
 
 KOKKOS_INLINE_FUNCTION
