@@ -128,6 +128,7 @@ class DevicePointer {
         T *ptr_;
 };
 
+using Vector3View = Kokkos::View<Vector3*>;
 
 
 }
