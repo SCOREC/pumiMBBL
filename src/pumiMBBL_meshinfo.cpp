@@ -479,6 +479,12 @@ int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
     return 0;
 }
 
+int get_num_interior_nodes_on_block(MBBL pumi_obj, int isub, int jsub){
+    int Nel_x1 = pumi_obj.host_submesh_x1[isub]->Nel;
+    int Nel_x2 = pumi_obj.host_submesh_x2[jsub]->Nel;
+    return (Nel_x1-1)*(Nel_x2-1);
+}
+
 double get_mesh_volume(MBBL pumi_obj){
     if (pumi_obj.mesh.ndim==1){
         double volume = pumi_obj.host_submesh_x1[pumi_obj.mesh.nsubmesh_x1]->xmax - pumi_obj.host_submesh_x1[1]->xmin;
@@ -502,7 +508,7 @@ double get_mesh_volume(MBBL pumi_obj){
     }
 }
 
-Vector3 get_bdry_edge_normal(MBBL pumi_obj, int iEdge){
+Vector3 get_bdry_edge_normal_host(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
@@ -517,7 +523,7 @@ Vector3 get_bdry_edge_normal(MBBL pumi_obj, int iEdge){
     }
 }
 
-Vector3 get_bdry_vert_normal(MBBL pumi_obj, int iVert){
+Vector3 get_bdry_vert_normal_host(MBBL pumi_obj, int iVert){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iVert>=0 && iVert<nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1){
@@ -527,6 +533,34 @@ Vector3 get_bdry_vert_normal(MBBL pumi_obj, int iVert){
         std::cout << "Invalid vertex ID\n";
         std::cout << "Valid VertexIDs = [0,1,..," << nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2 <<"]\n";
         exit(0);
+    }
+}
+
+bool is_horizontal_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+
+    int num = iEdge/(2*Nx+1);
+    int rem = iEdge - num*(2*Nx+1);
+
+    if (rem < Nx){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+int get_num_interior_nodes_on_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+
+    int num = iEdge/(2*Nx+1);
+    int rem = iEdge - num*(2*Nx+1);
+
+    if (rem < Nx){
+        return pumi_obj.host_submesh_x1[rem+1]->Nel-1;
+    }
+    else{
+        return pumi_obj.host_submesh_x2[num+1]->Nel-1;
     }
 }
 
@@ -605,6 +639,14 @@ bool is_vert_bdry(MBBL pumi_obj, int iVert){
         std::cout << "Valid VertexIDs = [0,1,..," << nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2 <<"]\n";
         exit(0);
     }
+}
+
+int get_block_vert_submeshID_host(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.blkif.host_vert_subID[iVert];
+}
+
+int get_block_edge_submeshID_host(MBBL pumi_obj, int iEdge){
+    return pumi_obj.mesh.blkif.host_edge_subID[iEdge];
 }
 
 void get_block_vert_submeshIDs_host(MBBL pumi_obj, int iVert, int *isub, int *jsub){
