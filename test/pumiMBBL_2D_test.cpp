@@ -140,6 +140,12 @@ int main( int argc, char* argv[] )
 
     pumi::Vector3View phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
 
+    Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
+        for (int i=0; i<Nnp_total; i++){
+            printf("%.16e %.16e\n",phi_grad(i)[0],phi_grad(i)[1] );
+        }
+    });
+
     // pumi::Vector3View::HostMirror h_phi_grad = Kokkos::create_mirror_view(phi_grad);
     // Kokkos::deep_copy(h_phi_grad,phi_grad);
     // write2file_3(h_phi_grad,Nnp_total);

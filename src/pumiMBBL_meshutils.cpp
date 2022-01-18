@@ -497,7 +497,6 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
                 r = 1.0/r;
                 phi_grad(inode_curr)[1] = -( -(1.0+r)*(1.0+r)*phi(inode_south_first) + phi(inode_south_second) + r*(r+2.0)*phi(inode_curr) )/
                                             (r*(r+1.0)*dx2);
-                printf("vert=%d  curr=%d s1=%d s2=%d dx2=%2.4e  r=%2.4e \n",inode,inode_curr,inode_south_first,inode_south_second, dx2,r );
             }
             else if (vert_nrml[1]==-1.0){
                 int inode_north_first = calc_first_north_global_nodeID_to_vertex(pumi_obj,inode);
@@ -507,7 +506,6 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
                 dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,0);
                 phi_grad(inode_curr)[1] = -( (1.0+r)*(1.0+r)*phi(inode_north_first) - phi(inode_north_second) - r*(r+2.0)*phi(inode_curr) ) /
                                              (r*(r+1.0)*dx2);
-                printf("vert=%d  curr=%d n1=%d n2=%d dx2=%2.4e  r=%2.4e \n",inode,inode_curr,inode_north_first,inode_north_second, dx2,r );
             }
             else{
                 int inode_north_first = calc_first_north_global_nodeID_to_vertex(pumi_obj,inode);
@@ -517,7 +515,6 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
                 double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub_south,nel_blk-1);
                 double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub_south+1,0);
                 phi_grad(inode_curr)[1] = -(phi(inode_north_first) - phi(inode_south_first))/(dx2_min+dx2_max);
-                printf("vert=%d curr=%d n=%d s=%d dx2_max=%2.4e  dx2_min=%2.4e \n",inode,inode_curr,inode_north_first,inode_south_first,dx2_max,dx2_min );
             }
         }
     });
