@@ -146,6 +146,21 @@ int main( int argc, char* argv[] )
         }
     });
 
+    Kokkos::parallel_for("test-bst",1,KOKKOS_LAMBDA(const int){
+        int tot_blks = pumi_obj.mesh.bst.total_active_blocks;
+        for (int inode=0; inode<pumi_obj.mesh.bst.block_nodes_cumulative(tot_blks-1); inode++){
+            int isub, jsub;
+            pumi::get_submeshIDs_of_block_interior_nodes(pumi_obj,inode,&isub,&jsub);
+            printf("inode=%d isub=%d jsub=%d\n",inode,isub,jsub );
+        }
+
+        int tot_edgs = pumi_obj.mesh.bst.total_active_edges;
+        for (int inode=0; inode<pumi_obj.mesh.bst.edge_nodes_cumulative(tot_edgs-1); inode++){
+            int isub = pumi::get_edgeIDs_of_block_edge_interior_nodes(pumi_obj,inode);
+            printf("inode=%d iedge=%d\n",inode,isub );
+        }
+    });
+
     // pumi::Vector3View::HostMirror h_phi_grad = Kokkos::create_mirror_view(phi_grad);
     // Kokkos::deep_copy(h_phi_grad,phi_grad);
     // write2file_3(h_phi_grad,Nnp_total);

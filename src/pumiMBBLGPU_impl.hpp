@@ -203,6 +203,52 @@ int get_block_vert_submeshID(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_subID(iVert);
 }
 
+KOKKOS_INLINE_FUNCTION
+int bst_search(Kokkos::View<int*> arr, int first, int last, int nodeID){
+    int mid = (first+last)/2;
+
+    if (last == first+1){
+        if (arr(first) > nodeID){
+            return first;
+        }
+        else if (arr(first) <= nodeID){
+            return last;
+        }
+    }
+    else{
+        if (arr(mid) > nodeID){
+            last = mid;
+            return bst_search(arr, first, last, nodeID);
+        }
+        else if (arr(mid) < nodeID){
+            first = mid;
+            return bst_search(arr, first, last, nodeID);
+        }
+        else{
+            return mid+1;
+        }
+    }
+}
+
+KOKKOS_INLINE_FUNCTION
+void get_submeshIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub, int *jsub){
+    int nblks = pumi_obj.mesh.bst.total_active_blocks;
+    int first = 0;
+    int last = nblks-1;
+    int subID = bst_search(pumi_obj.mesh.bst.block_nodes_cumulative,first,last,inode);
+    int submeshID = pumi_obj.mesh.bst.active_blockID(subID);
+    *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = submeshID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_edgeIDs_of_block_edge_interior_nodes(MBBL pumi_obj, int inode){
+    int nedges = pumi_obj.mesh.bst.total_active_edges;
+    int first = 0;
+    int last = nedges-1;
+    int edgID = bst_search(pumi_obj.mesh.bst.edge_nodes_cumulative,first,last,inode);
+    return pumi_obj.mesh.bst.active_edgeID(edgID);
+}
 /**
 * @brief Locate the submesh ID and local cell ID for a given x1-coordinate
 * Uses analytical formulae to locate the input coordinate
