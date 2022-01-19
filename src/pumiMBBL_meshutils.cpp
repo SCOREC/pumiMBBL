@@ -625,7 +625,7 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
             }
         }
     });
-    
+
     // Loop #3 --  Loop over all block-vertex nodes
     int nverts_tot = get_total_mesh_block_verts(pumi_obj);
     Kokkos::parallel_for("grad_block_verts",nverts_tot,KOKKOS_LAMBDA (const int inode){
@@ -701,4 +701,120 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
     return phi_grad;
 }
 
+DoubleView compute_2D_field_density(MBBL pumi_obj, DoubleView Q){
+    int nnp_total = Q.extent(0);
+    DoubleView rho = DoubleView("Q-density",nnp_total);
+    // Loop #1 -- Loop over all block interior nodes
+    int tot_blk_nodes = get_num_block_interior_nodes(pumi_obj);
+    Kokkos::parallel_for("grad_blk_interior",tot_blk_nodes, KOKKOS_LAMBDA (const int ignode){
+        int isub, jsub, inp, jnp;
+        get_submeshIDs_and_localnodeIDs_of_block_interior_nodes(pumi_obj, ignode, &isub, &jsub, &inp, &jnp);
+        int inode_curr;
+        double dx1_max, dx1_min, dx2_max, dx2_min, cov;
+        inode_curr = calc_global_nodeID(pumi_obj, isub, jsub, inp, jnp);
+        dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
+        dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+        dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
+        dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+        cov = 0.25*(dx1_min+dx1_max)*(dx2_min+dx2_max);
+        rho(inode_curr) = Q(inode_curr)/cov;
+    });
+
+    // Loop #2 -- Loop over all block-edge-interior nodes
+    int tot_edg_nodes = get_num_block_edge_interior_nodes(pumi_obj);
+    Kokkos::parallel_for("grad_edge_interior",tot_edg_nodes,KOKKOS_LAMBDA (const int ignode){
+        int inode, isub, jsub, iEdge;
+        get_edgeIDs_submeshIDs_and_localnodeIDs_of_block_edge_interior_nodes
+                                    (pumi_obj, ignode, &iEdge, &isub, &jsub, &inode);
+        if (is_horizontal_edge(pumi_obj,iEdge)){
+            int inode_curr = calc_global_nodeID_on_horizontal_edge(pumi_obj,iEdge,inode);
+            int jsub_north = get_x2_submeshID_north_to_horizontal_edge(pumi_obj,iEdge);
+            int jsub_south = jsub_north-1;
+            double cov = 0.0;
+            double dx2_max, dx2_min;
+            double dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inode);
+            double dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inode+1);
+
+            if (pumi_obj.mesh.isactive(isub,jsub_north)){
+                dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub_north,0);
+                cov += 0.25*(dx2_max*(dx1_min+dx1_max));
+            }
+            if (pumi_obj.mesh.isactive(isub,jsub_south)){
+                int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jsub_south);
+                dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub_south,nel_blk-1);
+                cov += 0.25*(dx2_min*(dx1_min+dx1_max));
+            }
+            printf("ID=%d cov=%2.2e\n",inode_curr,cov );
+
+            rho(inode_curr) = Q(inode_curr)/cov;
+        }
+        else{
+            int inode_curr = calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,inode);
+            int isub_east = get_x1_submeshID_east_to_vertical_edge(pumi_obj,iEdge);
+            int isub_west = isub_east-1;
+            double cov = 0.0;
+            double dx1_max, dx1_min;
+            double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode);
+            double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode+1);
+
+            if (pumi_obj.mesh.isactive(isub_east,jsub)){
+                dx1_max = get_x1_elem_size_in_submesh(pumi_obj,isub_east,0);
+                cov += 0.25*(dx1_max*(dx2_min+dx2_max));
+            }
+            if (pumi_obj.mesh.isactive(isub_west,jsub)){
+                int nel_blk = get_num_x1_elems_in_submesh(pumi_obj,isub_west);
+                dx1_min = get_x1_elem_size_in_submesh(pumi_obj,isub_west,nel_blk-1);
+                cov += 0.25*(dx1_min*(dx2_min+dx2_max));
+            }
+
+            rho(inode_curr) = Q(inode_curr)/cov;
+        }
+    });
+
+    // Loop #3 --  Loop over all block-vertex nodes
+    int nverts_tot = get_total_mesh_block_verts(pumi_obj);
+    Kokkos::parallel_for("grad_block_verts",nverts_tot,KOKKOS_LAMBDA (const int inode){
+        int inode_curr = get_block_vert_nodeID(pumi_obj,inode);
+        int submeshID = get_block_vert_submeshID(pumi_obj, inode);
+        if (submeshID+1){
+            int isub_east = get_x1_submeshID_east_to_vertex(pumi_obj, inode);
+            int isub_west = get_x1_submeshID_west_to_vertex(pumi_obj, inode);
+            int jsub_north = get_x2_submeshID_north_to_vertex(pumi_obj, inode);
+            int jsub_south = get_x2_submeshID_south_to_vertex(pumi_obj, inode);
+            double dx1_min=0.0, dx1_max=0.0, dx2_min=0.0, dx2_max=0.0, cov=0.0;
+
+            if (pumi_obj.mesh.isactive(isub_west,jsub_south)){
+                int nel_blk = get_num_x1_elems_in_submesh(pumi_obj,isub_west);
+                dx1_min = get_x1_elem_size_in_submesh(pumi_obj,isub_west,nel_blk-1);
+                nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jsub_south);
+                dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub_south,nel_blk-1);
+                cov += 0.25*dx1_min*dx2_min;
+            }
+
+            if (pumi_obj.mesh.isactive(isub_west,jsub_north)){
+                int nel_blk = get_num_x1_elems_in_submesh(pumi_obj,isub_west);
+                dx1_min = get_x1_elem_size_in_submesh(pumi_obj,isub_west,nel_blk-1);
+                dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub_north,0);
+                cov += 0.25*dx1_min*dx2_max;
+            }
+
+            if (pumi_obj.mesh.isactive(isub_east,jsub_south)){
+                dx1_max = get_x1_elem_size_in_submesh(pumi_obj,isub_east,0);
+                int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jsub_south);
+                dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub_south,nel_blk-1);
+                cov += 0.25*dx1_max*dx2_min;
+            }
+
+            if (pumi_obj.mesh.isactive(isub_east,jsub_north)){
+                dx1_max = get_x1_elem_size_in_submesh(pumi_obj,isub_east,0);
+                dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub_north,0);
+                cov += 0.25*dx1_max*dx2_max;
+            }
+
+            rho(inode_curr) = Q(inode_curr)/cov;
+        }
+    });
+
+    return rho;
+}
 } // namespace pumi
