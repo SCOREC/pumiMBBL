@@ -45,72 +45,7 @@ int main( int argc, char* argv[] )
 
     // pumi::print_blockwise_nodeIDs(pumi_obj);
     // pumi::print_node_submeshID(pumi_obj);
-    // pumi::print_fullmesh_nodeIDs(pumi_obj);
-
-    // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
-    //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
-    //         pumi::Vector3 bn = pumi::get_bdry_normal(pumi_obj, iEdge);
-    //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\t start=%d num=%d\n",iEdge,bn[0],bn[1],bn[2],
-    //                     pumi::get_starting_faceID_on_bdry(pumi_obj,iEdge),pumi::get_num_faces_on_edge(pumi_obj,iEdge));
-    //     }
-    //
-    // }
-
-    // for (int iVert=0; iVert<pumi::get_total_mesh_block_verts(pumi_obj); iVert++){
-    //     if (pumi::is_vert_bdry(pumi_obj,iVert)){
-    //         pumi::Vector3 bn = pumi::get_bdry_vert_normal(pumi_obj, iVert);
-    //         printf("Bdry-%2d \tNrml=[%+2.2f, %+2.2f, %+2.2f]\n",iVert,bn[0],bn[1],bn[2]);
-    //     }
-    //
-    // }
-
-    // for (int iEdge=0; iEdge<pumi::get_total_mesh_block_edges(pumi_obj); iEdge++){
-    //     if (pumi::is_edge_bdry(pumi_obj,iEdge)){
-    //         std::vector<int> v = pumi::get_bdry_edge_nodes(pumi_obj, iEdge);
-    //         for (int i=0; i<v.size(); i++){
-    //             printf("%3d ",v[i]);
-    //         }
-    //         printf("\n");
-    //     }
-    // }
-
-    // int k=0;
-    // for (int i=0; i<=h_pumi_mesh(0).Nel_tot_x2; i++){
-    //     for (int j=0; j<=h_pumi_mesh(0).Nel_tot_x1; j++){
-    //         double cv = pumi::return_covolume(pumi_obj, j, i);
-    //         double cv_full = pumi::return_covolume_fullmesh(pumi_obj, j, i);
-    //         bool on_bdry, in_domain;
-    //         int bdry_dim, bdry_tag;
-    //         pumi::where_is_node(pumi_obj, j, i, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
-    //         // std::cout << "cv[" << j << "," << i << "] = " << cv << " " << cv_full << "\n";
-    //         printf("cv[%3d,%3d] = %2.4f  cv_full[%3d,%3d] = %2.4f  diff = %2.4f -- bdry=%d domain=%d\n",
-    //                 j,i,cv,j,i,cv_full,cv_full-cv, on_bdry,in_domain );
-    //         k++;
-    //     }
-    // }
-
-
-    // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
-    //     printf("\nBDRY-TEST#1\n");
-    //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-    //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
-    //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-    //         if (pumi_obj.mesh(0).is_bdry(i)){
-    //             if (pumi_obj.mesh(0).bdry_normal(i,0)==1.0){
-    //                 printf("edge-%2d is boundary with +ve X normal\n",i);
-    //             }
-    //             else if (pumi_obj.mesh(0).bdry_normal(i,0)==-1.0){
-    //                 printf("edge-%2d is boundary with -ve X normal\n",i);
-    //             }
-    //             else if (pumi_obj.mesh(0).bdry_normal(i,1)==1.0){
-    //                 printf("edge-%2d is boundary with +ve Y normal\n",i);
-    //             }
-    //             else if (pumi_obj.mesh(0).bdry_normal(i,1)==-1.0){
-    //                 printf("edge-%2d is boundary with -ve Y normal\n",i);
-    //             }
-    //         }
-    //     }
-    // });
+    pumi::print_fullmesh_nodeIDs(pumi_obj);
 
     int Nnp_total = pumi_obj.mesh.Nnp_total;
     pumi::DoubleView phi = pumi::DoubleView("phi",Nnp_total);
@@ -130,6 +65,7 @@ int main( int argc, char* argv[] )
                         double x2_coord = pumi_obj.host_submesh_x2[jsubmesh]->node_coords(jnp);
                         int nodeID = pumi::get_global_nodeID_2D(pumi_obj,Inp,Jnp);
                         h_phi(nodeID) = x1_coord*x2_coord;
+                        // h_phi(nodeID) = 1.0;
                     }
                 }
             }
@@ -138,86 +74,41 @@ int main( int argc, char* argv[] )
     Kokkos::deep_copy(phi,h_phi);
     write2file_2(h_phi,Nnp_total);
 
-    pumi::Vector3View phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
-    pumi::Vector3View phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
+    // pumi::Vector3View phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
+    // pumi::Vector3View phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
 
-    Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
-        for (int i=0; i<Nnp_total; i++){
-            printf("%.16e %.16e\n",phi_grad(i)[0]-phi_grad_new(i)[0],phi_grad(i)[1]-phi_grad_new(i)[1] );
-        }
-    });
-
-    // Kokkos::parallel_for("test-bst",1,KOKKOS_LAMBDA(const int){
-    //     int tot_blks = pumi_obj.mesh.bst.total_active_blocks;
-    //     for (int inode=0; inode<pumi_obj.mesh.bst.block_nodes_cumulative(tot_blks-1); inode++){
-    //         int isub, jsub;
-    //         pumi::get_submeshIDs_of_block_interior_nodes(pumi_obj,inode,&isub,&jsub);
-    //         printf("inode=%d isub=%d jsub=%d\n",inode,isub,jsub );
-    //     }
-    //
-    //     int tot_edgs = pumi_obj.mesh.bst.total_active_edges;
-    //     for (int inode=0; inode<pumi_obj.mesh.bst.edge_nodes_cumulative(tot_edgs-1); inode++){
-    //         int isub = pumi::get_edgeIDs_of_block_edge_interior_nodes(pumi_obj,inode);
-    //         printf("inode=%d iedge=%d\n",inode,isub );
+    // Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
+    //     for (int i=0; i<Nnp_total; i++){
+    //         // printf("%.16e %.16e\n",phi_grad(i)[0]-phi_grad_new(i)[0],phi_grad(i)[1]-phi_grad_new(i)[1] );
     //     }
     // });
 
-    // pumi::Vector3View::HostMirror h_phi_grad = Kokkos::create_mirror_view(phi_grad);
-    // Kokkos::deep_copy(h_phi_grad,phi_grad);
-    // write2file_3(h_phi_grad,Nnp_total);
-    // for (int vertID=0; vertID<pumi::get_total_mesh_block_verts(pumi_obj); vertID++){
-    //     int Nx = nsubmesh_x1;
-    //
-    //     int subID = pumi_obj.mesh.blkif.host_vert_subID[vertID];
-    //     int nodeID = pumi_obj.mesh.blkif.host_vert_nodeID[vertID];
-    //
-    //     int jsub = subID/Nx + 1;
-    //     int isub = subID - Nx*(jsub-1) + 1;
-    //
-    //     if (subID+1){
-    //         printf("vert %3d -- isub=%d   jsub=%d  nodeID=%d\n", vertID, isub, jsub, nodeID);
-    //     }
-    //     else{
-    //         printf("vert %3d -- INACTIVE\n", vertID);
-    //     }
-    // }
-    // printf("\n\n");
-    // for (int edgeID=0; edgeID<pumi::get_total_mesh_block_edges(pumi_obj); edgeID++){
-    //     int Nx = nsubmesh_x1;
-    //
-    //     int subID = pumi_obj.mesh.blkif.host_edge_subID[edgeID];
-    //     int nodeID = pumi_obj.mesh.blkif.host_edge_first_nodeID[edgeID];
-    //
-    //     int jsub = subID/Nx + 1;
-    //     int isub = subID - Nx*(jsub-1) + 1;
-    //
-    //     if (subID+1){
-    //         printf("edge %3d -- isub=%d   jsub=%d nodeID=%d\n", edgeID, isub, jsub, nodeID);
-    //     }
-    //     else{
-    //         printf("edge %3d -- INACTIVE\n", edgeID);
-    //     }
-    // }
+    pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
 
-    // double integral_tot = 0.0;
-    // int Nblk = pumi::get_total_submesh_blocks(pumi_obj);
-    // for (int isubmesh=0; isubmesh<Nblk; isubmesh++){
-    //     int num_elems = pumi::get_total_elements_in_block(pumi_obj,isubmesh);
-    //     printf("subID=%d Nel=%d\n",isubmesh,num_elems );
-    //     if (pumi::is_block_active(pumi_obj,isubmesh)){
-    //         double integral = 0.0;
-    //         Kokkos::parallel_reduce("elem_size_test",
-    //                                 num_elems,
-    //                                 KOKKOS_LAMBDA (const int ielem, double& update) {
-    //             int isub, jsub, icell, jcell;
-    //             pumi::get_directional_submeshID_and_cellID(pumi_obj, isubmesh, ielem, &isub, &icell, &jsub, &jcell);
-    //             update += pumi::get_x1_elem_size_in_submesh(pumi_obj,isub,icell)*pumi::get_x2_elem_size_in_submesh(pumi_obj,jsub,jcell);
-    //         }, integral);
-    //         printf("Area=%2.4f\n",integral );
-    //         integral_tot += integral;
-    //     }
-    // }
-    // printf("domain area is %2.4f\n",integral_tot );
+    pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
+    pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
+
+    int knode=0;
+    for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
+        for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
+            bool on_bdry, in_domain;
+            int bdry_tag, bdry_dim;
+            double cov;
+            pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                cov = pumi::return_covolume(pumi_obj, inp, jnp);
+                h_phi_density_v2(knode) = h_phi(knode)/cov;
+                knode++;
+            }
+        }
+    }
+    Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
+
+    Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
+        for (int i=0; i<Nnp_total; i++){
+            printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
+        }
+    });
     /*
     int N_part = 1000;
     int N_step = 10;
