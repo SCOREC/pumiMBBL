@@ -228,6 +228,7 @@ int bst_search(Kokkos::View<int*> arr, int first, int last, int nodeID){
             return mid+1;
         }
     }
+    return -1;
 }
 
 KOKKOS_INLINE_FUNCTION
@@ -242,12 +243,66 @@ void get_submeshIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub,
 }
 
 KOKKOS_INLINE_FUNCTION
+void get_submeshIDs_and_localnodeIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub, int *jsub, int *inp, int *jnp){
+    int nblks = pumi_obj.mesh.bst.total_active_blocks;
+    int first = 0;
+    int last = nblks-1;
+    int subID = bst_search(pumi_obj.mesh.bst.block_nodes_cumulative,first,last,inode);
+    int submeshID = pumi_obj.mesh.bst.active_blockID(subID);
+    *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = submeshID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+    int inode_loc;
+    if (subID==0){
+        inode_loc = inode;
+    }
+    else{
+        inode_loc = inode - pumi_obj.mesh.bst.block_nodes_cumulative(subID-1);
+    }
+    *jnp = inode_loc/(pumi_obj.submesh_x1(*isub)()->Nel-1) + 1;
+    *inp = inode_loc - (*jnp-1)*(pumi_obj.submesh_x1(*isub)()->Nel-1) + 1;
+}
+
+KOKKOS_INLINE_FUNCTION
 int get_edgeIDs_of_block_edge_interior_nodes(MBBL pumi_obj, int inode){
     int nedges = pumi_obj.mesh.bst.total_active_edges;
     int first = 0;
     int last = nedges-1;
     int edgID = bst_search(pumi_obj.mesh.bst.edge_nodes_cumulative,first,last,inode);
     return pumi_obj.mesh.bst.active_edgeID(edgID);
+}
+
+KOKKOS_INLINE_FUNCTION
+void get_edgeIDs_submeshIDs_and_localnodeIDs_of_block_edge_interior_nodes
+            (MBBL pumi_obj, int inode, int *iEdge, int *isub, int *jsub, int *inp){
+    int nedges = pumi_obj.mesh.bst.total_active_edges;
+    int first = 0;
+    int last = nedges-1;
+    int edgID = bst_search(pumi_obj.mesh.bst.edge_nodes_cumulative,first,last,inode);
+    *iEdge = pumi_obj.mesh.bst.active_edgeID(edgID);
+    int subID = pumi_obj.mesh.blkif.edge_subID(*iEdge);
+    if (edgID == 0){
+        *inp = inode;
+    }
+    else{
+        *inp = inode - pumi_obj.mesh.bst.edge_nodes_cumulative(edgID-1);
+    }
+    *jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
+    *isub = subID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
+}
+
+KOKKOS_INLINE_FUNCTION
+bool is_horizontal_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+
+    int num = iEdge/(2*Nx+1);
+    int rem = iEdge - num*(2*Nx+1);
+
+    if (rem < Nx){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 /**
 * @brief Locate the submesh ID and local cell ID for a given x1-coordinate
