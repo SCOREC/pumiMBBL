@@ -2015,7 +2015,7 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
     }
     Kokkos::deep_copy(active_blockID, h_active_blockID);
     Kokkos::deep_copy(block_nodes_cumulative, h_block_nodes_cumulative);
-
+    total_block_nodes = h_block_nodes_cumulative(total_active_blocks-1);
     total_active_edges = 0;
     for(int iEdge=0; iEdge<2*Nx*Ny+Nx+Ny; iEdge++){
         if (blkif.host_edge_subID[iEdge]+1){
@@ -2059,6 +2059,7 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
     }
     Kokkos::deep_copy(active_edgeID,h_active_edgeID);
     Kokkos::deep_copy(edge_nodes_cumulative,h_edge_nodes_cumulative);
+    total_edge_nodes = h_edge_nodes_cumulative(total_active_edges-1);
 }
 
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
