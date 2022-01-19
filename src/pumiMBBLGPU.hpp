@@ -609,7 +609,9 @@ public:
 class MeshBST{
 public:
     int total_active_blocks;
+    int total_block_nodes;
     int total_active_edges;
+    int total_edge_nodes;
 
     Kokkos::View<int*> active_blockID;
     Kokkos::View<int*> block_nodes_cumulative;
