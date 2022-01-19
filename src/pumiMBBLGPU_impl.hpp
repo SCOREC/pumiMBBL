@@ -757,6 +757,36 @@ int get_x2_submeshID_north_to_vertex(MBBL pumi_obj, int iVert){
 }
 
 KOKKOS_INLINE_FUNCTION
+int get_x2_submeshID_north_to_horizontal_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iEdge/(2*Nx+1);
+    return jm1+1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x2_submeshID_south_to_horizontal_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iEdge/(2*Nx+1);
+    return jm1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x1_submeshID_east_to_vertical_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iEdge/(2*Nx+1);
+    int im1 = iEdge - (jm1*(2*Nx+1)+Nx);
+    return im1+1;
+}
+
+KOKKOS_INLINE_FUNCTION
+int get_x1_submeshID_west_to_vertical_edge(MBBL pumi_obj, int iEdge){
+    int Nx = pumi_obj.mesh.nsubmesh_x1;
+    int jm1 = iEdge/(2*Nx+1);
+    int im1 = iEdge - (jm1*(2*Nx+1)+Nx);
+    return im1;
+}
+
+KOKKOS_INLINE_FUNCTION
 Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
                    int *bdry_hit, double *fraction_done, int *faceID_on_bdry){
