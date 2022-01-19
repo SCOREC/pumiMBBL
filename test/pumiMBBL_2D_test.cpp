@@ -139,27 +139,28 @@ int main( int argc, char* argv[] )
     write2file_2(h_phi,Nnp_total);
 
     pumi::Vector3View phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
+    pumi::Vector3View phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
 
     Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
         for (int i=0; i<Nnp_total; i++){
-            // printf("%.16e %.16e\n",phi_grad(i)[0],phi_grad(i)[1] );
+            printf("%.16e %.16e\n",phi_grad(i)[0]-phi_grad_new(i)[0],phi_grad(i)[1]-phi_grad_new(i)[1] );
         }
     });
 
-    Kokkos::parallel_for("test-bst",1,KOKKOS_LAMBDA(const int){
-        int tot_blks = pumi_obj.mesh.bst.total_active_blocks;
-        for (int inode=0; inode<pumi_obj.mesh.bst.block_nodes_cumulative(tot_blks-1); inode++){
-            int isub, jsub;
-            pumi::get_submeshIDs_of_block_interior_nodes(pumi_obj,inode,&isub,&jsub);
-            printf("inode=%d isub=%d jsub=%d\n",inode,isub,jsub );
-        }
-
-        int tot_edgs = pumi_obj.mesh.bst.total_active_edges;
-        for (int inode=0; inode<pumi_obj.mesh.bst.edge_nodes_cumulative(tot_edgs-1); inode++){
-            int isub = pumi::get_edgeIDs_of_block_edge_interior_nodes(pumi_obj,inode);
-            printf("inode=%d iedge=%d\n",inode,isub );
-        }
-    });
+    // Kokkos::parallel_for("test-bst",1,KOKKOS_LAMBDA(const int){
+    //     int tot_blks = pumi_obj.mesh.bst.total_active_blocks;
+    //     for (int inode=0; inode<pumi_obj.mesh.bst.block_nodes_cumulative(tot_blks-1); inode++){
+    //         int isub, jsub;
+    //         pumi::get_submeshIDs_of_block_interior_nodes(pumi_obj,inode,&isub,&jsub);
+    //         printf("inode=%d isub=%d jsub=%d\n",inode,isub,jsub );
+    //     }
+    //
+    //     int tot_edgs = pumi_obj.mesh.bst.total_active_edges;
+    //     for (int inode=0; inode<pumi_obj.mesh.bst.edge_nodes_cumulative(tot_edgs-1); inode++){
+    //         int isub = pumi::get_edgeIDs_of_block_edge_interior_nodes(pumi_obj,inode);
+    //         printf("inode=%d iedge=%d\n",inode,isub );
+    //     }
+    // });
 
     // pumi::Vector3View::HostMirror h_phi_grad = Kokkos::create_mirror_view(phi_grad);
     // Kokkos::deep_copy(h_phi_grad,phi_grad);
