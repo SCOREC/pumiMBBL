@@ -46,7 +46,7 @@ int get_x1_gradingratio_at_interface_host(MBBL pumi_obj, int isub);
 int get_x2_gradingratio_at_interface_host(MBBL pumi_obj, int isub);
 int get_total_submesh_blocks(MBBL pumi_obj);
 int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID);
-bool is_horizontal_edge(MBBL pumi_obj, int iEdge);
+bool is_horizontal_edge_host(MBBL pumi_obj, int iEdge);
 int get_num_interior_nodes_on_block(MBBL pumi_obj, int isub, int jsub);
 double get_mesh_volume(MBBL pumi_obj);
 Vector3 get_bdry_edge_normal_host(MBBL pumi_obj,  int iEdge);
@@ -70,6 +70,8 @@ void get_block_vert_submeshIDs_host(MBBL pumi_obj, int iVert, int *isub, int *js
 void get_block_edge_submeshIDs_host(MBBL pumi_obj, int iEdge, int *isub, int *jsub);
 int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2);
 int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2);
+int get_num_block_interior_nodes(MBBL pumi_obj);
+int get_num_block_edge_interior_nodes(MBBL pumi_obj);
 bool check_edge_index_bounds(MBBL pumi_obj, int iEdge);
 int compute_global_nodeID_2D(MBBL pumi_obj, int isubmesh, int jsubmesh, int fullmesh_node_id);
 std::vector<int> get_nodes_on_bdry_edge(MBBL pumi_obj, int iEdge);

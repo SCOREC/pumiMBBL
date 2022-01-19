@@ -536,7 +536,7 @@ Vector3 get_bdry_vert_normal_host(MBBL pumi_obj, int iVert){
     }
 }
 
-bool is_horizontal_edge(MBBL pumi_obj, int iEdge){
+bool is_horizontal_edge_host(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
 
     int num = iEdge/(2*Nx+1);
@@ -1568,6 +1568,14 @@ int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2){
         return -1;
     }
 
+}
+
+int get_num_block_interior_nodes(MBBL pumi_obj){
+    return pumi_obj.mesh.bst.total_block_nodes;
+}
+
+int get_num_block_edge_interior_nodes(MBBL pumi_obj){
+    return pumi_obj.mesh.bst.total_edge_nodes;
 }
 /**
  * @brief Returns node info such as if node is in active domain, if node is on a boundary
