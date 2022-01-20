@@ -44,7 +44,7 @@ int main( int argc, char* argv[] )
 
     // pumi::print_blockwise_nodeIDs(pumi_obj);
     // pumi::print_node_submeshID(pumi_obj);
-    pumi::print_fullmesh_nodeIDs(pumi_obj);
+    // pumi::print_fullmesh_nodeIDs(pumi_obj);
 
     int Nnp_total = pumi_obj.mesh.Nnp_total;
     pumi::DoubleView phi = pumi::DoubleView("phi",Nnp_total);
@@ -73,23 +73,35 @@ int main( int argc, char* argv[] )
     Kokkos::deep_copy(phi,h_phi);
     // write2file_2(h_phi,Nnp_total);
 
-    pumi::Vector3View phi_grad, phi_grad_new;
+    pumi::Vector3View phi_grad, phi_grad_new, phi_grad_uni;
 
+    int nstep=1000;
     Kokkos::Profiling::pushRegion("grad_v1");
-    for (int istep=0; istep<1000; istep++){
+    for (int istep=0; istep<nstep; istep++){
+        // printf("t%d\n",istep );
         phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
     }
     Kokkos::Profiling::popRegion();
 
+    Kokkos::Profiling::pushRegion("grad_uni");
+    for (int istep=0; istep<nstep; istep++){
+        // printf("t%d\n",istep );
+        phi_grad_uni = pumi::compute_2D_field_gradient_fulluniform(pumi_obj,phi);
+    }
+    Kokkos::Profiling::popRegion();
+
     Kokkos::Profiling::pushRegion("grad_v2");
-    for (int istep=0; istep<1000; istep++){
+    for (int istep=0; istep<nstep; istep++){
+        // printf("t%d\n",istep );
         phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
     }
     Kokkos::Profiling::popRegion();
 
+
+
     // Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
     //     for (int i=0; i<Nnp_total; i++){
-    //         printf("%.16e %.16e\n",phi_grad(i)[0]-phi_grad_new(i)[0],phi_grad(i)[1]-phi_grad_new(i)[1] );
+    //         printf("%.16e %.16e\n",phi_grad_new(i)[0]-phi_grad_uni(i)[0],phi_grad_new(i)[1]-phi_grad_uni(i)[1] );
     //     }
     // });
 
@@ -603,7 +615,8 @@ void print_usage()
     printf("    ./install/bin/pumiMBBL2D_Demo 3 0.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 1.0 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
     printf("  E.g.#2 [On-DEVICE]\n\n");
     printf("    ./install/bin/pumiMBBL2D_Demo 4 0.0 \"minBL,uniform,uniform,maxBL\" \"10.0,5.0,5.0,10.0\" \"3.0,1.0,1.0,3.0\" \"1.0,1.0,1.0,1.0\" 4 1.0 \"maxBL,uniform,uniform,minBL\" \"20.0,20.0,20.0,20.0\" \"4.0,1.0,1.0,4.0\" \"1.0,2.0,2.0,1.0\" \"1,0,1,1,1,0,0,1,1,1,1,1,0,1,0,1\" \n\n");
-
+    printf("  E.g.#3 [On-DEVICE]\n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 1 1.0 \"uniform\" \"20.0\" \"1.0\" \"1.0\" 1 1.0 \"uniform\" \"20.0\" \"1.0\" \"1.0\" \"1\"\n\n");
     Kokkos::finalize();
     exit(0);
 }
