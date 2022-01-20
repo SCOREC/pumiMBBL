@@ -4,7 +4,6 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
 void write2file(Kokkos::View<pumi::ParticleData*>::HostMirror hp, int N_part, int nstep);
 void write2file_2(pumi::DoubleView::HostMirror hp, int N_part);
-void write2file_3(pumi::DoubleView::HostMirror hp, int N_part);
 
 int main( int argc, char* argv[] )
 {
@@ -72,43 +71,54 @@ int main( int argc, char* argv[] )
         }
     }
     Kokkos::deep_copy(phi,h_phi);
-    write2file_2(h_phi,Nnp_total);
+    // write2file_2(h_phi,Nnp_total);
 
-    // pumi::Vector3View phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
-    // pumi::Vector3View phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
+    pumi::Vector3View phi_grad, phi_grad_new;
+
+    Kokkos::Profiling::pushRegion("grad_v1");
+    for (int istep=0; istep<1000; istep++){
+        phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
+    }
+    Kokkos::Profiling::popRegion();
+
+    Kokkos::Profiling::pushRegion("grad_v2");
+    for (int istep=0; istep<1000; istep++){
+        phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
+    }
+    Kokkos::Profiling::popRegion();
 
     // Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
     //     for (int i=0; i<Nnp_total; i++){
-    //         // printf("%.16e %.16e\n",phi_grad(i)[0]-phi_grad_new(i)[0],phi_grad(i)[1]-phi_grad_new(i)[1] );
+    //         printf("%.16e %.16e\n",phi_grad(i)[0]-phi_grad_new(i)[0],phi_grad(i)[1]-phi_grad_new(i)[1] );
     //     }
     // });
 
-    pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
-
-    pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
-    pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
-
-    int knode=0;
-    for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
-        for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
-            bool on_bdry, in_domain;
-            int bdry_tag, bdry_dim;
-            double cov;
-            pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
-            if (in_domain){
-                cov = pumi::return_covolume(pumi_obj, inp, jnp);
-                h_phi_density_v2(knode) = h_phi(knode)/cov;
-                knode++;
-            }
-        }
-    }
-    Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
-
-    Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
-        for (int i=0; i<Nnp_total; i++){
-            printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
-        }
-    });
+    // pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
+    //
+    // pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
+    // pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
+    //
+    // int knode=0;
+    // for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
+    //     for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
+    //         bool on_bdry, in_domain;
+    //         int bdry_tag, bdry_dim;
+    //         double cov;
+    //         pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+    //         if (in_domain){
+    //             cov = pumi::return_covolume(pumi_obj, inp, jnp);
+    //             h_phi_density_v2(knode) = h_phi(knode)/cov;
+    //             knode++;
+    //         }
+    //     }
+    // }
+    // Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
+    //
+    // Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
+    //     for (int i=0; i<Nnp_total; i++){
+    //         printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
+    //     }
+    // });
     /*
     int N_part = 1000;
     int N_step = 10;
@@ -621,18 +631,6 @@ void write2file_2(pumi::DoubleView::HostMirror hp, int N_part){
     part_file = fopen(part_filename,"w");
     for (int i=0; i<N_part; i=i+1){
         fprintf(part_file, "%.16e\n", hp(i));
-    }
-
-    fclose(part_file);
-}
-
-void write2file_3(pumi::Vector3View::HostMirror hp, int N_part){
-    FILE *part_file;
-    char part_filename[30];
-    sprintf(part_filename,"phi_grad_data.dat");
-    part_file = fopen(part_filename,"w");
-    for (int i=0; i<N_part; i=i+1){
-        fprintf(part_file, "%.16e %.16e\n", hp(i)[0],hp(i)[1]);
     }
 
     fclose(part_file);
