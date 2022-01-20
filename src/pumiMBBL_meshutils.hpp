@@ -13,6 +13,7 @@ void print_2D_node_coordinates(MBBL pumi_obj);
 void print_2D_node_elem_connectivity(MBBL pumi_obj);
 Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi);
 Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi);
+Vector3View compute_2D_field_gradient_fulluniform(MBBL pumi_obj, DoubleView phi);
 DoubleView compute_2D_field_density(MBBL pumi_obj, DoubleView Q);
 } // namespace pumi
 #endif

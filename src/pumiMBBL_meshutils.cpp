@@ -733,6 +733,80 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
             }
         }
     });
+    Kokkos::fence();
+
+    return phi_grad;
+}
+
+Vector3View compute_2D_field_gradient_fulluniform(MBBL pumi_obj, DoubleView phi){
+    int num_interior_nodes = (pumi_obj.mesh.Nel_tot_x1-1)*(pumi_obj.mesh.Nel_tot_x2-1);
+    int num_boundary_nodes = (pumi_obj.mesh.Nel_tot_x1+1)*(pumi_obj.mesh.Nel_tot_x2+1)-num_interior_nodes;
+    int num_x1_nodes = pumi_obj.mesh.Nel_tot_x1+1;
+    int num_x2_nodes = pumi_obj.mesh.Nel_tot_x2+1;
+    double dx1 = pumi_obj.host_submesh_x1[1]->t0;
+    double dx2 = pumi_obj.host_submesh_x2[1]->t0;
+
+    int nnp_total = num_x1_nodes*num_x2_nodes;
+    Vector3View phi_grad = Vector3View("phi_grad",nnp_total);
+
+    Kokkos::parallel_for(
+        "UniformMesh2D::gradientNodalScalarField::interior_nodes",
+        Kokkos::MDRangePolicy<Kokkos::Rank<2>>({1, 1}, {num_x1_nodes-1, num_x2_nodes-1}),
+        KOKKOS_LAMBDA (const int inode, const int jnode)
+    {
+        // Need to find the global index corresponding to this interior node
+        int gnode = inode + jnode * num_x1_nodes;
+        phi_grad(gnode)[0] = -( phi(gnode+1) - phi(gnode-1) ) / dx1 / 2.0;
+        // Under our dictionary ordering,
+        // adding num_x1_nodes gives the index of the neighboring node
+        // in the positive x2 direction.
+        phi_grad(gnode)[1] = -( phi(gnode+num_x1_nodes) - phi(gnode-num_x1_nodes) ) / dx2 / 2.0;
+    });
+
+    Kokkos::parallel_for(
+        "UniformMesh2D::gradientNodalScalarField::boundary_nodes",
+        num_boundary_nodes,
+        KOKKOS_LAMBDA (const int boundary_node)
+    {
+        short north_flag = boundary_node / (num_x1_nodes + 2*num_x2_nodes - 4);
+        short south_flag = (boundary_node / num_x1_nodes) == 0;
+
+        int inode = 0;
+        int jnode = 0;
+        if (south_flag) {
+            inode = boundary_node;
+        } else if (north_flag) {
+            inode = boundary_node + num_interior_nodes - num_x1_nodes*(num_x2_nodes - 1);
+            jnode = num_x2_nodes - 1;
+        } else {
+            inode = ((boundary_node - num_x1_nodes) % 2) * (num_x1_nodes - 1);
+            jnode =  (boundary_node - num_x1_nodes) / 2 + 1;
+        }
+
+        // Need to find the global index corresponding to this boundary node
+        int gnode = inode + jnode * num_x1_nodes;
+
+        if (inode == 0) {
+            phi_grad(gnode)[0] = -( -0.5*phi(gnode+2) + 2.0*phi(gnode+1) - 1.5*phi(gnode  ) ) / dx1;
+        }
+        else if (inode == num_x1_nodes-1) {
+            phi_grad(gnode)[0] = -(  1.5*phi(gnode)   - 2.0*phi(gnode-1) + 0.5*phi(gnode-2) ) / dx1;
+        }
+        else {
+            phi_grad(gnode)[0] = -( phi(gnode+1) - phi(gnode-1) ) / dx1 / 2.0;
+        }
+
+        if (south_flag) {
+            phi_grad(gnode)[1] = -( -0.5*phi(gnode+2*num_x1_nodes) + 2.0*phi(gnode+num_x1_nodes) - 1.5*phi(gnode) ) / dx2;
+        }
+        else if (north_flag) {
+            phi_grad(gnode)[1] = -(  1.5*phi(gnode) - 2.0*phi(gnode-num_x1_nodes) + 0.5*phi(gnode-2*num_x1_nodes) ) / dx2;
+        }
+        else {
+            phi_grad(gnode)[1] = -( phi(gnode+num_x1_nodes) - phi(gnode-num_x1_nodes) ) / dx2 / 2.0;
+        }
+    });
+    Kokkos::fence();
 
     return phi_grad;
 }
