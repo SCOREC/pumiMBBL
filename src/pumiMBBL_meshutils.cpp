@@ -369,16 +369,17 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
             int isub, jsub;
             get_directional_submeshID_host(pumi_obj, submeshID, &isub, &jsub);
             int edge_interior_nnp = get_num_interior_nodes_on_edge(pumi_obj, iEdge);
+            Vector3 edge_nrml = get_edge_normal_host(pumi_obj,iEdge);
             if (is_horizontal_edge(pumi_obj,iEdge)){
-                Kokkos::parallel_for("grad_horizontal_edge_interior",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
-                    Vector3 edge_nrml = get_edge_normal(pumi_obj, iEdge);
-                    int inode_curr = calc_global_nodeID_on_horizontal_edge(pumi_obj,iEdge,inode);
-                    int inode_east = inode_curr+1;
-                    int inode_west = inode_curr-1;
-                    double dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inode);
-                    double dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inode+1);
-                    phi_grad(inode_curr)[0] = - (phi(inode_east) - phi(inode_west))/(dx1_min+dx1_max);
-                    if (edge_nrml[1]==1.0){
+                if (edge_nrml[1]>0.0){
+                    Kokkos::parallel_for("grad_horizontal_edge_interior_north_normal",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
+                        int inode_curr = calc_global_nodeID_on_horizontal_edge(pumi_obj,iEdge,inode);
+                        int inode_east = inode_curr+1;
+                        int inode_west = inode_curr-1;
+                        double dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inode);
+                        double dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inode+1);
+                        phi_grad(inode_curr)[0] = - (phi(inode_east) - phi(inode_west))/(dx1_min+dx1_max);
+
                         int inode_south_first = calc_first_south_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                         int inode_south_second = calc_second_south_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                         double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
@@ -387,36 +388,53 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
                         double dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,nel_blk-1);
                         phi_grad(inode_curr)[1] = -( -(1.0+r)*(1.0+r)*phi(inode_south_first) + phi(inode_south_second) + r*(r+2.0)*phi(inode_curr) )/
                                                     (r*(r+1.0)*dx2);
-                    }
-                    else if (edge_nrml[1]==-1.0){
+                    });
+                }
+                else if (edge_nrml[1]<0.0){
+                    Kokkos::parallel_for("grad_horizontal_edge_interior_south_normal",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
+                        int inode_curr = calc_global_nodeID_on_horizontal_edge(pumi_obj,iEdge,inode);
+                        int inode_east = inode_curr+1;
+                        int inode_west = inode_curr-1;
+                        double dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inode);
+                        double dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inode+1);
+                        phi_grad(inode_curr)[0] = - (phi(inode_east) - phi(inode_west))/(dx1_min+dx1_max);
+
                         int inode_north_first = calc_first_north_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                         int inode_north_second = calc_second_north_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                         double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
                         double dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,0);
                         phi_grad(inode_curr)[1] = -( (1.0+r)*(1.0+r)*phi(inode_north_first) - phi(inode_north_second) - r*(r+2.0)*phi(inode_curr) ) /
                                                      (r*(r+1.0)*dx2);
-                    }
-                    else{
+                    });
+                }
+                else{
+                    Kokkos::parallel_for("grad_horizontal_edge_interior_nonbdry",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
+                        int inode_curr = calc_global_nodeID_on_horizontal_edge(pumi_obj,iEdge,inode);
+                        int inode_east = inode_curr+1;
+                        int inode_west = inode_curr-1;
+                        double dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inode);
+                        double dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inode+1);
+                        phi_grad(inode_curr)[0] = - (phi(inode_east) - phi(inode_west))/(dx1_min+dx1_max);
+
                         int inode_north_first = calc_first_north_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                         int inode_south_first = calc_first_south_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                         int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jsub);
                         double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub,nel_blk-1);
                         double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub+1,0);
                         phi_grad(inode_curr)[1] = -(phi(inode_north_first) - phi(inode_south_first))/(dx2_min+dx2_max);
-                    }
-                });
+                    });
+                }
             }
             else{
-                Kokkos::parallel_for("grad_vertical_edge_interior",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
-                    Vector3 edge_nrml = get_edge_normal(pumi_obj, iEdge);
-                    int inode_curr = calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,inode);
-                    int inode_north = calc_first_north_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
-                    int inode_south = calc_first_south_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
-                    double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode);
-                    double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode+1);
-                    phi_grad(inode_curr)[1] = -(phi(inode_north) - phi(inode_south))/(dx2_min+dx2_max);
+                if (edge_nrml[0] > 0.0){
+                    Kokkos::parallel_for("grad_vertical_edge_interior_east_normal",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
+                        int inode_curr = calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,inode);
+                        int inode_north = calc_first_north_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
+                        int inode_south = calc_first_south_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
+                        double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode);
+                        double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode+1);
+                        phi_grad(inode_curr)[1] = -(phi(inode_north) - phi(inode_south))/(dx2_min+dx2_max);
 
-                    if (edge_nrml[0]==1.0){
                         int inode_west_first = inode_curr-1;
                         int inode_west_second = inode_curr-2;
                         double r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
@@ -425,24 +443,42 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
                         double dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,nel_blk-1);
                         phi_grad(inode_curr)[0] = -( -(1.0+r)*(1.0+r)*phi(inode_west_first) + phi(inode_west_second) + r*(r+2.0)*phi(inode_curr) ) /
                                                      (r*(r+1.0)*dx1);
-                    }
-                    else if (edge_nrml[0]==-1.0){
+                    });
+                }
+                else if (edge_nrml[0] < 0.0){
+                    Kokkos::parallel_for("grad_vertical_edge_interior_west_normal",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
+                        int inode_curr = calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,inode);
+                        int inode_north = calc_first_north_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
+                        int inode_south = calc_first_south_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
+                        double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode);
+                        double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode+1);
+                        phi_grad(inode_curr)[1] = -(phi(inode_north) - phi(inode_south))/(dx2_min+dx2_max);
+
                         int inode_east_first = inode_curr+1;
                         int inode_east_second = inode_curr+2;
                         double r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
                         double dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,0);
                         phi_grad(inode_curr)[0] = -( (1.0+r)*(1.0+r)*phi(inode_east_first) - phi(inode_east_second)- r*(r+2.0)*phi(inode_curr) ) /
                                                      (r*(r+1.0)*dx1);
-                    }
-                    else{
+                    });
+                }
+                else{
+                    Kokkos::parallel_for("grad_vertical_edge_interior_nonbdry",edge_interior_nnp,KOKKOS_LAMBDA (const int inode){
+                        int inode_curr = calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,inode);
+                        int inode_north = calc_first_north_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
+                        int inode_south = calc_first_south_global_nodeID_to_vertical_edge(pumi_obj,iEdge,inode);
+                        double dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode);
+                        double dx2_max = get_x2_elem_size_in_submesh(pumi_obj,jsub,inode+1);
+                        phi_grad(inode_curr)[1] = -(phi(inode_north) - phi(inode_south))/(dx2_min+dx2_max);
+
                         int inode_east_first = inode_curr+1;
                         int inode_west_first = inode_curr-1;
                         int nel_blk = get_num_x1_elems_in_submesh(pumi_obj,isub);
                         double dx1_min = get_x1_elem_size_in_submesh(pumi_obj,isub,nel_blk-1);
                         double dx1_max = get_x1_elem_size_in_submesh(pumi_obj,isub+1,0);
                         phi_grad(inode_curr)[0] = - (phi(inode_east_first)-phi(inode_west_first))/(dx1_max+dx1_min);
-                    }
-                });
+                    });
+                }
             }
         }
     }
