@@ -51,6 +51,8 @@ int get_num_interior_nodes_on_block(MBBL pumi_obj, int isub, int jsub);
 double get_mesh_volume(MBBL pumi_obj);
 Vector3 get_bdry_edge_normal_host(MBBL pumi_obj,  int iEdge);
 Vector3 get_bdry_vert_normal_host(MBBL pumi_obj,  int iEdge);
+Vector3 get_edge_normal_host(MBBL pumi_obj,  int iEdge);
+Vector3 get_vert_normal_host(MBBL pumi_obj,  int iEdge);
 int get_num_interior_nodes_on_edge(MBBL pumi_obj, int iEdge);
 int get_num_faces_on_edge(MBBL pumi_obj,  int iEdge);
 int get_starting_faceID_on_bdry_edge(MBBL pumi_obj,  int iEdge);

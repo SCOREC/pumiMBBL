@@ -536,6 +536,14 @@ Vector3 get_bdry_vert_normal_host(MBBL pumi_obj, int iVert){
     }
 }
 
+Vector3 get_edge_normal_host(MBBL pumi_obj, int iEdge){
+    return pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge];
+}
+
+Vector3 get_vert_normal_host(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.bdry.host_bdry_vert_normal[iVert];
+}
+
 bool is_horizontal_edge_host(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
 
