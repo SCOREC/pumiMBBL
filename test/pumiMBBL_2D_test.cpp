@@ -83,12 +83,12 @@ int main( int argc, char* argv[] )
     }
     Kokkos::Profiling::popRegion();
 
-    Kokkos::Profiling::pushRegion("grad_uni");
-    for (int istep=0; istep<nstep; istep++){
-        // printf("t%d\n",istep );
-        phi_grad_uni = pumi::compute_2D_field_gradient_fulluniform(pumi_obj,phi);
-    }
-    Kokkos::Profiling::popRegion();
+    // Kokkos::Profiling::pushRegion("grad_uni");
+    // for (int istep=0; istep<nstep; istep++){
+    //     // printf("t%d\n",istep );
+    //     phi_grad_uni = pumi::compute_2D_field_gradient_fulluniform(pumi_obj,phi);
+    // }
+    // Kokkos::Profiling::popRegion();
 
     Kokkos::Profiling::pushRegion("grad_v2");
     for (int istep=0; istep<nstep; istep++){
