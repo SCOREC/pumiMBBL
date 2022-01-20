@@ -234,9 +234,15 @@ int bst_search(Kokkos::View<int*> arr, int first, int last, int nodeID){
 KOKKOS_INLINE_FUNCTION
 void get_submeshIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub, int *jsub){
     int nblks = pumi_obj.mesh.bst.total_active_blocks;
-    int first = 0;
-    int last = nblks-1;
-    int subID = bst_search(pumi_obj.mesh.bst.block_nodes_cumulative,first,last,inode);
+    int subID;
+    if (nblks>1){
+        int first = 0;
+        int last = nblks-1;
+        subID = bst_search(pumi_obj.mesh.bst.block_nodes_cumulative,first,last,inode);
+    }
+    else{
+        subID = 0;
+    }
     int submeshID = pumi_obj.mesh.bst.active_blockID(subID);
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
@@ -245,9 +251,15 @@ void get_submeshIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub,
 KOKKOS_INLINE_FUNCTION
 void get_submeshIDs_and_localnodeIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub, int *jsub, int *inp, int *jnp){
     int nblks = pumi_obj.mesh.bst.total_active_blocks;
-    int first = 0;
-    int last = nblks-1;
-    int subID = bst_search(pumi_obj.mesh.bst.block_nodes_cumulative,first,last,inode);
+    int subID;
+    if (nblks>1){
+        int first = 0;
+        int last = nblks-1;
+        subID = bst_search(pumi_obj.mesh.bst.block_nodes_cumulative,first,last,inode);
+    }
+    else{
+        subID = 0;
+    }   
     int submeshID = pumi_obj.mesh.bst.active_blockID(subID);
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
