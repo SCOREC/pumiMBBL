@@ -259,7 +259,7 @@ void get_submeshIDs_and_localnodeIDs_of_block_interior_nodes(MBBL pumi_obj, int 
     }
     else{
         subID = 0;
-    }   
+    }
     int submeshID = pumi_obj.mesh.bst.active_blockID(subID);
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
@@ -315,6 +315,16 @@ bool is_horizontal_edge(MBBL pumi_obj, int iEdge){
     else{
         return false;
     }
+}
+
+KOKKOS_INLINE_FUNCTION
+bool is_edge_bdry(MBBL pumi_obj, int iEdge){
+    return pumi_obj.mesh.bdry.is_bdry_edge(iEdge);
+}
+
+KOKKOS_INLINE_FUNCTION
+bool is_vert_bdry(MBBL pumi_obj, int iVert){
+    return pumi_obj.mesh.bdry.is_bdry_vert(iVert);
 }
 /**
 * @brief Locate the submesh ID and local cell ID for a given x1-coordinate

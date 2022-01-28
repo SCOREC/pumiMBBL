@@ -623,7 +623,7 @@ int get_south_edgeID(MBBL pumi_obj, int isub, int jsub){
     return (jsub-1)*(2*Nx+1)+(isub-1);
 }
 
-bool is_edge_bdry(MBBL pumi_obj, int iEdge){
+bool is_edge_bdry_host(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iEdge>=0 && iEdge<2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2){
@@ -636,7 +636,7 @@ bool is_edge_bdry(MBBL pumi_obj, int iEdge){
     }
 }
 
-bool is_vert_bdry(MBBL pumi_obj, int iVert){
+bool is_vert_bdry_host(MBBL pumi_obj, int iVert){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     if (iVert>=0 && iVert<nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1){
