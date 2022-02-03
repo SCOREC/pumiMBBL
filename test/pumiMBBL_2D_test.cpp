@@ -75,13 +75,13 @@ int main( int argc, char* argv[] )
 
     pumi::Vector3View phi_grad, phi_grad_new, phi_grad_uni;
 
-    int nstep=1000;
-    Kokkos::Profiling::pushRegion("grad_v1");
-    for (int istep=0; istep<nstep; istep++){
-        // printf("t%d\n",istep );
-        phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
-    }
-    Kokkos::Profiling::popRegion();
+    // int nstep=1000;
+    // Kokkos::Profiling::pushRegion("grad_v1");
+    // for (int istep=0; istep<nstep; istep++){
+    //     // printf("t%d\n",istep );
+    //     phi_grad = pumi::compute_2D_field_gradient(pumi_obj,phi);
+    // }
+    // Kokkos::Profiling::popRegion();
 
     // Kokkos::Profiling::pushRegion("grad_uni");
     // for (int istep=0; istep<nstep; istep++){
@@ -90,12 +90,21 @@ int main( int argc, char* argv[] )
     // }
     // Kokkos::Profiling::popRegion();
 
-    Kokkos::Profiling::pushRegion("grad_v2");
-    for (int istep=0; istep<nstep; istep++){
-        // printf("t%d\n",istep );
-        phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
-    }
-    Kokkos::Profiling::popRegion();
+    // Kokkos::Profiling::pushRegion("grad_v2");
+    // for (int istep=0; istep<nstep; istep++){
+    //     // printf("t%d\n",istep );
+    //     phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
+    // }
+    // Kokkos::Profiling::popRegion();
+
+    int nel_tot = pumi::get_total_mesh_elements(pumi_obj);
+    Kokkos::parallel_for("test-elem-ids",1,KOKKOS_LAMBDA(const int){
+        for (int i=0; i<nel_tot; i++){
+            int isub, icell, jsub, jcell;
+            pumi::get_submeshIDs_and_localcellIDs_of_block_elements(pumi_obj,i,&isub,&jsub,&icell,&jcell);
+            printf("iel=%d isub=%d jsub=%d icell=%d jcell=%d\n",i,isub,jsub,icell,jcell);
+        }
+    });
 
 
 
