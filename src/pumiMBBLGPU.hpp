@@ -615,11 +615,13 @@ public:
 
     Kokkos::View<int*> active_blockID;
     Kokkos::View<int*> block_nodes_cumulative;
+    Kokkos::View<int*> block_elems_cumulative;
     Kokkos::View<int*> active_edgeID;
     Kokkos::View<int*> edge_nodes_cumulative;
 
     int* host_active_blockID;
     int* host_block_nodes_cumulative;
+    int* host_block_elems_cumulative;
     int* host_active_edgeID;
     int* host_edge_nodes_cumulative;
 

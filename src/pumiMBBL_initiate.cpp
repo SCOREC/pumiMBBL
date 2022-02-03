@@ -1990,10 +1990,13 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
     }
     host_active_blockID = new int[total_active_blocks];
     host_block_nodes_cumulative = new int[total_active_blocks];
+    host_block_elems_cumulative = new int[total_active_blocks];
     active_blockID = Kokkos::View<int*>("active-blockIDs",total_active_blocks);
     block_nodes_cumulative = Kokkos::View<int*>("block-nodes-cumulative",total_active_blocks);
+    block_elems_cumulative = Kokkos::View<int*>("block-elems-cumulative",total_active_blocks);
     Kokkos::View<int*>::HostMirror h_active_blockID = Kokkos::create_mirror_view(active_blockID);
     Kokkos::View<int*>::HostMirror h_block_nodes_cumulative = Kokkos::create_mirror_view(block_nodes_cumulative);
+    Kokkos::View<int*>::HostMirror h_block_elems_cumulative = Kokkos::create_mirror_view(block_elems_cumulative);
 
     int blkID = 0;
     for (int jsub=1; jsub<=Ny; jsub++){
@@ -2002,12 +2005,16 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
                 host_active_blockID[blkID] = (isub-1) + (jsub-1)*Nx;
                 if (blkID==0){
                     host_block_nodes_cumulative[blkID] = (hc_submesh_x1[isub]->Nel-1)*(hc_submesh_x2[jsub]->Nel-1);
+                    host_block_elems_cumulative[blkID] = (hc_submesh_x1[isub]->Nel)*(hc_submesh_x2[jsub]->Nel);
                 }
                 else{
                     host_block_nodes_cumulative[blkID] = host_block_nodes_cumulative[blkID-1] +
                                                         (hc_submesh_x1[isub]->Nel-1)*(hc_submesh_x2[jsub]->Nel-1);
+                    host_block_elems_cumulative[blkID] = host_block_elems_cumulative[blkID-1] +
+                                                        (hc_submesh_x1[isub]->Nel)*(hc_submesh_x2[jsub]->Nel);
                 }
                 h_block_nodes_cumulative(blkID) = host_block_nodes_cumulative[blkID];
+                h_block_elems_cumulative(blkID) = host_block_elems_cumulative[blkID];
                 h_active_blockID(blkID) = (isub-1) + (jsub-1)*Nx;
                 blkID++;
             }
@@ -2015,6 +2022,7 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
     }
     Kokkos::deep_copy(active_blockID, h_active_blockID);
     Kokkos::deep_copy(block_nodes_cumulative, h_block_nodes_cumulative);
+    Kokkos::deep_copy(block_elems_cumulative, h_block_elems_cumulative);
     total_block_nodes = h_block_nodes_cumulative(total_active_blocks-1);
     total_active_edges = 0;
     for(int iEdge=0; iEdge<2*Nx*Ny+Nx+Ny; iEdge++){
