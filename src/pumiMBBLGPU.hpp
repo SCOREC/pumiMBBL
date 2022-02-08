@@ -123,7 +123,7 @@ public:
         *global_cell = -1;
         *Wgh2 = -999.0;
     }
-    virtual double node_coords(int) {return -999.0;}
+    virtual double node_coords_host(int) {return -999.0;}
 
 };
 
@@ -186,6 +186,11 @@ public:
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double node_coords(int inode) {
+        return this->xmin + inode*this->t0;
+    }
+
     int locate_cell_host(double q) {
         if (q==this->xmax)
             return this->Nel-1;
@@ -206,7 +211,7 @@ public:
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
-    double node_coords(int inode) {
+    double node_coords_host(int inode) {
         return this->xmin + inode*this->t0;
     }
 
@@ -288,6 +293,11 @@ public:
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double node_coords(int inode) {
+        return this->BL_coords(inode);
+    }
+
     int locate_cell_host(double q) {
         if (r != 1.0){
             if (q==this->xmax){
@@ -325,7 +335,7 @@ public:
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
-    double node_coords(int inode) {
+    double node_coords_host(int inode) {
         return this->host_BL_coords[inode];
     }
 
@@ -409,6 +419,11 @@ public:
         // *Wgh2 = 1.0 - ((this->xmax - (r_pow_cell-1.0)/this->r_by_t0) - q)/(this->t0*r_pow_cell);
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double node_coords(int inode) {
+        return this->BL_coords(inode);
+    }
+
     int locate_cell_host(double q) {
         if (r != 1.0){
             if (q==this->xmin){
@@ -446,7 +461,7 @@ public:
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
-    double node_coords(int inode) {
+    double node_coords_host(int inode) {
         return this->host_BL_coords[inode];
     }
 
@@ -506,12 +521,20 @@ public:
         *global_cell = -1;
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double node_coords(int) {
+        return -999.0;
+    }
+
     int locate_cell_host(double ) { return -1; }
     int update_cell_host(double , int) { return -1; }
     double elem_size_host(int ) { return -999.0; }
     void calc_weights_host(double , int , int *global_cell, double *Wgh2){
         *global_cell = -1;
         *Wgh2 = -999.0;
+    }
+    double node_coords_host(int ){
+        return -999.0;
     }
 
 };

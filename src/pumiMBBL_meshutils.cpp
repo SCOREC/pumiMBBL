@@ -291,8 +291,8 @@ void print_2D_node_coordinates(MBBL pumi_obj){
                 int isub = subID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
                 int inp = inode - pumi_obj.host_submesh_x1[isub]->Nel_cumulative;
                 int jnp = jnode - pumi_obj.host_submesh_x2[jsub]->Nel_cumulative;
-                double icoord = pumi_obj.host_submesh_x1[isub]->node_coords(inp);
-                double jcoord = pumi_obj.host_submesh_x2[jsub]->node_coords(jnp);
+                double icoord = pumi_obj.host_submesh_x1[isub]->node_coords_host(inp);
+                double jcoord = pumi_obj.host_submesh_x2[jsub]->node_coords_host(jnp);
                 fprintf(node_coords_file, "%.16e %.16e\n",icoord, jcoord );
             }
         }

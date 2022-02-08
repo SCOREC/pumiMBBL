@@ -60,8 +60,8 @@ int main( int argc, char* argv[] )
                     for (int jnp=0; jnp<Nnp_y; jnp++){
                         int Inp = inp + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
                         int Jnp = jnp + pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
-                        double x1_coord = pumi_obj.host_submesh_x1[isubmesh]->node_coords(inp);
-                        double x2_coord = pumi_obj.host_submesh_x2[jsubmesh]->node_coords(jnp);
+                        double x1_coord = pumi_obj.host_submesh_x1[isubmesh]->node_coords_host(inp);
+                        double x2_coord = pumi_obj.host_submesh_x2[jsubmesh]->node_coords_host(jnp);
                         int nodeID = pumi::get_global_nodeID_2D(pumi_obj,Inp,Jnp);
                         h_phi(nodeID) = x1_coord*x2_coord;
                         // h_phi(nodeID) = 1.0;

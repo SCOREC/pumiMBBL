@@ -73,6 +73,21 @@ void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int 
 }
 
 KOKKOS_INLINE_FUNCTION
+double node_coords(DevicePointer<Submesh> submesh, int inode){
+    switch (submesh()->meshtype){
+        case (uniform) :
+            return static_cast<Uniform_Submesh*>(submesh())->node_coords(inode);
+        case (minBL) :
+            return static_cast<MinBL_Submesh*>(submesh())->node_coords(inode);
+        case (maxBL) :
+            return static_cast<MaxBL_Submesh*>(submesh())->node_coords(inode);
+        case (unassigned) :
+            return -999.0;
+    }
+    return -999.0;
+}
+
+KOKKOS_INLINE_FUNCTION
 bool is_block_active(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.isactive(isub,jsub);
 }
@@ -556,6 +571,30 @@ void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_g
      calc_weights(pumi_obj.submesh_x2(isubmesh),q,icell,x2_global_cell,Wgh2);
  }
 
+ KOKKOS_INLINE_FUNCTION
+ void calc_weights_2D(MBBL pumi_obj,
+                        double q1, double q2,
+                        int isub, int jsub,
+                        int icell, int jcell,
+                        int *x1_global_cell, int *x2_global_cell,
+                        double* w1, double* w2, double* w3, double* w4){
+
+
+    double x1_min_node = node_coords(pumi_obj.submesh_x1(isub),icell);
+    double x2_min_node = node_coords(pumi_obj.submesh_x2(jsub),jcell);
+    double x1_max_node = node_coords(pumi_obj.submesh_x1(isub),icell+1);
+    double x2_max_node = node_coords(pumi_obj.submesh_x2(jsub),jcell+1);
+
+    *x1_global_cell = pumi_obj.submesh_x1(isub)()->Nel_cumulative + icell;
+    *x2_global_cell = pumi_obj.submesh_x2(jsub)()->Nel_cumulative + jcell;
+
+    double elemsize = (x1_max_node-x1_min_node)*(x2_max_node-x2_min_node);
+    *w1 = (x1_max_node-q1)*(x2_max_node-q2)/elemsize;
+    *w2 = (-x1_min_node+q1)*(x2_max_node-q2)/elemsize;
+    *w3 = (x1_max_node-q1)*(-x2_min_node+q2)/elemsize;
+    *w4 = (-x1_min_node+q1)*(-x2_min_node+q2)/elemsize;
+}
+
  /**
   * @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
   * with no-inactive blocks (mesh with inactive blocks will need separate implementations)
@@ -704,7 +743,7 @@ int calc_first_north_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, in
 
 KOKKOS_INLINE_FUNCTION
 int calc_first_south_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
-    int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
+    // int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     if (inode==0){
         int jm1 = iEdge/(2*Nx+1);
