@@ -97,15 +97,36 @@ int main( int argc, char* argv[] )
     // }
     // Kokkos::Profiling::popRegion();
 
-    int nel_tot = pumi::get_total_mesh_elements(pumi_obj);
-    Kokkos::parallel_for("test-elem-ids",1,KOKKOS_LAMBDA(const int){
-        for (int i=0; i<nel_tot; i++){
-            int isub, icell, jsub, jcell;
-            pumi::get_submeshIDs_and_localcellIDs_of_block_elements(pumi_obj,i,&isub,&jsub,&icell,&jcell);
-            printf("iel=%d isub=%d jsub=%d icell=%d jcell=%d\n",i,isub,jsub,icell,jcell);
+    // int nel_tot = pumi::get_total_mesh_elements(pumi_obj);
+    // Kokkos::parallel_for("test-elem-ids",1,KOKKOS_LAMBDA(const int){
+    //     for (int i=0; i<nel_tot; i++){
+    //         int isub, icell, jsub, jcell;
+    //         pumi::get_submeshIDs_and_localcellIDs_of_block_elements(pumi_obj,i,&isub,&jsub,&icell,&jcell);
+    //         printf("iel=%d isub=%d jsub=%d icell=%d jcell=%d\n",i,isub,jsub,icell,jcell);
+    //     }
+    // });
+
+    int nel_tot_x1 = pumi_obj.mesh.Nel_tot_x1;
+    Kokkos::parallel_for("test-x1-elem-ids",1,KOKKOS_LAMBDA(const int){
+        for (int i=0; i<nel_tot_x1; i++){
+            int isub1, isub2, isub3, icell1, icell2, icell3;
+            pumi::get_x1_submeshID_and_localcellID_of_x1_elem(pumi_obj, i, &isub1, &icell1);
+            pumi::get_x1_submeshID_and_localcellID_of_x1_node(pumi_obj, i, &isub2, &icell2);
+            pumi::get_x1_submeshID_and_localcellID_of_x1_node(pumi_obj, i+1, &isub3, &icell3);
+            printf("iel=%d elem=(%d, %d) left=(%d, %d) right=(%d, %d)\n",i,isub1,icell1,isub2,icell2,isub3,icell3);
         }
     });
 
+    int nel_tot_x2 = pumi_obj.mesh.Nel_tot_x2;
+    Kokkos::parallel_for("test-x2-elem-ids",1,KOKKOS_LAMBDA(const int){
+        for (int i=0; i<nel_tot_x2; i++){
+            int isub1, isub2, isub3, icell1, icell2, icell3;
+            pumi::get_x2_submeshID_and_localcellID_of_x2_elem(pumi_obj, i, &isub1, &icell1);
+            pumi::get_x2_submeshID_and_localcellID_of_x2_node(pumi_obj, i, &isub2, &icell2);
+            pumi::get_x2_submeshID_and_localcellID_of_x2_node(pumi_obj, i+1, &isub3, &icell3);
+            printf("iel=%d elem=(%d, %d) left=(%d, %d) right=(%d, %d)\n",i,isub1,icell1,isub2,icell2,isub3,icell3);
+        }
+    });
 
 
     // Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){

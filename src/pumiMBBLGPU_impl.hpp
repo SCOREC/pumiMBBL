@@ -247,6 +247,106 @@ int bst_search(Kokkos::View<int*> arr, int first, int last, int nodeID){
 }
 
 KOKKOS_INLINE_FUNCTION
+int directional_bst_search(SubmeshDeviceViewPtr submesh, int first, int last, int entity_ID){
+    int mid = (first+last)/2;
+
+    if (last == first+1){
+        if (submesh(first+1)()->Nel+submesh(first+1)()->Nel_cumulative > entity_ID){
+            return first;
+        }
+        else if (submesh(first+1)()->Nel+submesh(first+1)()->Nel_cumulative <= entity_ID){
+            return last;
+        }
+    }
+    else{
+        if (submesh(mid+1)()->Nel+submesh(mid+1)()->Nel_cumulative > entity_ID){
+            last = mid;
+            return directional_bst_search(submesh, first, last, entity_ID);
+        }
+        else if (submesh(mid+1)()->Nel+submesh(mid+1)()->Nel_cumulative < entity_ID){
+            first = mid;
+            return directional_bst_search(submesh, first, last, entity_ID);
+        }
+        else{
+            return mid+1;
+        }
+    }
+    return -1;
+}
+
+KOKKOS_INLINE_FUNCTION
+void get_x1_submeshID_and_localcellID_of_x1_elem(MBBL pumi_obj, int x1_elem_id, int *isub, int *icell){
+    int nblks = pumi_obj.mesh.nsubmesh_x1;
+    if (nblks>1){
+        int first = 0;
+        int last = nblks-1;
+        *isub = directional_bst_search(pumi_obj.submesh_x1,first,last,x1_elem_id) + 1;
+    }
+    else{
+        *isub = 1;
+    }
+    *icell = x1_elem_id - pumi_obj.submesh_x1(*isub)()->Nel_cumulative;
+}
+
+KOKKOS_INLINE_FUNCTION
+void get_x1_submeshID_and_localcellID_of_x1_node(MBBL pumi_obj, int x1_node_id, int *isub, int *icell){
+    int nblks = pumi_obj.mesh.nsubmesh_x1;
+    if (x1_node_id == pumi_obj.mesh.Nel_tot_x1){
+        *isub = nblks;
+        *icell = pumi_obj.submesh_x1(*isub)()->Nel-1;
+        return;
+    }
+    else{
+        if (nblks>1){
+            int first = 0;
+            int last = nblks-1;
+            *isub = directional_bst_search(pumi_obj.submesh_x1,first,last,x1_node_id) + 1;
+        }
+        else{
+            *isub = 1;
+        }
+        *icell = x1_node_id - pumi_obj.submesh_x1(*isub)()->Nel_cumulative;
+        return;
+    }
+}
+
+KOKKOS_INLINE_FUNCTION
+void get_x2_submeshID_and_localcellID_of_x2_elem(MBBL pumi_obj, int x2_elem_id, int *isub, int *icell){
+    int nblks = pumi_obj.mesh.nsubmesh_x2;
+    if (nblks>1){
+        int first = 0;
+        int last = nblks-1;
+        *isub = directional_bst_search(pumi_obj.submesh_x2,first,last,x2_elem_id) + 1;
+    }
+    else{
+        *isub = 1;
+    }
+    *icell = x2_elem_id - pumi_obj.submesh_x2(*isub)()->Nel_cumulative;
+}
+
+KOKKOS_INLINE_FUNCTION
+void get_x2_submeshID_and_localcellID_of_x2_node(MBBL pumi_obj, int x2_node_id, int *isub, int *icell){
+    int nblks = pumi_obj.mesh.nsubmesh_x2;
+    if (x2_node_id == pumi_obj.mesh.Nel_tot_x2){
+        *isub = nblks;
+        *icell = pumi_obj.submesh_x2(*isub)()->Nel-1;
+        return;
+    }
+    else{
+        if (nblks>1){
+            int first = 0;
+            int last = nblks-1;
+            *isub = directional_bst_search(pumi_obj.submesh_x2,first,last,x2_node_id) + 1;
+        }
+        else{
+            *isub = 1;
+        }
+        *icell = x2_node_id - pumi_obj.submesh_x2(*isub)()->Nel_cumulative;
+        return;
+    }
+}
+
+KOKKOS_INLINE_FUNCTION
 void get_submeshIDs_and_localcellIDs_of_block_elements(MBBL pumi_obj, int ielem, int *isub, int *jsub, int *icell, int *jcell){
     int nblks = pumi_obj.mesh.bst.total_active_blocks;
     int subID;
