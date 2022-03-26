@@ -905,10 +905,10 @@ KOKKOS_FUNCTION
 int get_x2_nodeID_at_interface(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
-int get_x1_gradingratio_at_interface(MBBL pumi_obj, int isub);
+double get_x1_gradingratio_at_interface(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
-int get_x2_gradingratio_at_interface(MBBL pumi_obj, int isub);
+double get_x2_gradingratio_at_interface(MBBL pumi_obj, int isub);
 
 KOKKOS_FUNCTION
 double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub);
