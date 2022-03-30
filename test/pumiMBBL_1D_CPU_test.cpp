@@ -13,7 +13,7 @@ int main( int argc, char* argv[] )
 {
   Kokkos::initialize( argc, argv );
   {
-      if (argc != 7)
+      if (argc != 8)
       {
           print_usage();
       }
@@ -198,11 +198,31 @@ void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
         exit(0);
     }
 
+    //reading arbitrary block elemsize files
+    char all_arb_submesh_x1[MAX_SUBMESHES*100];
+    char each_arb_submesh_x1[MAX_SUBMESHES][100];
+    strcpy(all_arb_submesh_x1, argv[7]);
+
+    tok = strtok(all_arb_submesh_x1, ",");
+    isubmesh=0;
+    while (tok != NULL){
+      strcpy (each_arb_submesh_x1[isubmesh], tok);
+      tok = strtok(NULL, ",");
+      isubmesh++;
+    }
+    //print error if number of inputs do not match nsubmeshes
+    if (isubmesh != pumi_inputs->nsubmesh_x1){
+        printf("ERROR: Number of elem-size-file arguments not equal to number of submeshes...\n");
+        exit(0);
+    }
+
     for (isubmesh=0; isubmesh<nsubmesh_x1; isubmesh++){
         (pumi_inputs->meshtype_x1).push_back(each_submesh_flag_x1[isubmesh]);
         (pumi_inputs->block_length_x1).push_back(atof(each_p1_submesh_x1[isubmesh]));
         (pumi_inputs->max_elem_size_x1).push_back(atof(each_p2max_submesh_x1[isubmesh]));
         (pumi_inputs->min_elem_size_x1).push_back(atof(each_p2min_submesh_x1[isubmesh]));
+        std::string x1_elemsize_file(each_arb_submesh_x1[isubmesh]);
+        (pumi_inputs->arbitrary_x1_elemsize_file).push_back(x1_elemsize_file);
     }
     print_parsed_inputs(pumi_inputs);
 }
@@ -232,6 +252,8 @@ void print_usage()
     printf("\t \"max_elem_size_x1\" \t\t Maximum cell size in Debye lengths for i-th submesh along the x1-direction \n");
     printf("\t \"min_elem_size_x1\"  \t\t For leftBL/rightBL, Minimum cell size in Debye lengths for i-th submesh for i-th submesh along the x1-direction \n");
     printf("\t \t  \t\t For uniform, the inputs will be ignored \n\n");
+    printf("\t \"elem_size_file_x1\" \t\t For arbitrary, list of cell sizes in Debye lengths for i-th submesh along the x1-direction \n");
+    printf("\t \t  \t\t For uniform/maxBL/minBL, the inputs will be ignored \n\n");
     printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");
     printf("    ./install/bin/pumiMBBL1D_Demo_CPU 3 1.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \n\n");
