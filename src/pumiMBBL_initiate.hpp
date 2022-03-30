@@ -25,6 +25,8 @@ struct Mesh_Inputs{
     std::vector<double> min_elem_size_x2;//!< Minimum size cells in Debye Length (along x2-direction)
     std::vector<std::string> meshtype_x1; //!< Type of mesh as string (uniform/minBL/maxBL)
     std::vector<std::string> meshtype_x2; //!< Type of mesh as string (uniform/minBL/maxBL)
+    std::vector<std::string> arbitrary_x1_elemsize_file;
+    std::vector<std::string> arbitrary_x2_elemsize_file;
 };
 
 /*!
@@ -78,6 +80,7 @@ unsigned int get_submesh_type(std::string meshtype_string);
 double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel);
 Mesh_Inputs* inputs_allocate();
 void inputs_deallocate(Mesh_Inputs* pumi_inputs);
+std::vector<double> read_elemsize(double xmin, double xmax, std::string elemsize_file);
 void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1);
 void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2);
 void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Options pumi_options);
