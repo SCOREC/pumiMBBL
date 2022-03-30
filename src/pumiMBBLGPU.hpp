@@ -44,6 +44,7 @@ enum Meshtype{
     uniform    = 0x01, //!< Uniform mesh
     minBL      = 0x02, //!< geometrically graded BL mesh biased towards the min-size (i.e left-side or bottom-side)
     maxBL      = 0x04, //!< geometrically graded BL mesh biased towards the max-size (i.e right-side or top-side)
+    arbitrary  = 0x08,
 };
 
 ///////// PUMI-MBBL-GPU Data-Structures ////////////////////////////////////////////////////
@@ -440,6 +441,102 @@ public:
             else
                 return (q - this->xmin)/this->t0;
         }
+    }
+
+    int update_cell_host(double q, int icell) {
+        while (q < this->host_BL_coords[icell]){
+            icell--;
+        }
+        while (q > this->host_BL_coords[icell+1]){
+            icell++;
+        }
+        return icell;
+    }
+
+    double elem_size_host(int icell) {
+        return (this->host_BL_coords[icell+1]-this->host_BL_coords[icell]);
+    }
+
+    void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
+        *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
+        *global_cell = local_cell + this->Nel_cumulative;
+    }
+
+    double node_coords_host(int inode) {
+        return this->host_BL_coords[inode];
+    }
+
+};
+
+
+/**
+ * @brief MaxBL submesh class derived from submesh class
+ *
+ */
+class Arbitrary_Submesh : public Submesh{
+public:
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] submesh min-side coords
+    * \param[in] submesh max-side coords
+    * \param[in] submesh number of elements
+    * \param[in] submesh smallest element size
+    * \param[in] submesh grading ratio
+    * \param[in] submesh length
+    * \param[in] submesh preceding cumulative elements
+    * \param[in] submesh (r-1.0)/t0 value
+    * \param[in] submesh log(r) value
+    * \param[in] submesh BL coordinates (explicitly stored)
+    */
+    Arbitrary_Submesh(double xmin_,
+                    double xmax_,
+                    int Nel_,
+                    double t0_,
+                    double r_,
+                    double length_,
+                    int Nel_cumulative_,
+                    double r_by_t0_,
+                    double log_r_,
+                    DoubleView BL_coords_,
+                    double *host_BL_coords_):
+                    Submesh(xmin_,xmax_,Nel_,t0_,r_,arbitrary,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
+
+    KOKKOS_INLINE_FUNCTION
+    int locate_cell(double ){
+        return 0;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    int update_cell(double q, int icell){
+        while (q < this->BL_coords(icell)){
+            icell--;
+        }
+        while (q > this->BL_coords(icell+1)){
+            icell++;
+        }
+        return icell;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    double elem_size(int icell){
+        return (this->BL_coords(icell+1)-this->BL_coords(icell));
+        // return this->t0*pow(this->r,this->Nel-icell-1);
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
+        *Wgh2 = (q - this->BL_coords(local_cell))/(this->BL_coords(local_cell+1)-this->BL_coords(local_cell));
+        *global_cell = local_cell + this->Nel_cumulative;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    double node_coords(int inode) {
+        return this->BL_coords(inode);
+    }
+
+    int locate_cell_host(double ) {
+        return 0;
     }
 
     int update_cell_host(double q, int icell) {
