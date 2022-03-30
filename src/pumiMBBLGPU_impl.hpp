@@ -14,6 +14,8 @@ int locate_cell(DevicePointer<Submesh> submesh, double q) {
             return static_cast<MinBL_Submesh*>(submesh())->locate_cell(q);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->locate_cell(q);
+        case (arbitrary) :
+            return static_cast<Arbitrary_Submesh*>(submesh())->locate_cell(q);
         case (unassigned) :
             return -1;
     }
@@ -29,6 +31,8 @@ int update_cell(DevicePointer<Submesh> submesh, double q, int icell) {
             return static_cast<MinBL_Submesh*>(submesh())->update_cell(q,icell);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->update_cell(q,icell);
+        case (arbitrary) :
+            return static_cast<Arbitrary_Submesh*>(submesh())->update_cell(q,icell);
         case (unassigned) :
             return -1;
     }
@@ -44,6 +48,8 @@ double elem_size(DevicePointer<Submesh> submesh, int icell){
             return static_cast<MinBL_Submesh*>(submesh())->elem_size(icell);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->elem_size(icell);
+        case (arbitrary) :
+            return static_cast<Arbitrary_Submesh*>(submesh())->elem_size(icell);
         case (unassigned) :
             return -999.0;
     }
@@ -61,6 +67,9 @@ void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int 
             return;
         case (maxBL) :
             static_cast<MaxBL_Submesh*>(submesh())->calc_weights(q,local_cell,global_cell,Wgh2);
+            return;
+        case (arbitrary) :
+            static_cast<Arbitrary_Submesh*>(submesh())->calc_weights(q,local_cell,global_cell,Wgh2);
             return;
         case (unassigned) :
             *global_cell = -1;
@@ -81,6 +90,8 @@ double node_coords(DevicePointer<Submesh> submesh, int inode){
             return static_cast<MinBL_Submesh*>(submesh())->node_coords(inode);
         case (maxBL) :
             return static_cast<MaxBL_Submesh*>(submesh())->node_coords(inode);
+        case (arbitrary) :
+            return static_cast<Arbitrary_Submesh*>(submesh())->node_coords(inode);
         case (unassigned) :
             return -999.0;
     }
