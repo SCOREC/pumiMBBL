@@ -10,7 +10,7 @@ namespace pumi {
  * \return unsigned int mesh type -- uniform=0x01 , minBL=0x02 and maxBL=0x04
  */
 unsigned int get_submesh_type(std::string meshtype_string){
-    std::vector<std::string> defined_types {"uniform","minBL","maxBL"};
+    std::vector<std::string> defined_types {"uniform","minBL","maxBL","arbitrary"};
     unsigned int type = unassigned;
 
     if ( meshtype_string.compare(defined_types[0]) ==0 ){
@@ -22,9 +22,12 @@ unsigned int get_submesh_type(std::string meshtype_string){
     else if ( meshtype_string.compare(defined_types[2]) ==0 ){
         type = maxBL;
     }
+    else if ( meshtype_string.compare(defined_types[3]) ==0 ){
+        type = arbitrary;
+    }
     else{
         std::cout << meshtype_string << " is an invalid meshtype\n";
-        std::cout << "Valid types are \"uniform\", \"minBL\", \"maxBL\"\n";
+        std::cout << "Valid types are \"uniform\", \"minBL\", \"maxBL\", \"arbitrary\"\n";
         std::cout << "Terminating\n";
         exit(0);
     }
@@ -92,6 +95,38 @@ void inputs_deallocate(Mesh_Inputs* pumi_inputs){
     delete pumi_inputs;
 }
 
+std::vector<double> read_elemsize(double xmin, double xmax, std::string elemsize_file){
+    std::vector<double> dx;
+    double xlength = xmax-xmin;
+    double dx_val;
+    std::ifstream fn(elemsize_file);
+
+    if (fn.is_open()){
+        while (fn >> dx_val){
+            dx.push_back(dx_val);
+        }
+    }
+    else{
+        std::cout << "ERROR: Element-size input file " << elemsize_file << " NOT FOUND -- TERMINATING\n";
+        exit(0);
+    }
+
+    int nel = dx.size();
+    double xlength_computed = 0.0;
+    for (int i=0; i<nel; i++){
+        xlength_computed += dx[i];
+    }
+
+    double diff = fabs(xlength_computed-xlength);
+    if (diff/xlength > 1e-5){
+        std::cout << "ERROR: Element-sizes from file " << elemsize_file << "does not match with input block-size\n";
+        printf("Required block-size : %2.5e\n",xlength);
+        printf("Block-size from file: %2.5e\n",xlength_computed);
+        exit(0);
+    }
+    return dx;
+}
+
 /**
  * @brief Prints the all relevant 1D-mesh details
  *
@@ -134,6 +169,11 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
             printf("\t uniform_T      = %2.4e \t [m] Uniform block thickness\n", h_submesh_x1[i]->length);
             printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i]->t0);
             printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i]->Nel);
+        }
+        if (h_submesh_x1[i]->meshtype & arbitrary){
+            printf("arbitrary\n");
+            printf("\t arbitrary_T    = %2.4e \t [m] Arbitrary block thickness\n", h_submesh_x1[i]->length);
+            printf("\t arbitrary_Nel  = %d    \t Number of Cells in arbitrary block\n\n", h_submesh_x1[i]->Nel);
         }
     }
 }
@@ -182,6 +222,11 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshH
             printf("\t uniform_dx1    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x1[i]->t0);
             printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x1[i]->Nel);
         }
+        if (h_submesh_x1[i]->meshtype & arbitrary){
+            printf("arbitrary\n");
+            printf("\t arbitrary_T    = %2.4e \t [m] Arbitrary block thickness\n", h_submesh_x1[i]->length);
+            printf("\t arbitrary_Nel  = %d    \t Number of Cells in arbitrary block\n\n", h_submesh_x1[i]->Nel);
+        }
     }
 
     printf("PUMI mesh parameter info [X2-Direction] :\n\n");
@@ -219,6 +264,11 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshH
             printf("\t uniform_T      = %2.4e \t [m] Uniform block thickness\n", h_submesh_x2[i]->length);
             printf("\t uniform_dx2    = %2.4e \t [m] Cell size in uniform block\n", h_submesh_x2[i]->t0);
             printf("\t uniform_Nel    = %d    \t Number of Cells in uniform block\n\n", h_submesh_x2[i]->Nel);
+        }
+        if (h_submesh_x2[i]->meshtype & arbitrary){
+            printf("arbitrary\n");
+            printf("\t arbitrary_T    = %2.4e \t [m] Arbitrary block thickness\n", h_submesh_x2[i]->length);
+            printf("\t arbitrary_Nel  = %d    \t Number of Cells in arbitrary block\n\n", h_submesh_x2[i]->Nel);
         }
     }
 
@@ -282,6 +332,9 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Opti
                         pow(h_submesh_x1[isubmesh]->r,h_submesh_x1[isubmesh]->Nel-1);
             r = 1.0/r;
         }
+        if (h_submesh_x1[isubmesh]->meshtype & arbitrary){
+            cell_size = h_submesh_x1[isubmesh]->host_BL_coords[1]-h_submesh_x1[isubmesh]->host_BL_coords[0];
+        }
 
         if (isubmesh==1){
             fprintf(mesh_coords_file, "%.16e\n", icoord);
@@ -292,7 +345,13 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Opti
         for (int icell=0; icell<h_submesh_x1[isubmesh]->Nel; icell++){
             inode++;
             icoord += cell_size;
-            cell_size *= r;
+            if (h_submesh_x1[isubmesh]->meshtype &arbitrary){
+                if (icell < h_submesh_x1[isubmesh]->Nel-1)
+                    cell_size = h_submesh_x1[isubmesh]->host_BL_coords[icell+2]-h_submesh_x1[isubmesh]->host_BL_coords[icell+1];
+            }
+            else{
+                cell_size *= r;
+            }
             fprintf(mesh_coords_file, "%.16e\n", icoord);
             fprintf(submesh_coords_file, "%.16e\n", icoord);
             if (pumi_options.print_node_option)
@@ -336,6 +395,9 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHo
                         pow(h_submesh_x1[isubmesh]->r,h_submesh_x1[isubmesh]->Nel-1);
             r = 1.0/r;
         }
+        if (h_submesh_x1[isubmesh]->meshtype & arbitrary){
+            cell_size = h_submesh_x1[isubmesh]->host_BL_coords[1]-h_submesh_x1[isubmesh]->host_BL_coords[0];
+        }
 
         if (isubmesh==1){
             fprintf(mesh_coords_file, "%.16e\n", icoord);
@@ -346,7 +408,13 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHo
         for (int icell=0; icell<h_submesh_x1[isubmesh]->Nel; icell++){
             inode++;
             icoord += cell_size;
-            cell_size *= r;
+            if (h_submesh_x1[isubmesh]->meshtype &arbitrary){
+                if (icell < h_submesh_x1[isubmesh]->Nel-1)
+                    cell_size = h_submesh_x1[isubmesh]->host_BL_coords[icell+2]-h_submesh_x1[isubmesh]->host_BL_coords[icell+1];
+            }
+            else{
+                cell_size *= r;
+            }
             fprintf(mesh_coords_file, "%.16e\n", icoord);
             fprintf(submesh_coords_file, "%.16e\n", icoord);
             if (pumi_options.print_node_option)
@@ -375,6 +443,9 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHo
                         pow(h_submesh_x2[isubmesh]->r,h_submesh_x2[isubmesh]->Nel-1);
             r = 1.0/r;
         }
+        if (h_submesh_x2[isubmesh]->meshtype & arbitrary){
+            cell_size = h_submesh_x2[isubmesh]->host_BL_coords[1]-h_submesh_x2[isubmesh]->host_BL_coords[0];
+        }
 
         if (isubmesh==1){
             fprintf(mesh_coords_file, "%.16e\n", icoord);
@@ -385,7 +456,13 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHo
         for (int icell=0; icell<h_submesh_x2[isubmesh]->Nel; icell++){
             inode++;
             icoord += cell_size;
-            cell_size *= r;
+            if (h_submesh_x2[isubmesh]->meshtype &arbitrary){
+                if (icell < h_submesh_x2[isubmesh]->Nel-1)
+                    cell_size = h_submesh_x2[isubmesh]->host_BL_coords[icell+2]-h_submesh_x2[isubmesh]->host_BL_coords[icell+1];
+            }
+            else{
+                cell_size *= r;
+            }
             fprintf(mesh_coords_file, "%.16e\n", icoord);
             fprintf(submesh_coords_file, "%.16e\n", icoord);
             if (pumi_options.print_node_option)
@@ -474,6 +551,15 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
             }
             else{
                 printf("\t\t uniform_Nel -- verified...\n");
+            }
+        }
+        if (h_submesh_x1[isubmesh]->meshtype & arbitrary){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t arbitrary_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
+                flag++;
+            }
+            else{
+                printf("\t\t arbitrary_Nel -- verified...\n");
             }
         }
     }
@@ -568,6 +654,15 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
                 printf("\t\t uniform_Nel -- verified...\n");
             }
         }
+        if (h_submesh_x1[isubmesh]->meshtype & arbitrary){
+            if (!(h_submesh_x1[isubmesh]->Nel > 0)){
+                printf("\t\t arbitrary_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x1[isubmesh]->Nel);
+                flag++;
+            }
+            else{
+                printf("\t\t arbitrary_Nel -- verified...\n");
+            }
+        }
     }
 
 
@@ -639,6 +734,15 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
                 printf("\t\t uniform_Nel -- verified...\n");
             }
         }
+        if (h_submesh_x2[isubmesh]->meshtype & arbitrary){
+            if (!(h_submesh_x2[isubmesh]->Nel > 0)){
+                printf("\t\t arbitrary_Nel = %d is not a valid input. It has to be a positive integer.\n", h_submesh_x2[isubmesh]->Nel);
+                flag++;
+            }
+            else{
+                printf("\t\t arbitrary_Nel -- verified...\n");
+            }
+        }
     }
 
 
@@ -685,6 +789,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
     }
 
     double xmin, xmax, xlength, t0, tN, r, r_t0_ratio, logr;
+    std::string elemsize_file;
     int Nel = 0;
     unsigned int type = 0x00;
     int Nel_cumulative = 0;
@@ -773,6 +878,8 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 
             BLcoordsname = "x1-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
+
+            elemsize_file = pumi_inputs->arbitrary_x1_elemsize_file[isubmesh-1];
         }
         else if (dir == x2_dir){
             type = get_submesh_type(pumi_inputs->meshtype_x2[isubmesh-1]);
@@ -790,6 +897,8 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 
             BLcoordsname = "x2-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
+
+            elemsize_file = pumi_inputs->arbitrary_x2_elemsize_file[isubmesh-1];
         }
 
         if (isubmesh > 1){
@@ -883,6 +992,34 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
             MaxBL_Submesh *tmp_obj_host = new MaxBL_Submesh(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
             submesh_host_copy[isubmesh] = tmp_obj_host;
             auto dvc_ptr = copyForDevice<Submesh, MaxBL_Submesh> (tmp_obj);
+            h_submesh(isubmesh) = DevicePointer<Submesh>(dvc_ptr);
+        }
+        if (type & arbitrary){
+
+            std::vector<double> BL_elemsize = read_elemsize(xmin, xmax, elemsize_file);
+            Nel = BL_elemsize.size();
+            r = -1.0;
+            r_t0_ratio = -1.0;
+            logr = -1.0;
+
+            BLcoords = DoubleView (BLcoordsname, Nel+1);
+            host_BLcoords = new double[Nel+1];
+            DoubleView::HostMirror h_BLcoords = Kokkos::create_mirror_view(BLcoords);
+            h_BLcoords(0) = xmin;
+            host_BLcoords[0] = xmin;
+            for (int icell=1; icell<Nel; icell++){
+                h_BLcoords(icell) = h_BLcoords(icell-1) + BL_elemsize[icell-1];
+                host_BLcoords[icell] = host_BLcoords[icell-1] + BL_elemsize[icell-1];
+            }
+            h_BLcoords(Nel) = xmax;
+            host_BLcoords[Nel] = xmax;
+
+            Kokkos::deep_copy(BLcoords, h_BLcoords);
+
+            Arbitrary_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            Arbitrary_Submesh *tmp_obj_host = new Arbitrary_Submesh(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
+            submesh_host_copy[isubmesh] = tmp_obj_host;
+            auto dvc_ptr = copyForDevice<Submesh, Arbitrary_Submesh> (tmp_obj);
             h_submesh(isubmesh) = DevicePointer<Submesh>(dvc_ptr);
         }
 
@@ -1702,6 +1839,8 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
             min_elem = hc_submesh_x1[i]->t0;
         if (hc_submesh_x1[i]->meshtype & uniform)
             min_elem = hc_submesh_x1[i]->t0;
+        if (hc_submesh_x1[i]->meshtype & arbitrary)
+            min_elem = hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel]-hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel-1];
 
         if (hc_submesh_x1[i+1]->meshtype & minBL)
             max_elem = hc_submesh_x1[i]->t0;
@@ -1709,6 +1848,8 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
             max_elem = (hc_submesh_x1[i]->t0)*pow(hc_submesh_x1[i]->r,hc_submesh_x1[i]->Nel-1);
         if (hc_submesh_x1[i+1]->meshtype & uniform)
             max_elem = hc_submesh_x1[i]->t0;
+        if (hc_submesh_x1[i+1]->meshtype & arbitrary)
+            max_elem = hc_submesh_x1[i]->host_BL_coords[1]-hc_submesh_x1[i]->host_BL_coords[0];
 
         host_if_x1_r[i-1] = max_elem/min_elem;
         host_if_x1_node[i] = hc_submesh_x1[i+1]->Nel_cumulative;
@@ -1753,6 +1894,8 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
            min_elem = hc_submesh_x1[i]->t0;
        if (hc_submesh_x1[i]->meshtype & uniform)
            min_elem = hc_submesh_x1[i]->t0;
+       if (hc_submesh_x1[i]->meshtype & arbitrary)
+           min_elem = hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel]-hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel-1];
 
        if (hc_submesh_x1[i+1]->meshtype & minBL)
            max_elem = hc_submesh_x1[i]->t0;
@@ -1760,6 +1903,8 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
            max_elem = (hc_submesh_x1[i]->t0)*pow(hc_submesh_x1[i]->r,hc_submesh_x1[i]->Nel-1);
        if (hc_submesh_x1[i+1]->meshtype & uniform)
            max_elem = hc_submesh_x1[i]->t0;
+       if (hc_submesh_x1[i+1]->meshtype & arbitrary)
+           max_elem = hc_submesh_x1[i]->host_BL_coords[1]-hc_submesh_x1[i]->host_BL_coords[0];
 
        host_if_x1_r[i-1] = max_elem/min_elem;
        host_if_x1_node[i] = hc_submesh_x1[i+1]->Nel_cumulative;
@@ -1776,6 +1921,8 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
            min_elem = hc_submesh_x2[i]->t0;
        if (hc_submesh_x2[i]->meshtype & uniform)
            min_elem = hc_submesh_x2[i]->t0;
+       if (hc_submesh_x2[i]->meshtype & arbitrary)
+           min_elem = hc_submesh_x2[i]->host_BL_coords[hc_submesh_x2[i]->Nel]-hc_submesh_x2[i]->host_BL_coords[hc_submesh_x2[i]->Nel-1];
 
        if (hc_submesh_x2[i+1]->meshtype & minBL)
            max_elem = hc_submesh_x2[i]->t0;
@@ -1783,6 +1930,8 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
            max_elem = (hc_submesh_x2[i]->t0)*pow(hc_submesh_x2[i]->r,hc_submesh_x2[i]->Nel-1);
        if (hc_submesh_x2[i+1]->meshtype & uniform)
            max_elem = hc_submesh_x2[i]->t0;
+       if (hc_submesh_x2[i+1]->meshtype & arbitrary)
+           max_elem = hc_submesh_x2[i]->host_BL_coords[1]-hc_submesh_x2[i]->host_BL_coords[0];
 
        host_if_x2_r[i-1] = max_elem/min_elem;
        host_if_x2_node[i] = hc_submesh_x2[i+1]->Nel_cumulative;
