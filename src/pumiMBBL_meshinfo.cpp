@@ -458,6 +458,10 @@ double get_x1_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
     }
 }
 
+double get_x1_gradingratio_in_submesh_host(MBBL pumi_obj, int isub, int inode){
+    return pumi_obj.host_submesh_x1[isub]->grading_ratio_host(inode);
+}
+
 double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
     if (pumi_obj.host_submesh_x2[isub]->meshtype & maxBL){
         return 1.0/pumi_obj.host_submesh_x2[isub]->r;
@@ -465,6 +469,10 @@ double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
     else{
         return pumi_obj.host_submesh_x2[isub]->r;
     }
+}
+
+double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub, int inode){
+    return pumi_obj.host_submesh_x2[isub]->grading_ratio_host(inode);
 }
 
 int get_x1_nodeID_at_interface_host(MBBL pumi_obj, int if_node){
