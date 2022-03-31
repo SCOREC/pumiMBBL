@@ -531,8 +531,34 @@ public:
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,arbitrary,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
     KOKKOS_INLINE_FUNCTION
-    int locate_cell(double ){
-        return 0;
+    int bst_search(DoubleView arr, int first, int last, double val){
+        int mid = (first+last)/2;
+
+        if (last == first+1){
+            if ((arr(first) <= val) && (arr(last) >= val)){
+                return first;
+            }
+        }
+        else{
+            if (arr(mid) >= val){
+                last = mid;
+                return bst_search(arr, first, last, val);
+            }
+            else if (arr(mid) <= val){
+                first = mid;
+                return bst_search(arr, first, last, val);
+            }
+            else{
+                return mid+1;
+            }
+        }
+        return -1;
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    int locate_cell(double q){
+        int iel = bst_search(this->BL_coords,0,this->Nel-1,q);
+        return iel;
     }
 
     KOKKOS_INLINE_FUNCTION
@@ -570,8 +596,33 @@ public:
         return max/min;
     }
 
-    int locate_cell_host(double ) {
-        return 0;
+    int bst_search_host(double* arr, int first, int last, double val){
+        int mid = (first+last)/2;
+
+        if (last == first+1){
+            if ((arr[first] <= val) && (arr[last] >= val)){
+                return first;
+            }
+        }
+        else{
+            if (arr[mid] >= val){
+                last = mid;
+                return bst_search_host(arr, first, last, val);
+            }
+            else if (arr[mid] <= val){
+                first = mid;
+                return bst_search_host(arr, first, last, val);
+            }
+            else{
+                return mid+1;
+            }
+        }
+        return -1;
+    }
+
+    int locate_cell_host(double q) {
+        int iel = bst_search_host(this->host_BL_coords,0,this->Nel-1,q);
+        return iel;
     }
 
     int update_cell_host(double q, int icell) {
