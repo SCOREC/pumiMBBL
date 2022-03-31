@@ -544,12 +544,9 @@ public:
                 last = mid;
                 return bst_search(arr, first, last, val);
             }
-            else if (arr(mid) <= val){
+            else if (arr(mid) < val){
                 first = mid;
                 return bst_search(arr, first, last, val);
-            }
-            else{
-                return mid+1;
             }
         }
         return -1;
@@ -557,7 +554,7 @@ public:
 
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
-        int iel = bst_search(this->BL_coords,0,this->Nel-1,q);
+        int iel = bst_search(this->BL_coords,0,this->Nel,q);
         return iel;
     }
 
@@ -609,19 +606,16 @@ public:
                 last = mid;
                 return bst_search_host(arr, first, last, val);
             }
-            else if (arr[mid] <= val){
+            else if (arr[mid] < val){
                 first = mid;
                 return bst_search_host(arr, first, last, val);
-            }
-            else{
-                return mid+1;
             }
         }
         return -1;
     }
 
     int locate_cell_host(double q) {
-        int iel = bst_search_host(this->host_BL_coords,0,this->Nel-1,q);
+        int iel = bst_search_host(this->host_BL_coords,0,this->Nel,q);
         return iel;
     }
 
