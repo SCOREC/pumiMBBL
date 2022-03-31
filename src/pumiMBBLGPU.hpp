@@ -193,6 +193,11 @@ public:
         return this->xmin + inode*this->t0;
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double grading_ratio(int){
+        return 1.0;
+    }
+
     int locate_cell_host(double q) {
         if (q==this->xmax)
             return this->Nel-1;
@@ -302,6 +307,11 @@ public:
     KOKKOS_INLINE_FUNCTION
     double node_coords(int inode) {
         return this->BL_coords(inode);
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    double grading_ratio(int){
+        return this->r;
     }
 
     int locate_cell_host(double q) {
@@ -434,6 +444,11 @@ public:
         return this->BL_coords(inode);
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double grading_ratio(int){
+        return 1.0/this->r;
+    }
+
     int locate_cell_host(double q) {
         if (r != 1.0){
             if (q==this->xmin){
@@ -548,6 +563,13 @@ public:
         return this->BL_coords(inode);
     }
 
+    KOKKOS_INLINE_FUNCTION
+    double grading_ratio(int inode){
+        double max = this->BL_coords(inode+1)-this->BL_coords(inode);
+        double min = this->BL_coords(inode)-this->BL_coords(inode-1);
+        return max/min;
+    }
+
     int locate_cell_host(double ) {
         return 0;
     }
@@ -576,8 +598,8 @@ public:
     }
 
     double grading_ratio_host(int inode){
-        double max = this->BL_coords[inode+1]-this->BL_coords[inode];
-        double min = this->BL_coords[inode]-this->BL_coords[inode-1];
+        double max = this->host_BL_coords[inode+1]-this->host_BL_coords[inode];
+        double min = this->host_BL_coords[inode]-this->host_BL_coords[inode-1];
         return max/min;
     }
 
