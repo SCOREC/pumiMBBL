@@ -99,6 +99,23 @@ double node_coords(DevicePointer<Submesh> submesh, int inode){
 }
 
 KOKKOS_INLINE_FUNCTION
+double grading_ratio(DevicePointer<Submesh> submesh, int inode){
+    switch (submesh()->meshtype){
+        case (uniform) :
+            return static_cast<Uniform_Submesh*>(submesh())->grading_ratio(inode);
+        case (minBL) :
+            return static_cast<MinBL_Submesh*>(submesh())->grading_ratio(inode);
+        case (maxBL) :
+            return static_cast<MaxBL_Submesh*>(submesh())->grading_ratio(inode);
+        case (arbitrary) :
+            return static_cast<Arbitrary_Submesh*>(submesh())->grading_ratio(inode);
+        case (unassigned) :
+            return -999.0;
+    }
+    return -999.0;
+}
+
+KOKKOS_INLINE_FUNCTION
 bool is_block_active(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.isactive(isub,jsub);
 }
@@ -144,6 +161,11 @@ double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub){
 }
 
 KOKKOS_INLINE_FUNCTION
+double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub, int inode){
+    return grading_ratio(pumi_obj.submesh_x1(isub),inode);
+}
+
+KOKKOS_INLINE_FUNCTION
 double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub){
     if (pumi_obj.submesh_x2(isub)()-> meshtype & maxBL){
         return 1.0/pumi_obj.submesh_x2(isub)()->r;
@@ -151,6 +173,11 @@ double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub){
     else{
         return pumi_obj.submesh_x2(isub)()->r;
     }
+}
+
+KOKKOS_INLINE_FUNCTION
+double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub, int inode){
+    return grading_ratio(pumi_obj.submesh_x2(isub),inode);
 }
 
 KOKKOS_INLINE_FUNCTION
