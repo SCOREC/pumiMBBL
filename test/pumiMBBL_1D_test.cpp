@@ -289,8 +289,10 @@ void print_usage()
     printf("\t \"elem_size_file_x1\" \t\t For arbitrary, list of cell sizes in Debye lengths for i-th submesh along the x1-direction \n");
     printf("\t \t  \t\t For uniform/maxBL/minBL, the inputs will be ignored \n\n");
     printf("\t ENSURE INPUTS FOR EACH SUBMESH ARE SEPARATED BY A COMMA AND WITHOUT ANY SPACES\n\n");
-    printf("  E.g.#1 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL1D_Demo 3 1.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \n\n");
+    printf("  E.g.#1 \n\n");
+    printf("    ./install/bin/pumiMBBL1D_Demo 3 1.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \"NA,NA,NA\" \n\n");
+    printf("  E.g.#2 \n\n");
+    printf("    ./install/bin/pumiMBBL1D_Demo 3 1.0 \"minBL,uniform,arbitrary\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \"NA,NA,x1-size.dat\" \n\n");
     Kokkos::finalize();
     exit(0);
 }
