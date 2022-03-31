@@ -1839,17 +1839,19 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
             min_elem = hc_submesh_x1[i]->t0;
         if (hc_submesh_x1[i]->meshtype & uniform)
             min_elem = hc_submesh_x1[i]->t0;
-        if (hc_submesh_x1[i]->meshtype & arbitrary)
-            min_elem = hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel]-hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel-1];
+        if (hc_submesh_x1[i]->meshtype & arbitrary){
+            int Nel = hc_submesh_x1[i]->Nel;
+            min_elem = hc_submesh_x1[i]->host_BL_coords[Nel]-hc_submesh_x1[i]->host_BL_coords[Nel-1];
+        }
 
         if (hc_submesh_x1[i+1]->meshtype & minBL)
-            max_elem = hc_submesh_x1[i]->t0;
+            max_elem = hc_submesh_x1[i+1]->t0;
         if (hc_submesh_x1[i+1]->meshtype & maxBL)
-            max_elem = (hc_submesh_x1[i]->t0)*pow(hc_submesh_x1[i]->r,hc_submesh_x1[i]->Nel-1);
+            max_elem = (hc_submesh_x1[i+1]->t0)*pow(hc_submesh_x1[i+1]->r,hc_submesh_x1[i+1]->Nel-1);
         if (hc_submesh_x1[i+1]->meshtype & uniform)
-            max_elem = hc_submesh_x1[i]->t0;
+            max_elem = hc_submesh_x1[i+1]->t0;
         if (hc_submesh_x1[i+1]->meshtype & arbitrary)
-            max_elem = hc_submesh_x1[i]->host_BL_coords[1]-hc_submesh_x1[i]->host_BL_coords[0];
+            max_elem = hc_submesh_x1[i+1]->host_BL_coords[1]-hc_submesh_x1[i+1]->host_BL_coords[0];
 
         host_if_x1_r[i-1] = max_elem/min_elem;
         host_if_x1_node[i] = hc_submesh_x1[i+1]->Nel_cumulative;
@@ -1894,17 +1896,19 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
            min_elem = hc_submesh_x1[i]->t0;
        if (hc_submesh_x1[i]->meshtype & uniform)
            min_elem = hc_submesh_x1[i]->t0;
-       if (hc_submesh_x1[i]->meshtype & arbitrary)
-           min_elem = hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel]-hc_submesh_x1[i]->host_BL_coords[hc_submesh_x1[i]->Nel-1];
+       if (hc_submesh_x1[i]->meshtype & arbitrary){
+           int Nel = hc_submesh_x1[i]->Nel;
+           min_elem = hc_submesh_x1[i]->host_BL_coords[Nel]-hc_submesh_x1[i]->host_BL_coords[Nel-1];
+       }
 
        if (hc_submesh_x1[i+1]->meshtype & minBL)
-           max_elem = hc_submesh_x1[i]->t0;
+           max_elem = hc_submesh_x1[i+1]->t0;
        if (hc_submesh_x1[i+1]->meshtype & maxBL)
-           max_elem = (hc_submesh_x1[i]->t0)*pow(hc_submesh_x1[i]->r,hc_submesh_x1[i]->Nel-1);
+           max_elem = (hc_submesh_x1[i+1]->t0)*pow(hc_submesh_x1[i+1]->r,hc_submesh_x1[i+1]->Nel-1);
        if (hc_submesh_x1[i+1]->meshtype & uniform)
-           max_elem = hc_submesh_x1[i]->t0;
+           max_elem = hc_submesh_x1[i+1]->t0;
        if (hc_submesh_x1[i+1]->meshtype & arbitrary)
-           max_elem = hc_submesh_x1[i]->host_BL_coords[1]-hc_submesh_x1[i]->host_BL_coords[0];
+           max_elem = hc_submesh_x1[i+1]->host_BL_coords[1]-hc_submesh_x1[i+1]->host_BL_coords[0];
 
        host_if_x1_r[i-1] = max_elem/min_elem;
        host_if_x1_node[i] = hc_submesh_x1[i+1]->Nel_cumulative;
@@ -1921,17 +1925,19 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
            min_elem = hc_submesh_x2[i]->t0;
        if (hc_submesh_x2[i]->meshtype & uniform)
            min_elem = hc_submesh_x2[i]->t0;
-       if (hc_submesh_x2[i]->meshtype & arbitrary)
-           min_elem = hc_submesh_x2[i]->host_BL_coords[hc_submesh_x2[i]->Nel]-hc_submesh_x2[i]->host_BL_coords[hc_submesh_x2[i]->Nel-1];
+       if (hc_submesh_x2[i]->meshtype & arbitrary){
+           int Nel = hc_submesh_x2[i]->Nel;
+           min_elem = hc_submesh_x2[i]->host_BL_coords[Nel]-hc_submesh_x2[i]->host_BL_coords[Nel-1];
+       }
 
        if (hc_submesh_x2[i+1]->meshtype & minBL)
-           max_elem = hc_submesh_x2[i]->t0;
+           max_elem = hc_submesh_x2[i+1]->t0;
        if (hc_submesh_x2[i+1]->meshtype & maxBL)
-           max_elem = (hc_submesh_x2[i]->t0)*pow(hc_submesh_x2[i]->r,hc_submesh_x2[i]->Nel-1);
+           max_elem = (hc_submesh_x2[i+1]->t0)*pow(hc_submesh_x2[i+1]->r,hc_submesh_x2[i+1]->Nel-1);
        if (hc_submesh_x2[i+1]->meshtype & uniform)
-           max_elem = hc_submesh_x2[i]->t0;
+           max_elem = hc_submesh_x2[i+1]->t0;
        if (hc_submesh_x2[i+1]->meshtype & arbitrary)
-           max_elem = hc_submesh_x2[i]->host_BL_coords[1]-hc_submesh_x2[i]->host_BL_coords[0];
+           max_elem = hc_submesh_x2[i+1]->host_BL_coords[1]-hc_submesh_x2[i+1]->host_BL_coords[0];
 
        host_if_x2_r[i-1] = max_elem/min_elem;
        host_if_x2_node[i] = hc_submesh_x2[i+1]->Nel_cumulative;
@@ -2235,7 +2241,9 @@ MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
         x1_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x1_dir);
         x2_sub_obj = pumi::submesh_initialize(pumi_inputs, pumi_options, pumi::x2_dir);
         mesh = pumi::mesh_initialize(pumi_inputs, pumi_options, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+        printf("mesh-done\n");
         pumi_obj = MBBL(mesh, x1_sub_obj.submesh, x1_sub_obj.host_submesh, x2_sub_obj.submesh, x2_sub_obj.host_submesh);
+        printf("mbbl-done\n");
         if (pumi_options.print_mesh_connectivity_option){
             pumi::print_2D_node_coordinates(pumi_obj);
             pumi::print_2D_node_elem_connectivity(pumi_obj);
