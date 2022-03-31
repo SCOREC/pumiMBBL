@@ -47,36 +47,36 @@ int main( int argc, char* argv[] )
     // pumi::print_node_submeshID(pumi_obj);
     // pumi::print_fullmesh_nodeIDs(pumi_obj);
 
-    int Nnp_total = pumi_obj.mesh.Nnp_total;
-    pumi::DoubleView phi = pumi::DoubleView("phi",Nnp_total);
-    pumi::DoubleView::HostMirror h_phi = Kokkos::create_mirror_view(phi);
-    int Nx = pumi_obj.mesh.nsubmesh_x1;
-    int Ny = pumi_obj.mesh.nsubmesh_x2;
-    for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
-        for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
-            if (is_block_active_host(pumi_obj,isubmesh,jsubmesh)){
-                int Nnp_y = pumi_obj.host_submesh_x2[jsubmesh]->Nel+1;
-                int Nnp_x = pumi_obj.host_submesh_x1[isubmesh]->Nel+1;
-                for (int inp=0; inp<Nnp_x; inp++){
-                    for (int jnp=0; jnp<Nnp_y; jnp++){
-                        int Inp = inp + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
-                        int Jnp = jnp + pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
-                        double x1_coord = pumi_obj.host_submesh_x1[isubmesh]->node_coords_host(inp);
-                        double x2_coord = pumi_obj.host_submesh_x2[jsubmesh]->node_coords_host(jnp);
-                        int nodeID = pumi::get_global_nodeID_2D(pumi_obj,Inp,Jnp);
-                        h_phi(nodeID) = x1_coord*x2_coord;
-                        // h_phi(nodeID) = 1.0;
-                    }
-                }
-            }
-        }
-    }
-    Kokkos::deep_copy(phi,h_phi);
-    write2file_2(h_phi,Nnp_total);
+    // int Nnp_total = pumi_obj.mesh.Nnp_total;
+    // pumi::DoubleView phi = pumi::DoubleView("phi",Nnp_total);
+    // pumi::DoubleView::HostMirror h_phi = Kokkos::create_mirror_view(phi);
+    // int Nx = pumi_obj.mesh.nsubmesh_x1;
+    // int Ny = pumi_obj.mesh.nsubmesh_x2;
+    // for (int isubmesh=1; isubmesh<=Nx; isubmesh++){
+    //     for (int jsubmesh=1; jsubmesh<=Ny; jsubmesh++){
+    //         if (is_block_active_host(pumi_obj,isubmesh,jsubmesh)){
+    //             int Nnp_y = pumi_obj.host_submesh_x2[jsubmesh]->Nel+1;
+    //             int Nnp_x = pumi_obj.host_submesh_x1[isubmesh]->Nel+1;
+    //             for (int inp=0; inp<Nnp_x; inp++){
+    //                 for (int jnp=0; jnp<Nnp_y; jnp++){
+    //                     int Inp = inp + pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
+    //                     int Jnp = jnp + pumi_obj.host_submesh_x2[jsubmesh]->Nel_cumulative;
+    //                     double x1_coord = pumi_obj.host_submesh_x1[isubmesh]->node_coords_host(inp);
+    //                     double x2_coord = pumi_obj.host_submesh_x2[jsubmesh]->node_coords_host(jnp);
+    //                     int nodeID = pumi::get_global_nodeID_2D(pumi_obj,Inp,Jnp);
+    //                     h_phi(nodeID) = x1_coord*x2_coord;
+    //                     // h_phi(nodeID) = 1.0;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // Kokkos::deep_copy(phi,h_phi);
+    // write2file_2(h_phi,Nnp_total);
 
-    pumi::Vector3View phi_grad_new;
+    // pumi::Vector3View phi_grad_new;
 
-    int nstep=1000;
+    // int nstep=1000;
     // Kokkos::Profiling::pushRegion("grad_v1");
     // for (int istep=0; istep<nstep; istep++){
     //     // printf("t%d\n",istep );
@@ -91,98 +91,57 @@ int main( int argc, char* argv[] )
     // }
     // Kokkos::Profiling::popRegion();
 
-    Kokkos::Profiling::pushRegion("grad_v2");
-    for (int istep=0; istep<nstep; istep++){
-        // printf("t%d\n",istep );
-        phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
-    }
-    Kokkos::Profiling::popRegion();
-
-    pumi::Vector3View::HostMirror h_phi_grad_new = Kokkos::create_mirror_view(phi_grad_new);
-    Kokkos::deep_copy(h_phi_grad_new,phi_grad_new);
-
-    write2file_3(h_phi_grad_new,Nnp_total);
+    // Kokkos::Profiling::pushRegion("grad_v2");
+    // for (int istep=0; istep<nstep; istep++){
+    //     // printf("t%d\n",istep );
+    //     phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
+    // }
+    // Kokkos::Profiling::popRegion();
+    //
+    // pumi::Vector3View::HostMirror h_phi_grad_new = Kokkos::create_mirror_view(phi_grad_new);
+    // Kokkos::deep_copy(h_phi_grad_new,phi_grad_new);
+    //
+    // write2file_3(h_phi_grad_new,Nnp_total);
     // Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
     //     for (int i=0; i<Nnp_total; i++){
     //         printf("%.16e %.16e\n",phi_grad_new(i)[0]-phi_grad_uni(i)[0],phi_grad_new(i)[1]-phi_grad_uni(i)[1] );
     //     }
     // });
 
-    pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
+    // pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
+    //
+    // pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
+    // pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
+    //
+    // int knode=0;
+    // for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
+    //     for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
+    //         bool on_bdry, in_domain;
+    //         int bdry_tag, bdry_dim;
+    //         double cov;
+    //         pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+    //         if (in_domain){
+    //             cov = pumi::return_covolume(pumi_obj, inp, jnp);
+    //             h_phi_density_v2(knode) = h_phi(knode)/cov;
+    //             knode++;
+    //         }
+    //     }
+    // }
+    // Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
+    //
+    // Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
+    //     for (int i=0; i<Nnp_total; i++){
+    //         printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
+    //     }
+    // });
 
-    pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
-    pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
-
-    int knode=0;
-    for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
-        for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
-            bool on_bdry, in_domain;
-            int bdry_tag, bdry_dim;
-            double cov;
-            pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
-            if (in_domain){
-                cov = pumi::return_covolume(pumi_obj, inp, jnp);
-                h_phi_density_v2(knode) = h_phi(knode)/cov;
-                knode++;
-            }
-        }
-    }
-    Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
-
-    Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
-        for (int i=0; i<Nnp_total; i++){
-            printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
-        }
-    });
-    /*
     int N_part = 1000;
     int N_step = 10;
     // Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
     Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part);
 
-    // int Nblk = pumi::get_total_submesh_blocks(pumi_obj);
-    // for (int isubmesh=0; isubmesh<Nblk; isubmesh++){
-    //     int num_elems = pumi::get_total_elements_in_block(pumi_obj,isubmesh);
-    //     if (pumi::is_block_active(pumi_obj,isubmesh)){
-    //         Kokkos::parallel_for("node-ID-test",1,KOKKOS_LAMBDA(const int){
-    //             for (int ielem=0; ielem<num_elems; ielem++){
-    //                 int isub, jsub, icell, jcell;
-    //                 pumi::get_directional_submeshID_and_cellID(pumi_obj, isubmesh, ielem, &isub, &icell, &jsub, &jcell);
-    //                 int kcell_x1 = pumi::get_x1_cellID(pumi_obj, isub, icell);
-    //                 int kcell_x2 = pumi::get_x2_cellID(pumi_obj, jsub, jcell);
-    //                 int node_lb,node_lt,global_cellID;
-    //                 pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2,
-    //                 &global_cellID,&node_lb,&node_lt);
-    //                 printf("cellID=%4d n1=%4d n2=%4d n3=%4d n4=%4d\n",global_cellID, node_lb, node_lb+1, node_lt, node_lt+1 );
-    //             }
-    //         });
-    //     }
-    // }
-
-    // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
-    //     printf("\nBDRY-TEST#2\n");
-    //     int Nx = pumi_obj.mesh(0).nsubmesh_x1;
-    //     int Ny = pumi_obj.mesh(0).nsubmesh_x2;
-    //     for (int i=0; i<2*Nx*Ny+Nx+Ny; i++){
-    //         if (pumi_obj.mesh(0).bdry.is_bdry_edge(i)){
-    //             if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,0)==1.0){
-    //                 printf("edge-%2d is boundary with +ve X normal\n",i);
-    //             }
-    //             else if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,0)==-1.0){
-    //                 printf("edge-%2d is boundary with -ve X normal\n",i);
-    //             }
-    //             else if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,1)==1.0){
-    //                 printf("edge-%2d is boundary with +ve Y normal\n",i);
-    //             }
-    //             else if (pumi_obj.mesh(0).bdry.bdry_edge_normal(i,1)==-1.0){
-    //                 printf("edge-%2d is boundary with -ve Y normal\n",i);
-    //             }
-    //         }
-    //     }
-    // });
-
     bool test0 = true;
-    bool test1 = false;
+    bool test1 = true;
 
     std::srand((unsigned)(std::time(nullptr)));
 
@@ -353,7 +312,7 @@ int main( int argc, char* argv[] )
         }
         Kokkos::Profiling::popRegion();
         printf("Total number of particle pushes executed in Test-1 = %d\n",num_push );
-    }*/
+    }
     // Kokkos::parallel_for("bdry-test-1", 1, KOKKOS_LAMBDA (const int) {
     //     int Nx = pumi_obj.mesh.nsubmesh_x1;
     //     int Ny = pumi_obj.mesh.nsubmesh_x2;
