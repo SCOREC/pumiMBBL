@@ -4,12 +4,13 @@ void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
 void write2file(Kokkos::View<pumi::ParticleData*>::HostMirror hp, int N_part, int nstep);
 void write2file_2(pumi::DoubleView::HostMirror hp, int N_part);
+void write2file_3(pumi::Vector3View::HostMirror hp, int N_part);
 
 int main( int argc, char* argv[] )
 {
   Kokkos::initialize( argc, argv );
   {
-      if (argc != 14)
+      if (argc != 16)
       {
           print_usage();
       }
@@ -71,11 +72,11 @@ int main( int argc, char* argv[] )
         }
     }
     Kokkos::deep_copy(phi,h_phi);
-    // write2file_2(h_phi,Nnp_total);
+    write2file_2(h_phi,Nnp_total);
 
-    pumi::Vector3View phi_grad, phi_grad_new, phi_grad_uni;
+    pumi::Vector3View phi_grad_new;
 
-    // int nstep=1000;
+    int nstep=1000;
     // Kokkos::Profiling::pushRegion("grad_v1");
     // for (int istep=0; istep<nstep; istep++){
     //     // printf("t%d\n",istep );
@@ -90,77 +91,49 @@ int main( int argc, char* argv[] )
     // }
     // Kokkos::Profiling::popRegion();
 
-    // Kokkos::Profiling::pushRegion("grad_v2");
-    // for (int istep=0; istep<nstep; istep++){
-    //     // printf("t%d\n",istep );
-    //     phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
-    // }
-    // Kokkos::Profiling::popRegion();
+    Kokkos::Profiling::pushRegion("grad_v2");
+    for (int istep=0; istep<nstep; istep++){
+        // printf("t%d\n",istep );
+        phi_grad_new = pumi::compute_2D_field_gradient_v2(pumi_obj,phi);
+    }
+    Kokkos::Profiling::popRegion();
 
-    // int nel_tot = pumi::get_total_mesh_elements(pumi_obj);
-    // Kokkos::parallel_for("test-elem-ids",1,KOKKOS_LAMBDA(const int){
-    //     for (int i=0; i<nel_tot; i++){
-    //         int isub, icell, jsub, jcell;
-    //         pumi::get_submeshIDs_and_localcellIDs_of_block_elements(pumi_obj,i,&isub,&jsub,&icell,&jcell);
-    //         printf("iel=%d isub=%d jsub=%d icell=%d jcell=%d\n",i,isub,jsub,icell,jcell);
-    //     }
-    // });
+    pumi::Vector3View::HostMirror h_phi_grad_new = Kokkos::create_mirror_view(phi_grad_new);
+    Kokkos::deep_copy(h_phi_grad_new,phi_grad_new);
 
-    int nel_tot_x1 = pumi_obj.mesh.Nel_tot_x1;
-    Kokkos::parallel_for("test-x1-elem-ids",1,KOKKOS_LAMBDA(const int){
-        for (int i=0; i<nel_tot_x1; i++){
-            int isub1, isub2, isub3, icell1, icell2, icell3;
-            pumi::get_x1_submeshID_and_localcellID_of_x1_elem(pumi_obj, i, &isub1, &icell1);
-            pumi::get_x1_submeshID_and_localcellID_of_x1_node(pumi_obj, i, &isub2, &icell2);
-            pumi::get_x1_submeshID_and_localcellID_of_x1_node(pumi_obj, i+1, &isub3, &icell3);
-            printf("iel=%d elem=(%d, %d) left=(%d, %d) right=(%d, %d)\n",i,isub1,icell1,isub2,icell2,isub3,icell3);
-        }
-    });
-
-    int nel_tot_x2 = pumi_obj.mesh.Nel_tot_x2;
-    Kokkos::parallel_for("test-x2-elem-ids",1,KOKKOS_LAMBDA(const int){
-        for (int i=0; i<nel_tot_x2; i++){
-            int isub1, isub2, isub3, icell1, icell2, icell3;
-            pumi::get_x2_submeshID_and_localcellID_of_x2_elem(pumi_obj, i, &isub1, &icell1);
-            pumi::get_x2_submeshID_and_localcellID_of_x2_node(pumi_obj, i, &isub2, &icell2);
-            pumi::get_x2_submeshID_and_localcellID_of_x2_node(pumi_obj, i+1, &isub3, &icell3);
-            printf("iel=%d elem=(%d, %d) left=(%d, %d) right=(%d, %d)\n",i,isub1,icell1,isub2,icell2,isub3,icell3);
-        }
-    });
-
-
+    write2file_3(h_phi_grad_new,Nnp_total);
     // Kokkos::parallel_for("print-grad",1,KOKKOS_LAMBDA (const int){
     //     for (int i=0; i<Nnp_total; i++){
     //         printf("%.16e %.16e\n",phi_grad_new(i)[0]-phi_grad_uni(i)[0],phi_grad_new(i)[1]-phi_grad_uni(i)[1] );
     //     }
     // });
 
-    // pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
-    //
-    // pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
-    // pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
-    //
-    // int knode=0;
-    // for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
-    //     for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
-    //         bool on_bdry, in_domain;
-    //         int bdry_tag, bdry_dim;
-    //         double cov;
-    //         pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
-    //         if (in_domain){
-    //             cov = pumi::return_covolume(pumi_obj, inp, jnp);
-    //             h_phi_density_v2(knode) = h_phi(knode)/cov;
-    //             knode++;
-    //         }
-    //     }
-    // }
-    // Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
-    //
-    // Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
-    //     for (int i=0; i<Nnp_total; i++){
-    //         printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
-    //     }
-    // });
+    pumi::DoubleView phi_density = pumi::compute_2D_field_density(pumi_obj,phi);
+
+    pumi::DoubleView phi_density_v2 = pumi::DoubleView("new-density-arr",pumi_obj.mesh.Nnp_total);
+    pumi::DoubleView::HostMirror h_phi_density_v2 = Kokkos::create_mirror_view(phi_density_v2);
+
+    int knode=0;
+    for (int jnp=0; jnp<=pumi_obj.mesh.Nel_tot_x2; jnp++){
+        for (int inp=0; inp<=pumi_obj.mesh.Nel_tot_x1; inp++){
+            bool on_bdry, in_domain;
+            int bdry_tag, bdry_dim;
+            double cov;
+            pumi::where_is_node(pumi_obj, inp, jnp, &on_bdry, &in_domain, &bdry_tag, &bdry_dim);
+            if (in_domain){
+                cov = pumi::return_covolume(pumi_obj, inp, jnp);
+                h_phi_density_v2(knode) = h_phi(knode)/cov;
+                knode++;
+            }
+        }
+    }
+    Kokkos::deep_copy(phi_density_v2,h_phi_density_v2);
+
+    Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
+        for (int i=0; i<Nnp_total; i++){
+            printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
+        }
+    });
     /*
     int N_part = 1000;
     int N_step = 10;
@@ -686,11 +659,13 @@ void print_usage()
     // printf("  E.g.#1 [On-HOST]\n\n");
     // printf("    ./pumi-test.host 3 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
     printf("  E.g.#1 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL2D_Demo 3 0.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" 3 1.0 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"1,1,1,1,1,1,1,1,1\" \n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 3 0.0 \"minBL,uniform,maxBL\" \"20.0,10.0,20.0\" \"3.0,1.0,3.0\" \"1.0,1.0,1.0\" \"NA,NA,NA\" 3 1.0 \"maxBL,uniform,minBL\" \"50.0,20.0,50.0\" \"4.0,1.0,4.0\" \"1.0,2.0,1.0\" \"NA,NA,NA\" \"1,1,1,1,1,1,1,1,1\" \n\n");
     printf("  E.g.#2 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL2D_Demo 4 0.0 \"minBL,uniform,uniform,maxBL\" \"10.0,5.0,5.0,10.0\" \"3.0,1.0,1.0,3.0\" \"1.0,1.0,1.0,1.0\" 4 1.0 \"maxBL,uniform,uniform,minBL\" \"20.0,20.0,20.0,20.0\" \"4.0,1.0,1.0,4.0\" \"1.0,2.0,2.0,1.0\" \"1,0,1,1,1,0,0,1,1,1,1,1,0,1,0,1\" \n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 4 0.0 \"minBL,uniform,uniform,maxBL\" \"10.0,5.0,5.0,10.0\" \"3.0,1.0,1.0,3.0\" \"1.0,1.0,1.0,1.0\" \"NA,NA,NA,NA\" 4 1.0 \"maxBL,uniform,uniform,minBL\" \"20.0,20.0,20.0,20.0\" \"4.0,1.0,1.0,4.0\" \"1.0,2.0,2.0,1.0\" \"NA,NA,NA,NA\" \"1,0,1,1,1,0,0,1,1,1,1,1,0,1,0,1\" \n\n");
     printf("  E.g.#3 [On-DEVICE]\n\n");
-    printf("    ./install/bin/pumiMBBL2D_Demo 1 1.0 \"uniform\" \"20.0\" \"1.0\" \"1.0\" 1 1.0 \"uniform\" \"20.0\" \"1.0\" \"1.0\" \"1\"\n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 1 1.0 \"uniform\" \"20.0\" \"1.0\" \"1.0\" \"NA\" 1 1.0 \"uniform\" \"20.0\" \"1.0\" \"1.0\" \"NA\" \"1\"\n\n");
+    printf("  E.g.#4 [On-DEVICE]\n\n");
+    printf("    ./install/bin/pumiMBBL2D_Demo 4 0.0 \"minBL,uniform,arbitrary,maxBL\" \"10.0,5.0,5.0,10.0\" \"3.0,1.0,1.0,3.0\" \"1.0,1.0,1.0,1.0\" \"NA,NA,x1-size.dat,NA\" 4 1.0 \"maxBL,arbitrary,uniform,minBL\" \"20.0,20.0,20.0,20.0\" \"4.0,1.0,1.0,4.0\" \"1.0,2.0,2.0,1.0\" \"NA,x2-size.dat,NA,NA\" \"1,0,1,1,1,0,0,1,1,1,1,1,0,1,0,1\" \n\n");
     Kokkos::finalize();
     exit(0);
 }
@@ -718,6 +693,18 @@ void write2file_2(pumi::DoubleView::HostMirror hp, int N_part){
     part_file = fopen(part_filename,"w");
     for (int i=0; i<N_part; i=i+1){
         fprintf(part_file, "%.16e\n", hp(i));
+    }
+
+    fclose(part_file);
+}
+
+void write2file_3(pumi::Vector3View::HostMirror hp, int N_part){
+    FILE *part_file;
+    char part_filename[30];
+    sprintf(part_filename,"phi_grad_data.dat");
+    part_file = fopen(part_filename,"w");
+    for (int i=0; i<N_part; i=i+1){
+        fprintf(part_file, "%.16e %.16e\n", hp(i)[0], hp(i)[1]);
     }
 
     fclose(part_file);
