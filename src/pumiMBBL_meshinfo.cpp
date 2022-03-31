@@ -36,6 +36,12 @@ double return_gradingratio(MBBL pumi_obj, int dir, int node){
                 if (h_submesh[isubmesh]->meshtype & maxBL){
                     return 1.0/h_submesh[isubmesh]->r;
                 }
+                else if (h_submesh[isubmesh]->meshtype & arbitrary){
+                    int inode = node - submesh_min_node;
+                    double max_elem = h_submesh[isubmesh]->host_BL_coords[inode+1]-h_submesh[isubmesh]->host_BL_coords[inode];
+                    double min_elem = h_submesh[isubmesh]->host_BL_coords[inode]-h_submesh[isubmesh]->host_BL_coords[inode-1];
+                    return max_elem/min_elem;
+                }
                 else{
                     return h_submesh[isubmesh]->r;
                 }
@@ -46,12 +52,19 @@ double return_gradingratio(MBBL pumi_obj, int dir, int node){
                 if (h_submesh[isubmesh-1]->meshtype & minBL){
                     min_elem = h_submesh[isubmesh-1]->t0 * pow(h_submesh[isubmesh-1]->r, h_submesh[isubmesh-1]->Nel-1);
                 }
+                else if (h_submesh[isubmesh-1]->meshtype & arbitrary){
+                    int Nel = h_submesh[isubmesh-1]->Nel;
+                    min_elem = h_submesh[isubmesh-1]->host_BL_coords[Nel]-h_submesh[isubmesh-1]->host_BL_coords[Nel-1];
+                }
                 else{
                     min_elem = h_submesh[isubmesh-1]->t0;
                 }
 
                 if (h_submesh[isubmesh]->meshtype & maxBL){
                     max_elem = h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r, h_submesh[isubmesh]->Nel-1);
+                }
+                else if (h_submesh[isubmesh]->meshtype & arbitrary){
+                    max_elem = h_submesh[isubmesh]->host_BL_coords[1]-h_submesh[isubmesh]->host_BL_coords[0];
                 }
                 else{
                     max_elem = h_submesh[isubmesh]->t0;
@@ -103,14 +116,18 @@ double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
             if (h_submesh[isubmesh]->meshtype & uniform){
                 return h_submesh[isubmesh]->t0;
             }
-            if (h_submesh[isubmesh]->meshtype & minBL){
+            else{
                 int local_cell = elem - submesh_min_elem;
-                return (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                return (h_submesh[isubmesh]->host_BL_coords[local_cell+1]-h_submesh[isubmesh]->host_BL_coords[local_cell]);
             }
-            if (h_submesh[isubmesh]->meshtype & maxBL){
-                int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
-                return (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
-            }
+            // if (h_submesh[isubmesh]->meshtype & minBL){
+            //     int local_cell = elem - submesh_min_elem;
+            //     return (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+            // }
+            // if (h_submesh[isubmesh]->meshtype & maxBL){
+            //     int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+            //     return (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+            // }
         }
     }
     return -999.0;
@@ -234,14 +251,18 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
                 if (h_submesh[isubmesh]->meshtype & uniform){
                     dx1_min = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh]->meshtype & minBL){
+                else{
                     int local_cell = elem - submesh_min_elem;
-                    dx1_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                    dx1_min = h_submesh[isubmesh]->host_BL_coords[local_cell+1]-h_submesh[isubmesh]->host_BL_coords[local_cell];
                 }
-                if (h_submesh[isubmesh]->meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
-                    dx1_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
-                }
+                // if (h_submesh[isubmesh]->meshtype & minBL){
+                //     int local_cell = elem - submesh_min_elem;
+                //     dx1_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
+                // if (h_submesh[isubmesh]->meshtype & maxBL){
+                //     int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                //     dx1_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
             }
         }
     }
@@ -261,14 +282,18 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
                 if (h_submesh[isubmesh]->meshtype & uniform){
                     dx1_max = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh]->meshtype & minBL){
+                else{
                     int local_cell = elem - submesh_min_elem;
-                    dx1_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                    dx1_max = h_submesh[isubmesh]->host_BL_coords[local_cell+1]-h_submesh[isubmesh]->host_BL_coords[local_cell];
                 }
-                if (h_submesh[isubmesh]->meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
-                    dx1_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
-                }
+                // if (h_submesh[isubmesh]->meshtype & minBL){
+                //     int local_cell = elem - submesh_min_elem;
+                //     dx1_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
+                // if (h_submesh[isubmesh]->meshtype & maxBL){
+                //     int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                //     dx1_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
             }
         }
     }
@@ -293,14 +318,18 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
                 if (h_submesh[isubmesh]->meshtype & uniform){
                     dx2_min = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh]->meshtype & minBL){
+                else{
                     int local_cell = elem - submesh_min_elem;
-                    dx2_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                    dx2_min = h_submesh[isubmesh]->host_BL_coords[local_cell+1]-h_submesh[isubmesh]->host_BL_coords[local_cell];
                 }
-                if (h_submesh[isubmesh]->meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
-                    dx2_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
-                }
+                // if (h_submesh[isubmesh]->meshtype & minBL){
+                //     int local_cell = elem - submesh_min_elem;
+                //     dx2_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
+                // if (h_submesh[isubmesh]->meshtype & maxBL){
+                //     int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                //     dx2_min = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
             }
         }
     }
@@ -320,14 +349,18 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
                 if (h_submesh[isubmesh]->meshtype & uniform){
                     dx2_max = h_submesh[isubmesh]->t0;
                 }
-                if (h_submesh[isubmesh]->meshtype & minBL){
+                else{
                     int local_cell = elem - submesh_min_elem;
-                    dx2_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                    dx2_max = h_submesh[isubmesh]->host_BL_coords[local_cell+1]-h_submesh[isubmesh]->host_BL_coords[local_cell];
                 }
-                if (h_submesh[isubmesh]->meshtype & maxBL){
-                    int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
-                    dx2_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
-                }
+                // if (h_submesh[isubmesh]->meshtype & minBL){
+                //     int local_cell = elem - submesh_min_elem;
+                //     dx2_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
+                // if (h_submesh[isubmesh]->meshtype & maxBL){
+                //     int local_cell = h_submesh[isubmesh]->Nel - (elem - submesh_min_elem) - 1;
+                //     dx2_max = (h_submesh[isubmesh]->t0 * pow(h_submesh[isubmesh]->r , local_cell));
+                // }
             }
         }
     }
