@@ -600,9 +600,11 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
             if (edge_nrml[1]==1.0){
                 int inode_south_first = calc_first_south_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                 int inode_south_second = calc_second_south_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
-                double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
-                r = 1.0/r;
+                // double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
+                // r = 1.0/r;
                 int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jsub);
+                double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub,nel_blk-1);
+                r = 1.0/r;
                 double dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,nel_blk-1);
                 phi_grad(inode_curr)[1] = -( -(1.0+r)*(1.0+r)*phi(inode_south_first) + phi(inode_south_second) + r*(r+2.0)*phi(inode_curr) )/
                                             (r*(r+1.0)*dx2);
@@ -610,7 +612,8 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
             else if (edge_nrml[1]==-1.0){
                 int inode_north_first = calc_first_north_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
                 int inode_north_second = calc_second_north_global_nodeID_to_horizontal_edge(pumi_obj,iEdge,inode);
-                double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
+                // double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
+                double r = get_x2_gradingratio_in_submesh(pumi_obj,jsub,1);
                 double dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,0);
                 phi_grad(inode_curr)[1] = -( (1.0+r)*(1.0+r)*phi(inode_north_first) - phi(inode_north_second) - r*(r+2.0)*phi(inode_curr) ) /
                                              (r*(r+1.0)*dx2);
@@ -636,9 +639,11 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
             if (edge_nrml[0]==1.0){
                 int inode_west_first = inode_curr-1;
                 int inode_west_second = inode_curr-2;
-                double r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
-                r = 1.0/r;
+                // double r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
+                // r = 1.0/r;
                 int nel_blk = get_num_x1_elems_in_submesh(pumi_obj,isub);
+                double r = get_x1_gradingratio_in_submesh(pumi_obj,isub,nel_blk-1);
+                r = 1.0/r;
                 double dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,nel_blk-1);
                 phi_grad(inode_curr)[0] = -( -(1.0+r)*(1.0+r)*phi(inode_west_first) + phi(inode_west_second) + r*(r+2.0)*phi(inode_curr) ) /
                                              (r*(r+1.0)*dx1);
@@ -646,7 +651,8 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
             else if (edge_nrml[0]==-1.0){
                 int inode_east_first = inode_curr+1;
                 int inode_east_second = inode_curr+2;
-                double r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
+                // double r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
+                double r = get_x1_gradingratio_in_submesh(pumi_obj,isub,1);
                 double dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,0);
                 phi_grad(inode_curr)[0] = -( (1.0+r)*(1.0+r)*phi(inode_east_first) - phi(inode_east_second)- r*(r+2.0)*phi(inode_curr) ) /
                                              (r*(r+1.0)*dx1);
@@ -676,8 +682,9 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
                 int inode_west_first = calc_first_west_global_nodeID_to_vertex(pumi_obj,inode);
                 int inode_west_second = calc_second_west_global_nodeID_to_vertex(pumi_obj,inode);
                 double r, dx1;
-                r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
+                // r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
                 int nel_blk = get_num_x1_elems_in_submesh(pumi_obj,isub);
+                r = get_x1_gradingratio_in_submesh(pumi_obj,isub,nel_blk-1);
                 dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,nel_blk-1);
                 r = 1.0/r;
                 phi_grad(inode_curr)[0] = -( -(1.0+r)*(1.0+r)*phi(inode_west_first) + phi(inode_west_second) + r*(r+2.0)*phi(inode_curr) ) /
@@ -687,7 +694,8 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
                 int inode_east_first = calc_first_east_global_nodeID_to_vertex(pumi_obj,inode);
                 int inode_east_second = calc_second_east_global_nodeID_to_vertex(pumi_obj,inode);
                 double r, dx1;
-                r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
+                // r = get_x1_gradingratio_in_submesh(pumi_obj,isub);
+                r = get_x1_gradingratio_in_submesh(pumi_obj,isub,1);
                 dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,0);
                 phi_grad(inode_curr)[0] = -( (1.0+r)*(1.0+r)*phi(inode_east_first) - phi(inode_east_second)- r*(r+2.0)*phi(inode_curr) ) /
                                              (r*(r+1.0)*dx1);
@@ -706,8 +714,9 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
                 int inode_south_first = calc_first_south_global_nodeID_to_vertex(pumi_obj,inode);
                 int inode_south_second = calc_second_south_global_nodeID_to_vertex(pumi_obj,inode);
                 double r, dx2;
-                r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
+                // r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
                 int nel_blk = get_num_x2_elems_in_submesh(pumi_obj,jsub);
+                r = get_x2_gradingratio_in_submesh(pumi_obj,jsub,nel_blk-1);
                 dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,nel_blk-1);
                 r = 1.0/r;
                 phi_grad(inode_curr)[1] = -( -(1.0+r)*(1.0+r)*phi(inode_south_first) + phi(inode_south_second) + r*(r+2.0)*phi(inode_curr) )/
@@ -717,7 +726,8 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
                 int inode_north_first = calc_first_north_global_nodeID_to_vertex(pumi_obj,inode);
                 int inode_north_second = calc_second_north_global_nodeID_to_vertex(pumi_obj,inode);
                 double r, dx2;
-                r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
+                // r = get_x2_gradingratio_in_submesh(pumi_obj,jsub);
+                r = get_x2_gradingratio_in_submesh(pumi_obj,jsub,1);
                 dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,0);
                 phi_grad(inode_curr)[1] = -( (1.0+r)*(1.0+r)*phi(inode_north_first) - phi(inode_north_second) - r*(r+2.0)*phi(inode_curr) ) /
                                              (r*(r+1.0)*dx2);
@@ -854,7 +864,6 @@ DoubleView compute_2D_field_density(MBBL pumi_obj, DoubleView Q){
                 dx2_min = get_x2_elem_size_in_submesh(pumi_obj,jsub_south,nel_blk-1);
                 cov += 0.25*(dx2_min*(dx1_min+dx1_max));
             }
-            printf("ID=%d cov=%2.2e\n",inode_curr,cov );
 
             rho(inode_curr) = Q(inode_curr)/cov;
         }
