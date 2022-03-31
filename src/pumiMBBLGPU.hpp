@@ -125,6 +125,7 @@ public:
         *Wgh2 = -999.0;
     }
     virtual double node_coords_host(int) {return -999.0;}
+    virtual double grading_ratio_host(int) {return -999.0;}
 
 };
 
@@ -214,6 +215,10 @@ public:
 
     double node_coords_host(int inode) {
         return this->xmin + inode*this->t0;
+    }
+
+    double grading_ratio_host(int){
+        return 1.0;
     }
 
 };
@@ -338,6 +343,10 @@ public:
 
     double node_coords_host(int inode) {
         return this->host_BL_coords[inode];
+    }
+
+    double grading_ratio_host(int){
+        return this->r;
     }
 
 };
@@ -466,6 +475,10 @@ public:
         return this->host_BL_coords[inode];
     }
 
+    double grading_ratio_host(int){
+        return 1.0/this->r;
+    }
+
 };
 
 
@@ -562,6 +575,12 @@ public:
         return this->host_BL_coords[inode];
     }
 
+    double grading_ratio_host(int inode){
+        double max = this->BL_coords[inode+1]-this->BL_coords[inode];
+        double min = this->BL_coords[inode]-this->BL_coords[inode-1];
+        return max/min;
+    }
+
 };
 
 /**
@@ -631,6 +650,9 @@ public:
         *Wgh2 = -999.0;
     }
     double node_coords_host(int ){
+        return -999.0;
+    }
+    double grading_ratio_host(int){
         return -999.0;
     }
 
