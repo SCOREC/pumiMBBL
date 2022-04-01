@@ -119,7 +119,7 @@ std::vector<double> read_elemsize(double xmin, double xmax, std::string elemsize
 
     double diff = fabs(xlength_computed-xlength);
     if (diff/xlength > 1e-5){
-        std::cout << "ERROR: Element-sizes from file " << elemsize_file << "does not match with input block-size\n";
+        std::cout << "ERROR: Element-sizes from file " << elemsize_file << " does not match with input block-size\n";
         printf("Required block-size : %2.5e\n",xlength);
         printf("Block-size from file: %2.5e\n",xlength_computed);
         exit(0);
@@ -879,7 +879,8 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
             BLcoordsname = "x1-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
 
-            elemsize_file = pumi_inputs->arbitrary_x1_elemsize_file[isubmesh-1];
+            if (type & arbitrary)
+                elemsize_file = pumi_inputs->arbitrary_x1_elemsize_file[isubmesh-1];
         }
         else if (dir == x2_dir){
             type = get_submesh_type(pumi_inputs->meshtype_x2[isubmesh-1]);
@@ -898,7 +899,8 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
             BLcoordsname = "x2-BLcoords-submesh-";
             BLcoordsname += std::to_string(isubmesh);
 
-            elemsize_file = pumi_inputs->arbitrary_x2_elemsize_file[isubmesh-1];
+            if (type & arbitrary)
+                elemsize_file = pumi_inputs->arbitrary_x2_elemsize_file[isubmesh-1];
         }
 
         if (isubmesh > 1){
