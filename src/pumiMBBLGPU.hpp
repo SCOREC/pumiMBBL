@@ -1113,6 +1113,10 @@ class ParticleData{
 public:
     double x1;
     double x2;
+    double w1;
+    double w2;
+    double w3;
+    double w4;
     int cellID;
     int submeshID;
     bool part_active;
@@ -1127,12 +1131,38 @@ public:
     ParticleData(double x1_, double x2_, int submeshID_, int cellID_, bool part_active_, int exit_faceID_):
                 x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_),part_active(part_active_),exit_faceID(exit_faceID_){};
 
+    KOKKOS_INLINE_FUNCTION
+    ParticleData(double x1_,
+                double x2_,
+                int submeshID_,
+                int cellID_,
+                bool part_active_,
+                int exit_faceID_,
+                double w1_,
+                double w2_,
+                double w3_,
+                double w4_):
+                x1(x1_),
+                x2(x2_),
+                cellID(cellID_),
+                submeshID(submeshID_),
+                part_active(part_active_),
+                exit_faceID(exit_faceID_),
+                w1(w1_),
+                w2(w2_),
+                w3(w3_),
+                w4(w4_){};
+
 };
 
 class ParticleDataCPU{
 public:
     double x1;
     double x2;
+    double w1;
+    double w2;
+    double w3;
+    double w4;
     int cellID;
     int submeshID;
     bool part_active;
@@ -1145,6 +1175,27 @@ public:
 
     ParticleDataCPU(double x1_, double x2_, int submeshID_, int cellID_, bool part_active_, int exit_faceID_):
                 x1(x1_),x2(x2_),cellID(cellID_),submeshID(submeshID_),part_active(part_active_),exit_faceID(exit_faceID_){};
+
+    ParticleDataCPU(double x1_,
+                    double x2_,
+                    int submeshID_,
+                    int cellID_,
+                    bool part_active_,
+                    int exit_faceID_,
+                    double w1_,
+                    double w2_,
+                    double w3_,
+                    double w4_):
+                    x1(x1_),
+                    x2(x2_),
+                    cellID(cellID_),
+                    submeshID(submeshID_),
+                    part_active(part_active_),
+                    exit_faceID(exit_faceID_),
+                    w1(w1_),
+                    w2(w2_),
+                    w3(w3_),
+                    w4(w4_){};
 
 };
 

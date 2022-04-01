@@ -222,7 +222,7 @@ int main( int argc, char* argv[] )
                             Wgh1_x2 = 1.0-Wgh2_x2;
                             pumi::calc_global_cellID_and_nodeID_fullmesh(pumi_obj, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
+                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1,Wgh1_x1,Wgh2_x1,Wgh1_x2,Wgh2_x2);
                         }
 
                     }
@@ -302,7 +302,7 @@ int main( int argc, char* argv[] )
                             Wgh1_x2 = 1.0-Wgh2_x2;
                             pumi::calc_global_cellID_and_nodeID(pumi_obj, isub, jsub, kcell_x1, kcell_x2, &global_cell, &bottomleft_node, &topleft_node);
                             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
+                            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1,Wgh1_x1,Wgh2_x1,Wgh1_x2,Wgh2_x2);
                         }
                     }
                 }
@@ -328,7 +328,7 @@ int main( int argc, char* argv[] )
   return 0;
 }
 
-void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
+void parse_inputs(int , char* argv[], pumi::Mesh_Inputs *pumi_inputs)
 {
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
     int nsubmesh_x2 = pumi_inputs->nsubmesh_x2;

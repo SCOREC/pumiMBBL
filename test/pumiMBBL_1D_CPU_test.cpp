@@ -20,7 +20,7 @@ int main( int argc, char* argv[] )
 
     int nsubmesh_x1 = atoi( argv[1] );
     double domain_x1_min = atof( argv[2] );
-    int nsubmesh = nsubmesh_x1;
+
     pumi::Mesh_Inputs *pumi_inputs = pumi::inputs_allocate();
 
     pumi_inputs->ndim = 1; // Fixed pumi input
@@ -105,7 +105,7 @@ int main( int argc, char* argv[] )
                         pumi::update_submesh_and_cell_x1_host(pumi_obj, q1, isub, icell, &isub, &icell);
                         pumi::calc_weights_x1_host(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
                         Wgh1_x1 = 1.0-Wgh2_x1;
-                        Partdata[ipart] = pumi::ParticleDataCPU(q1,0.0,isub,icell,true,-1);
+                        Partdata[ipart] = pumi::ParticleDataCPU(q1,0.0,isub,icell,true,-1,Wgh1_x1,Wgh2_x1,0.0,0.0);
                     }
 
                 }
@@ -122,10 +122,10 @@ int main( int argc, char* argv[] )
   return 0;
 }
 
-void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs)
+void parse_inputs(int , char* argv[], pumi::Mesh_Inputs *pumi_inputs)
 {
     int nsubmesh_x1 = pumi_inputs->nsubmesh_x1;
-    int nsubmesh_x2 = pumi_inputs->nsubmesh_x2;
+
     // reading submesh meshtypes
     char all_submesh_flag_x1[MAX_SUBMESHES*10];
     char each_submesh_flag_x1[MAX_SUBMESHES][10];
