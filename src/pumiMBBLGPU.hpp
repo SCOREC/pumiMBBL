@@ -58,14 +58,13 @@ using DoubleView = Kokkos::View<double*>;
  */
 class Submesh{
 public:
-    // SUBMESH PARAMS
+
     double xmin; //!< Min-side coordinates
     double xmax; //!< Max-side coordinates
     int Nel; //!< Number of elements in the block
     double t0; //!< Smallest element size in the block (or element size for uniform blocks)
-    Meshtype meshtype; //<! Type of meshing in the block
-    // DEPENDENT PARAMETERS
     double r; //!< Grading ratio for element sizes in the block
+    Meshtype meshtype; //<! Type of meshing in the block
     double length; //!< Length of the block
     int Nel_cumulative; //!< Number of elements in the preceding blocks
 
@@ -848,8 +847,9 @@ class Mesh{
 public:
     int ndim; //!< dimensions of the domain
     int nsubmesh_x1; //!< number of blocks in x1-direction
+    int Nel_tot_x1; //!< Total number of elements in x1-direction
     int nsubmesh_x2; //!< number of blocks in x2-direction
-    int nsubmesh_x3; //!< number of blocks in x3-direction
+    int Nel_tot_x2; //!< Total number of elements in x2-direction
 
     Kokkos::View<bool**> isactive; //!< 2D bool-array defining the activity of blocks
     bool **host_isactive;
@@ -859,12 +859,12 @@ public:
     BlockInterface blkif;
     MeshBST bst;
 
-    int Nel_tot_x1; //!< Total number of elements in x1-direction
-    int Nel_tot_x2; //!< Total number of elements in x2-direction
-    int Nel_tot_x3; //!< Total number of elements in x3-direction
 
     int Nel_total; //!< Total active elements in domain
     int Nnp_total; //!< Total active nodes in domain
+
+    int nsubmesh_x3; //!< number of blocks in x3-direction
+    int Nel_tot_x3; //!< Total number of elements in x3-direction
 
     /**
     * @brief Default constructor.
@@ -1113,14 +1113,14 @@ class ParticleData{
 public:
     double x1;
     double x2;
-    double w1;
-    double w2;
-    double w3;
-    double w4;
     int cellID;
     int submeshID;
     bool part_active;
     int exit_faceID;
+    double w1;
+    double w2;
+    double w3;
+    double w4;
 
     ParticleData(){};
 
@@ -1159,14 +1159,14 @@ class ParticleDataCPU{
 public:
     double x1;
     double x2;
-    double w1;
-    double w2;
-    double w3;
-    double w4;
     int cellID;
     int submeshID;
     bool part_active;
     int exit_faceID;
+    double w1;
+    double w2;
+    double w3;
+    double w4;
 
     ParticleDataCPU(){};
 
