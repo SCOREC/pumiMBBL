@@ -374,7 +374,12 @@ double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
 
 }
 
-
+/**
+ * @brief Provides info about inactivity in mesh
+ *
+ * @param[in] Object of the wrapper mesh structure
+ * \return true for all active blocks, false otherwise
+ */
 bool is_fullmesh(MBBL pumi_obj){
     return pumi_obj.mesh.offsets.is_fullmesh;
 }
@@ -417,34 +422,80 @@ double get_global_x2_max_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x2[nsubmesh]->xmax;
 }
 
+/**
+ * @brief Fetches number of x1 blocks in domain
+ * @param[in] Object of the wrapper mesh structure
+ * @return number of x1 blocks in domain
+ */
 int get_num_x1_submesh(MBBL pumi_obj){
     return pumi_obj.mesh.nsubmesh_x1;
 }
 
+/**
+ * @brief Fetches number of x1 elements in domain
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @return number of x1 elements in domain
+ */
 int get_num_x1_elems_in_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x1[isubmesh]->Nel;
 }
 
+/**
+ * @brief Fetches number of x1 elements in all preceding blocks
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @return number of x1 elements in all preceding blocks
+ */
 int get_num_x1_elems_before_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x1[isubmesh]->Nel_cumulative;
 }
 
+/**
+ * @brief Fetches number of x1 elements in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @return number of x1 elements in block
+ */
 double get_x1_elem_size_in_submesh_host(MBBL pumi_obj, int isubmesh, int icell){
     return pumi_obj.host_submesh_x1[isubmesh]->elem_size_host(icell);
 }
 
+/**
+ * @brief Fetches number of x2 blocks in domain
+ * @param[in] Object of the wrapper mesh structure
+ * @return number of x2 blocks in domain
+ */
 int get_num_x2_submesh(MBBL pumi_obj){
     return pumi_obj.mesh.nsubmesh_x2;
 }
 
+/**
+ * @brief Fetches number of x2 elements in domain
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @return number of x2 elements in domain
+ */
 int get_num_x2_elems_in_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x2[isubmesh]->Nel;
 }
 
+/**
+ * @brief Fetches number of x2 elements in all preceding blocks
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @return number of x2 elements in all preceding blocks
+ */
 int get_num_x2_elems_before_submesh_host(MBBL pumi_obj, int isubmesh){
     return pumi_obj.host_submesh_x2[isubmesh]->Nel_cumulative;
 }
 
+/**
+ * @brief Fetches number of x1 elements in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @return number of x1 elements in block
+ */
 double get_x2_elem_size_in_submesh_host(MBBL pumi_obj, int isubmesh, int icell){
     return pumi_obj.host_submesh_x2[isubmesh]->elem_size_host(icell);
 }
@@ -458,6 +509,13 @@ double get_x1_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
     }
 }
 
+/**
+ * @brief Fetches x1 grading ratio in around given node
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @param[in] local x1 node ID in block
+ * @return x1 grading ratio in around given node
+ */
 double get_x1_gradingratio_in_submesh_host(MBBL pumi_obj, int isub, int inode){
     return pumi_obj.host_submesh_x1[isub]->grading_ratio_host(inode);
 }
@@ -470,43 +528,98 @@ double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub){
         return pumi_obj.host_submesh_x2[isub]->r;
     }
 }
-
+/**
+ * @brief Fetches x2 grading ratio in around given node
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @param[in] local x2 node ID in block
+ * @return x1 grading ratio in around given node
+ */
 double get_x2_gradingratio_in_submesh_host(MBBL pumi_obj, int isub, int inode){
     return pumi_obj.host_submesh_x2[isub]->grading_ratio_host(inode);
 }
 
+/**
+ * @brief Fetches directional global node ID at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x1 directional global node ID at block interfaces/ends
+ */
 int get_x1_nodeID_at_interface_host(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.host_if_x1_node[if_node];
 }
 
+/**
+ * @brief Fetches directional global node ID at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x2 directional global node ID at block interfaces/ends
+ */
 int get_x2_nodeID_at_interface_host(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.host_if_x2_node[if_node];
 }
 
+/**
+ * @brief Fetches directional grading ratio at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x1 grading ratio at block interfaces/ends
+ */
 int get_x1_gradingratio_at_interface_host(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.host_if_x1_r[if_node-1];
 }
 
+/**
+ * @brief Fetches directional grading ratio at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x2 grading ratio at block interfaces/ends
+ */
 int get_x2_gadingratio_at_interface_host(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.host_if_x2_r[if_node-1];
 }
 
+/**
+ * @brief Fetches total active mesh elements
+ * @param[in] Object of the wrapper mesh structure
+ * @return total active mesh elements
+ */
 int get_total_mesh_elements(MBBL pumi_obj){
     return pumi_obj.mesh.Nel_total;
 }
 
+/**
+ * @brief Fetches total active mesh nodes
+ * @param[in] Object of the wrapper mesh structure
+ * @return total active mesh nodes
+ */
 int get_total_mesh_nodes(MBBL pumi_obj){
     return pumi_obj.mesh.Nnp_total;
 }
 
+/**
+ * @brief Fetches total x1 elements
+ * @param[in] Object of the wrapper mesh structure
+ * @return total x1 elements
+ */
 int get_total_x1_elements(MBBL pumi_obj){
     return pumi_obj.mesh.Nel_tot_x1;
 }
 
+/**
+ * @brief Fetches total x2 elements
+ * @param[in] Object of the wrapper mesh structure
+ * @return total x2 elements
+ */
 int get_total_x2_elements(MBBL pumi_obj){
     return pumi_obj.mesh.Nel_tot_x2;
 }
 
+/**
+ * @brief Fetches total blocks (active + inactive)
+ * @param[in] Object of the wrapper mesh structure
+ * @return total blocks
+ */
 int get_total_submesh_blocks(MBBL pumi_obj){
     if (pumi_obj.mesh.ndim==1){
         return pumi_obj.mesh.nsubmesh_x1;
@@ -517,6 +630,12 @@ int get_total_submesh_blocks(MBBL pumi_obj){
     return 0;
 }
 
+/**
+ * @brief Fetches total elements in a block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] flattened submesh ID
+ * @return total elements in a block
+ */
 int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
     if (pumi_obj.mesh.ndim==1){
         return pumi_obj.host_submesh_x1[flattened_submesh_ID]->Nel;
@@ -530,12 +649,24 @@ int get_total_elements_in_block(MBBL pumi_obj, int flattened_submesh_ID){
     return 0;
 }
 
+/**
+ * @brief Fetches total block-interior nodes in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 submesh ID
+ * @param[in] x2 submesh ID
+ * @return total block-interior nodes in block
+ */
 int get_num_interior_nodes_on_block(MBBL pumi_obj, int isub, int jsub){
     int Nel_x1 = pumi_obj.host_submesh_x1[isub]->Nel;
     int Nel_x2 = pumi_obj.host_submesh_x2[jsub]->Nel;
     return (Nel_x1-1)*(Nel_x2-1);
 }
 
+/**
+ * @brief Fetches total volume of domain
+ * @param[in] Object of the wrapper mesh structure
+ * @return total volume of domain
+ */
 double get_mesh_volume(MBBL pumi_obj){
     if (pumi_obj.mesh.ndim==1){
         double volume = pumi_obj.host_submesh_x1[pumi_obj.mesh.nsubmesh_x1]->xmax - pumi_obj.host_submesh_x1[1]->xmin;
@@ -559,6 +690,12 @@ double get_mesh_volume(MBBL pumi_obj){
     }
 }
 
+/**
+ * @brief Fetches edge bdry normal vector for given edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return edge bdry normal vector
+ */
 Vector3 get_bdry_edge_normal_host(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
@@ -574,6 +711,12 @@ Vector3 get_bdry_edge_normal_host(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Fetches bdry normal vector for given vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return vertex bdry normal vector
+ */
 Vector3 get_bdry_vert_normal_host(MBBL pumi_obj, int iVert){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
@@ -587,14 +730,32 @@ Vector3 get_bdry_vert_normal_host(MBBL pumi_obj, int iVert){
     }
 }
 
+/**
+ * @brief Fetches edge bdry normal vector for given edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return edge bdry normal vector
+ */
 Vector3 get_edge_normal_host(MBBL pumi_obj, int iEdge){
     return pumi_obj.mesh.bdry.host_bdry_edge_normal[iEdge];
 }
 
+/**
+ * @brief Fetches bdry normal vector for given vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return vertex bdry normal vector
+ */
 Vector3 get_vert_normal_host(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.bdry.host_bdry_vert_normal[iVert];
 }
 
+/**
+ * @brief Checks if given edge ID is a edge oriented horizontally
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return true for horizontal and false for vertical edges
+ */
 bool is_horizontal_edge_host(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
 
@@ -609,6 +770,12 @@ bool is_horizontal_edge_host(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Fetches number of nodes on edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return number of nodes on edge
+ */
 int get_num_interior_nodes_on_edge(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
 
@@ -623,6 +790,12 @@ int get_num_interior_nodes_on_edge(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Fetches number of faces on edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return number of faces on edge
+ */
 int get_num_faces_on_edge(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
@@ -644,6 +817,12 @@ int get_num_faces_on_edge(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Fetches starting face ID on given edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return starting face ID
+ */
 int get_starting_faceID_on_bdry_edge(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
@@ -657,23 +836,60 @@ int get_starting_faceID_on_bdry_edge(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Fetches edge ID on west of block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 submesh ID
+ * @param[in] x2 submesh ID
+ * @return west edge ID
+ */
 int get_west_edgeID(MBBL pumi_obj, int isub, int jsub){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     return (jsub-1)*(2*Nx+1)+(isub-1)+Nx;
 }
+
+/**
+ * @brief Fetches edge ID on east of block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 submesh ID
+ * @param[in] x2 submesh ID
+ * @return east edge ID
+ */
 int get_east_edgeID(MBBL pumi_obj, int isub, int jsub){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     return (jsub-1)*(2*Nx+1)+isub+Nx;
 }
+
+/**
+ * @brief Fetches edge ID on north of block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 submesh ID
+ * @param[in] x2 submesh ID
+ * @return north edge ID
+ */
 int get_north_edgeID(MBBL pumi_obj, int isub, int jsub){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     return jsub*(2*Nx+1)+(isub-1);
 }
+
+/**
+ * @brief Fetches edge ID on south of block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 submesh ID
+ * @param[in] x2 submesh ID
+ * @return south edge ID
+ */
 int get_south_edgeID(MBBL pumi_obj, int isub, int jsub){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     return (jsub-1)*(2*Nx+1)+(isub-1);
 }
 
+/**
+ * @brief Fetches bdry info for given edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return true for bdry edge, false otherwise
+ */
 bool is_edge_bdry_host(MBBL pumi_obj, int iEdge){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
@@ -687,6 +903,12 @@ bool is_edge_bdry_host(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Fetches bdry info for given vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return true for bdry vertex, false otherwise
+ */
 bool is_vert_bdry_host(MBBL pumi_obj, int iVert){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
@@ -700,48 +922,103 @@ bool is_vert_bdry_host(MBBL pumi_obj, int iVert){
     }
 }
 
+/**
+ * @brief Fetches flattened active submesh ID to which given vertex belongs to
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return flattened active submesh ID
+ */
 int get_block_vert_submeshID_host(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.host_vert_subID[iVert];
 }
 
+/**
+ * @brief Fetches flattened active submesh ID to which given edge belongs to
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return flattened active submesh ID
+ */
 int get_block_edge_submeshID_host(MBBL pumi_obj, int iEdge){
     return pumi_obj.mesh.blkif.host_edge_subID[iEdge];
 }
 
+/**
+ * @brief Fetches submesh IDs to which given vertex belongs to
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @param[out] x1-submesh ID
+ * @param[out] x2-submesh ID
+ */
 void get_block_vert_submeshIDs_host(MBBL pumi_obj, int iVert, int *isub, int *jsub){
     int subID = pumi_obj.mesh.blkif.host_vert_subID[iVert];
     *jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = subID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
 }
 
+/**
+ * @brief Fetches submesh IDs to which given edge belongs to
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @param[out] x1-submesh ID
+ * @param[out] x2-submesh ID
+ */
 void get_block_edge_submeshIDs_host(MBBL pumi_obj, int iEdge, int *isub, int *jsub){
     int subID = pumi_obj.mesh.blkif.host_edge_subID[iEdge];
     *jsub = subID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = subID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
 }
 
+/**
+ * @brief Fetches block activity info
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @param[in] x2-submesh ID
+ * @return boolean on activity status of block
+ */
 bool is_block_active_host(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.host_isactive[isub][jsub];
 }
 
+/**
+ * @brief Fetches block activity info
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] flattened submesh ID
+ * @return boolean on activity status of block
+ */
 bool is_block_active_host(MBBL pumi_obj, int flattened_submesh_ID){
     int jsub = flattened_submesh_ID/pumi_obj.mesh.nsubmesh_x1 + 1;
     int isub = flattened_submesh_ID - (jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
     return pumi_obj.mesh.host_isactive[isub][jsub];
 }
 
+/**
+ * @brief Fetches total edges in mesh (active + inactive)
+ * @param[in] Object of the wrapper mesh structure
+ * @return total edges in mesh
+ */
 int get_total_mesh_block_edges(MBBL pumi_obj){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     return 2*nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2;
 }
 
+/**
+ * @brief Fetches total verts in mesh (active + inactive)
+ * @param[in] Object of the wrapper mesh structure
+ * @return total verts in mesh
+ */
 int get_total_mesh_block_verts(MBBL pumi_obj){
     int nsubmesh_x1 = pumi_obj.mesh.nsubmesh_x1;
     int nsubmesh_x2 = pumi_obj.mesh.nsubmesh_x2;
     return nsubmesh_x1*nsubmesh_x2+nsubmesh_x1+nsubmesh_x2+1;
 }
 
+/**
+ * @brief checks validity of edge ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return true for valid ID, false for Invalid id
+ */
 bool check_edge_index_bounds(MBBL pumi_obj, int iEdge){
     bool valid = true;
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -752,6 +1029,14 @@ bool check_edge_index_bounds(MBBL pumi_obj, int iEdge){
     return valid;
 }
 
+/**
+ * @brief computes 2D global node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 submesh ID
+ * @param[in] x2 submesh ID
+ * @param[in] flattened node ID
+ * @return 2D global node ID
+ */
 int compute_global_nodeID_2D(MBBL pumi_obj, int isubmesh, int jsubmesh, int fullmesh_node_id){
     int Jnp;
     Jnp = fullmesh_node_id/(pumi_obj.mesh.Nel_tot_x1+1);
@@ -773,6 +1058,12 @@ int compute_global_nodeID_2D(MBBL pumi_obj, int isubmesh, int jsubmesh, int full
     return nodeID-nodeoffset;
 }
 
+/**
+ * @brief computes 2D list of nodes on given bdry-edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return array of nodes on bdry-edge
+ */
 std::vector<int> get_nodes_on_bdry_edge(MBBL pumi_obj, int iEdge){
     bool validID = check_edge_index_bounds(pumi_obj, iEdge);
     std::vector<int> nodeIDs;
@@ -847,6 +1138,13 @@ std::vector<int> get_nodes_on_bdry_edge(MBBL pumi_obj, int iEdge){
     return nodeIDs;
 }
 
+/**
+ * @brief checks validity of directional node IDs
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 global node ID
+ * @param[in] x2 global node ID
+ * @return true for valid ID, false for Invalid id
+ */
 bool check_node_index_bounds(MBBL pumi_obj, int knode_x1, int knode_x2){
     bool valid = true;
     if (knode_x1 < 0 || knode_x1 > pumi_obj.mesh.Nel_tot_x1){
@@ -858,6 +1156,13 @@ bool check_node_index_bounds(MBBL pumi_obj, int knode_x1, int knode_x2){
     return valid;
 }
 
+/**
+ * @brief Computes 2D global node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 global node ID
+ * @param[in] x2 global node ID
+ * @return 2D global node ID
+ */
 int get_global_nodeID_2D(MBBL pumi_obj, int knode_x1, int knode_x2){
 
     bool validID = check_node_index_bounds(pumi_obj, knode_x1, knode_x2);
@@ -1241,6 +1546,13 @@ int get_global_nodeID_2D(MBBL pumi_obj, int knode_x1, int knode_x2){
     return -1;
 }
 
+/**
+ * @brief Computes active block ID to which give node belongs to
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 global node ID
+ * @param[in] x2 global node ID
+ * @return flattened active block ID
+ */
 int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2){
 
     int isubmesh, jsubmesh, inp, jnp;
@@ -1601,6 +1913,13 @@ int get_node_submeshID(MBBL pumi_obj, int knode_x1, int knode_x2){
     return -1;
 }
 
+/**
+ * @brief Computes active block ID to which give element belongs to
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 global element ID
+ * @param[in] x2 global element ID
+ * @return flattened active block ID
+ */
 int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2){
     int isubmesh, jsubmesh;
 
@@ -1629,13 +1948,24 @@ int get_elem_submeshID(MBBL pumi_obj, int kcell_x1, int kcell_x2){
 
 }
 
+/**
+ * @brief Fetches number of total block interior nodes
+ * @param[in] Object of the wrapper mesh structure
+ * @return number of total block interior nodes
+ */
 int get_num_block_interior_nodes(MBBL pumi_obj){
     return pumi_obj.mesh.bst.total_block_nodes;
 }
 
+/**
+ * @brief Fetches number of total edge nodes
+ * @param[in] Object of the wrapper mesh structure
+ * @return number of total edge nodes
+ */
 int get_num_block_edge_interior_nodes(MBBL pumi_obj){
     return pumi_obj.mesh.bst.total_edge_nodes;
 }
+
 /**
  * @brief Returns node info such as if node is in active domain, if node is on a boundary
  * and boundary entity dimension (boundary vertex (dim=0) or edge (dim=1)) and entity tag
