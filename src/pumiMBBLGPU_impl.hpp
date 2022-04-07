@@ -5,6 +5,12 @@
 
 namespace pumi {
 
+/**
+ * @brief Locates local cell ID of given point inside a block
+ * @param[in] Submesh object (on device)
+ * @param[in] point coordinate to be located
+ * @return local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 int locate_cell(DevicePointer<Submesh> submesh, double q) {
     switch (submesh()->meshtype){
@@ -22,6 +28,13 @@ int locate_cell(DevicePointer<Submesh> submesh, double q) {
     return -1;
 }
 
+/**
+ * @brief updates local cell ID of given particle coordinate
+ * @param[in] Submesh object (on device)
+ * @param[in] point coordinate to be located
+ * @param[in] previous local cell ID of particle
+ * @return upddated local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 int update_cell(DevicePointer<Submesh> submesh, double q, int icell) {
     switch (submesh()->meshtype){
@@ -39,6 +52,12 @@ int update_cell(DevicePointer<Submesh> submesh, double q, int icell) {
     return -1;
 }
 
+/**
+ * @brief Computes element size inside a block
+ * @param[in] Submesh object (on device)
+ * @param[in] local cell ID for which elemetn size is needed
+ * @return Value of element size
+ */
 KOKKOS_INLINE_FUNCTION
 double elem_size(DevicePointer<Submesh> submesh, int icell){
     switch (submesh()->meshtype){
@@ -56,6 +75,15 @@ double elem_size(DevicePointer<Submesh> submesh, int icell){
     return -999.0;
 }
 
+/**
+ * @brief Computes linear 1D weights for gather/scatter operations and
+ *        directional global cell ID
+ * @param[in] Submesh object (on device)
+ * @param[in] point coordinate inside submesh block
+ * @param[in] local cell ID of point inside submesh block
+ * @param[out] directional global cell ID
+ * @param[out] linear 1D weight (correspoding to max-side node)
+ */
 KOKKOS_INLINE_FUNCTION
 void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int *global_cell, double *Wgh2){
     switch (submesh()->meshtype){
@@ -81,6 +109,12 @@ void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int 
     return;
 }
 
+/**
+ * @brief Fetches node coordinate inside submesh block
+ * @param[in] Submesh object (on device)
+ * @param[in] local node ID inside block
+ * @return Value of node coordinate
+ */
 KOKKOS_INLINE_FUNCTION
 double node_coords(DevicePointer<Submesh> submesh, int inode){
     switch (submesh()->meshtype){
@@ -98,6 +132,12 @@ double node_coords(DevicePointer<Submesh> submesh, int inode){
     return -999.0;
 }
 
+/**
+ * @brief Computes grading ration inside submesh block
+ * @param[in] Submesh object (on device)
+ * @param[in] local node ID inside block
+ * @return Value of grading ratio at given node
+ */
 KOKKOS_INLINE_FUNCTION
 double grading_ratio(DevicePointer<Submesh> submesh, int inode){
     switch (submesh()->meshtype){
@@ -115,36 +155,79 @@ double grading_ratio(DevicePointer<Submesh> submesh, int inode){
     return -999.0;
 }
 
+/**
+ * @brief Fetches block activity info
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @param[in] x2-submesh ID
+ * @return boolean on activity status of block
+ */
 KOKKOS_INLINE_FUNCTION
 bool is_block_active(MBBL pumi_obj, int isub, int jsub){
     return pumi_obj.mesh.isactive(isub,jsub);
 }
 
+/**
+ * @brief Fetches number of x1 elements in domain
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @return number of x1 elements in domain
+ */
 KOKKOS_INLINE_FUNCTION
 int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh){
     return pumi_obj.submesh_x1(isubmesh)()->Nel;
 }
 
+/**
+ * @brief Fetches number of x2 elements in domain
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @return number of x2 elements in domain
+ */
 KOKKOS_INLINE_FUNCTION
 int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh){
     return pumi_obj.submesh_x2(isubmesh)()->Nel;
 }
 
+/**
+ * @brief Fetches number of x1 elements in all preceding blocks
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @return number of x1 elements in all preceding blocks
+ */
 KOKKOS_INLINE_FUNCTION
 int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh){
     return pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
 }
 
+/**
+ * @brief Fetches number of x2 elements in all preceding blocks
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @return number of x2 elements in all preceding blocks
+ */
 KOKKOS_INLINE_FUNCTION
 int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh){
     return pumi_obj.submesh_x2(isubmesh)()->Nel_cumulative;
 }
 
+/**
+ * @brief Fetches number of x1 elements in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @return number of x1 elements in block
+ */
 KOKKOS_INLINE_FUNCTION
 double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
     return elem_size(pumi_obj.submesh_x1(isub),icell);
 }
 
+/**
+ * @brief Fetches number of x1 elements in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @return number of x1 elements in block
+ */
 KOKKOS_INLINE_FUNCTION
 double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
     return elem_size(pumi_obj.submesh_x2(isub),icell);
@@ -160,6 +243,13 @@ double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub){
     }
 }
 
+/**
+ * @brief Fetches x1 grading ratio in around given node
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @param[in] local x1 node ID in block
+ * @return x1 grading ratio in around given node
+ */
 KOKKOS_INLINE_FUNCTION
 double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub, int inode){
     return grading_ratio(pumi_obj.submesh_x1(isub),inode);
@@ -175,47 +265,109 @@ double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub){
     }
 }
 
+/**
+ * @brief Fetches x2 grading ratio in around given node
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @param[in] local x2 node ID in block
+ * @return x1 grading ratio in around given node
+ */
 KOKKOS_INLINE_FUNCTION
 double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub, int inode){
     return grading_ratio(pumi_obj.submesh_x2(isub),inode);
 }
 
+/**
+ * @brief Converts local cell ID to directional global ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @param[in] local x1 cell ID in block
+ * @return x1 directional global ID
+ */
 KOKKOS_INLINE_FUNCTION
 int get_x1_cellID(MBBL pumi_obj, int isub, int icell){
     return icell + pumi_obj.submesh_x1(isub)()->Nel_cumulative;
 }
 
+/**
+ * @brief Converts local cell ID to directional global ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @param[in] local x2 cell ID in block
+ * @return x1 directional global ID
+ */
 KOKKOS_INLINE_FUNCTION
 int get_x2_cellID(MBBL pumi_obj, int isub, int icell){
     return icell + pumi_obj.submesh_x2(isub)()->Nel_cumulative;
 }
 
+/**
+ * @brief Fetches directional global node ID at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x1 directional global node ID at block interfaces/ends
+ */
 KOKKOS_INLINE_FUNCTION
 int get_x1_nodeID_at_interface(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.if_x1_node(if_node);
 }
 
+/**
+ * @brief Fetches directional global node ID at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x2 directional global node ID at block interfaces/ends
+ */
 KOKKOS_INLINE_FUNCTION
 int get_x2_nodeID_at_interface(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.if_x2_node(if_node);
 }
 
+/**
+ * @brief Fetches directional grading ratio at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x1 grading ratio at block interfaces/ends
+ */
 KOKKOS_INLINE_FUNCTION
 double get_x1_gradingratio_at_interface(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.if_x1_r(if_node-1);
 }
 
+/**
+ * @brief Fetches directional grading ratio at block interfaces/ends
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] block interface/end ID
+ * @return x2 grading ratio at block interfaces/ends
+ */
 KOKKOS_INLINE_FUNCTION
 double get_x2_gradingratio_at_interface(MBBL pumi_obj, int if_node){
     return pumi_obj.mesh.blkif.if_x2_r(if_node-1);
 }
 
+/**
+ * @brief Computes directional block IDs from flattened block ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] flattened block ID
+ * @param[out] x1 block ID
+ * @param[out] x2 block ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_directional_submeshID(MBBL pumi_obj, int submeshID, int *isub, int *jsub){
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
 }
 
+/**
+ * @brief Computes directional block IDs and local cell IDs from flattened block and local cell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] flattened block ID
+ * @param[in] flattened local cell ID
+ * @param[out] x1 block ID
+ * @param[out] x1 local cell ID
+ * @param[out] x2 block ID
+ * @param[out] x2 local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
@@ -224,38 +376,89 @@ void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cell
     *icell = cellID - pumi_obj.submesh_x1(*isub)()->Nel*(*jcell);
 }
 
+/**
+ * @brief Computes directional local node IDs from directional block IDs and interior node IDs
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 block ID
+ * @param[in] x2 block ID
+ * @param[in] interior local node ID
+ * @param[out] x1 local node ID
+ * @param[out] x2 local node ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_directional_interior_nodeIDs(MBBL pumi_obj, int isub, int , int inode, int *inp, int *jnp){
     *jnp = inode/(pumi_obj.submesh_x1(isub)()->Nel-1) + 1;
     *inp = inode - (*jnp-1)*(pumi_obj.submesh_x1(isub)()->Nel-1) + 1;
 }
 
+/**
+ * @brief Computes flattened submesh ID and local cell ID from directional submesh IDs and local cell IDs
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 block ID
+ * @param[in] x1 local cell ID
+ * @param[in] x2 block ID
+ * @param[in] x2 local cell ID
+ * @param[out] flattedned block ID
+ * @param[out] flattedned local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
     *submeshID = (isub-1) + (jsub-1)*pumi_obj.mesh.nsubmesh_x1;
     *cellID = icell + jcell*pumi_obj.submesh_x1(isub)()->Nel;
 }
 
+/**
+ * @brief Fetches edge bdry normal vector for given edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return edge bdry normal vector
+ */
 KOKKOS_INLINE_FUNCTION
 Vector3 get_edge_normal(MBBL pumi_obj, int iEdge){
     return pumi_obj.mesh.bdry.bdry_edge_normal(iEdge);
 }
 
+/**
+ * @brief Fetches bdry normal vector for given vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return vertex bdry normal vector
+ */
 KOKKOS_INLINE_FUNCTION
 Vector3 get_vert_normal(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.bdry.bdry_vert_normal(iVert);
 }
 
+/**
+ * @brief Fetches global node ID for given vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return global node ID
+ */
 KOKKOS_INLINE_FUNCTION
 int get_block_vert_nodeID(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_nodeID(iVert);
 }
 
+/**
+ * @brief Fetches flattened submesh ID for given vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return flattened submesh ID
+ */
 KOKKOS_INLINE_FUNCTION
 int get_block_vert_submeshID(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_subID(iVert);
 }
 
+/**
+ * @brief performs binary search
+ * @param[in] array of cumulative number of nodes upto certain block/edge
+ * @param[in] first index in window
+ * @param[in] last index in window
+ * @param[in] node ID to be located
+ * @return active block/edge ID
+ */
 KOKKOS_INLINE_FUNCTION
 int bst_search(Kokkos::View<int*> arr, int first, int last, int nodeID){
     int mid = (first+last)/2;
@@ -284,6 +487,15 @@ int bst_search(Kokkos::View<int*> arr, int first, int last, int nodeID){
     return -1;
 }
 
+/**
+ * @brief performs binary search to locate directional submesh ID
+ * for give global directional element ID
+ * @param[in] Submesh object on device
+ * @param[in] first index in window
+ * @param[in] last index in window
+ * @param[in] entity ID to be located
+ * @return directional block ID
+ */
 KOKKOS_INLINE_FUNCTION
 int directional_bst_search(SubmeshDeviceViewPtr submesh, int first, int last, int entity_ID){
     int mid = (first+last)/2;
@@ -312,6 +524,13 @@ int directional_bst_search(SubmeshDeviceViewPtr submesh, int first, int last, in
     return -1;
 }
 
+/**
+ * @brief Locate x1 submesh and local cell ID for given x1 global cell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 global cell ID
+ * @param[out] x1 submesh ID
+ * @param[out] x1 local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_x1_submeshID_and_localcellID_of_x1_elem(MBBL pumi_obj, int x1_elem_id, int *isub, int *icell){
     int nblks = pumi_obj.mesh.nsubmesh_x1;
@@ -326,6 +545,13 @@ void get_x1_submeshID_and_localcellID_of_x1_elem(MBBL pumi_obj, int x1_elem_id, 
     *icell = x1_elem_id - pumi_obj.submesh_x1(*isub)()->Nel_cumulative;
 }
 
+/**
+ * @brief Locate x1 submesh and local cell ID (on the min side) for given x1 global node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 global node ID
+ * @param[out] x1 submesh ID
+ * @param[out] x1 local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_x1_submeshID_and_localcellID_of_x1_node(MBBL pumi_obj, int x1_node_id, int *isub, int *icell){
     int nblks = pumi_obj.mesh.nsubmesh_x1;
@@ -348,6 +574,13 @@ void get_x1_submeshID_and_localcellID_of_x1_node(MBBL pumi_obj, int x1_node_id, 
     }
 }
 
+/**
+ * @brief Locate x2 submesh and local cell ID for given x2 global cell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2 global cell ID
+ * @param[out] x2 submesh ID
+ * @param[out] x2 local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_x2_submeshID_and_localcellID_of_x2_elem(MBBL pumi_obj, int x2_elem_id, int *isub, int *icell){
     int nblks = pumi_obj.mesh.nsubmesh_x2;
@@ -362,6 +595,13 @@ void get_x2_submeshID_and_localcellID_of_x2_elem(MBBL pumi_obj, int x2_elem_id, 
     *icell = x2_elem_id - pumi_obj.submesh_x2(*isub)()->Nel_cumulative;
 }
 
+/**
+ * @brief Locate x2 submesh and local cell ID (on the min side) for given x2 global node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2 global node ID
+ * @param[out] x2 submesh ID
+ * @param[out] x2 local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_x2_submeshID_and_localcellID_of_x2_node(MBBL pumi_obj, int x2_node_id, int *isub, int *icell){
     int nblks = pumi_obj.mesh.nsubmesh_x2;
@@ -384,6 +624,15 @@ void get_x2_submeshID_and_localcellID_of_x2_node(MBBL pumi_obj, int x2_node_id, 
     }
 }
 
+/**
+ * @brief Locate submesh IDs and local cell IDs for given global block element ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global block element ID
+ * @param[out] x1 submesh ID
+ * @param[out] x2 submesh ID
+ * @param[out] x2 local cell ID
+ * @param[out] x1 local cell ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_submeshIDs_and_localcellIDs_of_block_elements(MBBL pumi_obj, int ielem, int *isub, int *jsub, int *icell, int *jcell){
     int nblks = pumi_obj.mesh.bst.total_active_blocks;
@@ -411,6 +660,13 @@ void get_submeshIDs_and_localcellIDs_of_block_elements(MBBL pumi_obj, int ielem,
     *icell = ielem_loc - (*jcell)*(pumi_obj.submesh_x1(*isub)()->Nel);
 }
 
+/**
+ * @brief Locate submesh IDs for given global block-interior node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global block-interior node ID
+ * @param[out] x1 submesh ID
+ * @param[out] x2 submesh ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_submeshIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub, int *jsub){
     int nblks = pumi_obj.mesh.bst.total_active_blocks;
@@ -428,6 +684,15 @@ void get_submeshIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub,
     *isub = submeshID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
 }
 
+/**
+ * @brief Locate submesh IDs and local node IDs for given global block-interior node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global block-interior node ID
+ * @param[out] x1 submesh ID
+ * @param[out] x2 submesh ID
+ * @param[out] x1 local node ID
+ * @param[out] x2 local node ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_submeshIDs_and_localnodeIDs_of_block_interior_nodes(MBBL pumi_obj, int inode, int *isub, int *jsub, int *inp, int *jnp){
     int nblks = pumi_obj.mesh.bst.total_active_blocks;
@@ -454,6 +719,12 @@ void get_submeshIDs_and_localnodeIDs_of_block_interior_nodes(MBBL pumi_obj, int 
     *inp = inode_loc - (*jnp-1)*(pumi_obj.submesh_x1(*isub)()->Nel-1) + 1;
 }
 
+/**
+ * @brief Locate edge IDs for given global block-interior node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global block-interior node ID
+ * @return edge ID
+ */
 KOKKOS_INLINE_FUNCTION
 int get_edgeIDs_of_block_edge_interior_nodes(MBBL pumi_obj, int inode){
     int nedges = pumi_obj.mesh.bst.total_active_edges;
@@ -463,6 +734,15 @@ int get_edgeIDs_of_block_edge_interior_nodes(MBBL pumi_obj, int inode){
     return pumi_obj.mesh.bst.active_edgeID(edgID);
 }
 
+/**
+ * @brief Locate edge IDs and edge-local node IDs for given global edge-interior node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global edge-interior node ID
+ * @param[out] edge ID
+ * @param[out] x1 submesh ID
+ * @param[out] x2 submesh ID
+ * @param[out] edge local node ID
+ */
 KOKKOS_INLINE_FUNCTION
 void get_edgeIDs_submeshIDs_and_localnodeIDs_of_block_edge_interior_nodes
             (MBBL pumi_obj, int inode, int *iEdge, int *isub, int *jsub, int *inp){
@@ -482,6 +762,12 @@ void get_edgeIDs_submeshIDs_and_localnodeIDs_of_block_edge_interior_nodes
     *isub = subID - (*jsub-1)*pumi_obj.mesh.nsubmesh_x1 + 1;
 }
 
+/**
+ * @brief Checks if given edge ID is a edge oriented horizontally
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return true for horizontal and false for vertical edges
+ */
 KOKKOS_INLINE_FUNCTION
 bool is_horizontal_edge(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -497,28 +783,40 @@ bool is_horizontal_edge(MBBL pumi_obj, int iEdge){
     }
 }
 
+/**
+ * @brief Checks if given edge ID is a boundary edge
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] edge ID
+ * @return true for bdry and false for non-bdry edges
+ */
 KOKKOS_INLINE_FUNCTION
 bool is_edge_bdry(MBBL pumi_obj, int iEdge){
     return pumi_obj.mesh.bdry.is_bdry_edge(iEdge);
 }
 
+/**
+ * @brief Checks if given vertex ID is a boundary vertex
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] vertex ID
+ * @return true for bdry and false for non-bdry vertices
+ */
 KOKKOS_INLINE_FUNCTION
 bool is_vert_bdry(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.bdry.is_bdry_vert(iVert);
 }
+
 /**
 * @brief Locate the submesh ID and local cell ID for a given x1-coordinate
 * Uses analytical formulae to locate the input coordinate
-* \param[in] Object of the wrapper mesh structure
-* \param[in] x1-coordinate to be located
-* \param[out] located x1-submesh ID
-* \param[out] located x1-localcell ID
+* @param[in] Object of the wrapper mesh structure
+* @param[in] x1-coordinate to be located
+* @param[out] located x1-submesh ID
+* @param[out] located x1-localcell ID
 */
 KOKKOS_INLINE_FUNCTION
 void locate_submesh_and_cell_x1(MBBL pumi_obj, double q, int* submeshID, int *cellID){
     int isubmesh;
     int submesh_located = 0;
-    // int nsubmesh = pumi_obj.submesh_x1.extent(0);
     int nsubmesh = pumi_obj.mesh.nsubmesh_x1;
     for (isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
      if (q >= (pumi_obj.submesh_x1(isubmesh)()->xmin) && q <= (pumi_obj.submesh_x1(isubmesh)()->xmax)){
@@ -532,23 +830,21 @@ void locate_submesh_and_cell_x1(MBBL pumi_obj, double q, int* submeshID, int *ce
      *cellID = -1;
      return;
     }
-    // *cellID  = pumi_obj.submesh_x1(*submeshID)()->locate_cell(q);
     *cellID = locate_cell(pumi_obj.submesh_x1(*submeshID),q);
 }
 
 /**
 * @brief Locate the submesh ID and local cell ID for a given x2-coordinate
 * Uses analytical formulae to locate the input coordinate
-* \param[in] Object of the wrapper mesh structure
-* \param[in] x2-coordinate to be located
-* \param[out] located x2-submesh ID
-* \param[out] located x2-localcell ID
+* @param[in] Object of the wrapper mesh structure
+* @param[in] x2-coordinate to be located
+* @param[out] located x2-submesh ID
+* @param[out] located x2-localcell ID
 */
 KOKKOS_INLINE_FUNCTION
 void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *cellID){
     int isubmesh;
     int submesh_located = 0;
-    // int nsubmesh = pumi_obj.submesh_x2.extent(0);
     int nsubmesh = pumi_obj.mesh.nsubmesh_x2;
     for (isubmesh=1; isubmesh<=nsubmesh; isubmesh++){
      if (q >= (pumi_obj.submesh_x2(isubmesh)()->xmin) && q <= (pumi_obj.submesh_x2(isubmesh)()->xmax)){
@@ -562,7 +858,6 @@ void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *ce
         *cellID = -1;
         return;
     }
-    // *cellID  = pumi_obj.submesh_x2(*submeshID)()->locate_cell(q);
     *cellID  = locate_cell(pumi_obj.submesh_x2(*submeshID),q);
 }
 
@@ -570,12 +865,12 @@ void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *ce
  * @brief Update the submesh ID and local cell ID for a given x1-coordinate
  * based on previous submesh and cell IDs.
  * Uses adjacency search to update the IDs
- * \param[in] Object of the wrapper mesh structure
- * \param[in] new x1-coordinate
- * \param[in] old x1-submesh ID
- * \param[in] old x1-localcell ID
- * \param[out] updated x1-submesh ID
- * \param[out] updated x1-localcell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] new x1-coordinate
+ * @param[in] old x1-submesh ID
+ * @param[in] old x1-localcell ID
+ * @param[out] updated x1-submesh ID
+ * @param[out] updated x1-localcell ID
  */
 KOKKOS_INLINE_FUNCTION
 void update_submesh_and_cell_x1(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
@@ -589,7 +884,6 @@ void update_submesh_and_cell_x1(MBBL pumi_obj, double q, int prev_submeshID, int
         *submeshID += 1;
         prev_cellID = 0;
     }
-    // *cellID = pumi_obj.submesh_x1(*submeshID)()->update_cell(q, prev_cellID);
     *cellID = update_cell(pumi_obj.submesh_x1(*submeshID), q, prev_cellID);
 }
 
@@ -598,12 +892,12 @@ void update_submesh_and_cell_x1(MBBL pumi_obj, double q, int prev_submeshID, int
  * @brief Update the submesh ID and local cell ID for a given x2-coordinate
  * based on previous submesh and cell IDs.
  * Uses adjacency search to update the IDs
- * \param[in] Object of the wrapper mesh structure
- * \param[in] new x2-coordinate
- * \param[in] old x2-submesh ID
- * \param[in] old x2-localcell ID
- * \param[out] updated x2-submesh ID
- * \param[out] updated x2-localcell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] new x2-coordinate
+ * @param[in] old x2-submesh ID
+ * @param[in] old x2-localcell ID
+ * @param[out] updated x2-submesh ID
+ * @param[out] updated x2-localcell ID
  */
 KOKKOS_INLINE_FUNCTION
 void update_submesh_and_cell_x2(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
@@ -617,7 +911,6 @@ void update_submesh_and_cell_x2(MBBL pumi_obj, double q, int prev_submeshID, int
         *submeshID += 1;
         prev_cellID = 0;
     }
-    // *cellID = pumi_obj.submesh_x2(*submeshID)()->update_cell(q, prev_cellID);
     *cellID = update_cell(pumi_obj.submesh_x2(*submeshID), q, prev_cellID);
 }
 
@@ -627,11 +920,11 @@ void update_submesh_and_cell_x2(MBBL pumi_obj, double q, int prev_submeshID, int
  * Uses adjacency search to update the submesh IDs and analytical
  * forumlae for cell IDs. Use this function when BL coords are
  * not stored
- * \param[in] Object of the wrapper mesh structure
- * \param[in] new x1-coordinate
- * \param[in] old x1-submesh ID
- * \param[out] updated x1-submesh ID
- * \param[out] updated x1-localcell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] new x1-coordinate
+ * @param[in] old x1-submesh ID
+ * @param[out] updated x1-submesh ID
+ * @param[out] updated x1-localcell ID
  */
 KOKKOS_INLINE_FUNCTION
 void update_submesh_and_locate_cell_x1(MBBL pumi_obj, double q, int prev_submeshID, int *submeshID, int *cellID){
@@ -644,7 +937,6 @@ void update_submesh_and_locate_cell_x1(MBBL pumi_obj, double q, int prev_submesh
         *submeshID += 1;
     }
 
-    // *cellID = pumi_obj.submesh_x1(*submeshID)()->locate_cell(q);
     *cellID = locate_cell(pumi_obj.submesh_x1(*submeshID),q);
 }
 
@@ -655,11 +947,11 @@ void update_submesh_and_locate_cell_x1(MBBL pumi_obj, double q, int prev_submesh
  * Uses adjacency search to update the submesh IDs and analytical
  * forumlae for cell IDs. Use this function when BL coords are
  * not stored
- * \param[in] Object of the wrapper mesh structure
- * \param[in] new x2-coordinate
- * \param[in] old x2-submesh ID
- * \param[out] updated x2-submesh ID
- * \param[out] updated x2-localcell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] new x2-coordinate
+ * @param[in] old x2-submesh ID
+ * @param[out] updated x2-submesh ID
+ * @param[out] updated x2-localcell ID
  */
 KOKKOS_INLINE_FUNCTION
 void update_submesh_and_locate_cell_x2(MBBL pumi_obj, double q, int prev_submeshID, int *submeshID, int *cellID){
@@ -672,7 +964,6 @@ void update_submesh_and_locate_cell_x2(MBBL pumi_obj, double q, int prev_submesh
         *submeshID += 1;
     }
 
-    // *cellID = pumi_obj.submesh_x2(*submeshID)()->locate_cell(q);
     *cellID = locate_cell(pumi_obj.submesh_x2(*submeshID),q);
 }
 
@@ -680,35 +971,49 @@ void update_submesh_and_locate_cell_x2(MBBL pumi_obj, double q, int prev_submesh
 /**
  * @brief Computes the partial weights (correspoding to node on the max-side i.e right side)
  * for a located particle coordinate and the global directional cell ID
- * \param[in] Object of the wrapper mesh structure
- * \param[in] x1-coordinate of the particle
- * \param[in] x1-submesh ID of the particle
- * \param[in] x1-localcell ID of the particle
- * \param[out] global cell ID in x1 direction
- * \param[out] partial weight
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-coordinate of the particle
+ * @param[in] x1-submesh ID of the particle
+ * @param[in] x1-localcell ID of the particle
+ * @param[out] global cell ID in x1 direction
+ * @param[out] partial weight
  */
 KOKKOS_INLINE_FUNCTION
 void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_global_cell, double *Wgh2){
-    // pumi_obj.submesh_x1(isubmesh)()->calc_weights(q, icell, x1_global_cell, Wgh2);
     calc_weights(pumi_obj.submesh_x1(isubmesh),q,icell,x1_global_cell,Wgh2);
 }
 
 /**
  * @brief Computes the partial weights (correspoding to node on the max-side i.e top side)
  * for a located particle coordinate and the global directional cell ID
- * \param[in] Object of the wrapper mesh structure
- * \param[in] x2-coordinate of the particle
- * \param[in] x2-submesh ID of the particle
- * \param[in] x2-localcell ID of the particle
- * \param[out] global cell ID in x2 direction
- * \param[out] partial weight
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-coordinate of the particle
+ * @param[in] x2-submesh ID of the particle
+ * @param[in] x2-localcell ID of the particle
+ * @param[out] global cell ID in x2 direction
+ * @param[out] partial weight
  */
  KOKKOS_INLINE_FUNCTION
  void calc_weights_x2(MBBL pumi_obj, double q, int isubmesh, int icell, int *x2_global_cell, double *Wgh2){
-     // pumi_obj.submesh_x2(isubmesh)()->calc_weights(q, icell, x2_global_cell, Wgh2);
      calc_weights(pumi_obj.submesh_x2(isubmesh),q,icell,x2_global_cell,Wgh2);
  }
 
+ /**
+  * @brief Computes the fractional 2D weights
+  * @param[in] Object of the wrapper mesh structure
+  * @param[in] x1-coordinate of the particle
+  * @param[in] x2-coordinate of the particle
+  * @param[in] x1-submesh ID of the particle
+  * @param[in] x2-submesh ID of the particle
+  * @param[in] x1-localcell ID of the particle
+  * @param[in] x2-localcell ID of the particle
+  * @param[out] global cell ID in x1 direction
+  * @param[out] global cell ID in x2 direction
+  * @param[out] fractional weight for bottom-left node
+  * @param[out] fractional weight for bottom-right node
+  * @param[out] fractional weight for top-left node
+  * @param[out] fractional weight for top-left node
+  */
  KOKKOS_INLINE_FUNCTION
  void calc_weights_2D(MBBL pumi_obj,
                         double q1, double q2,
@@ -736,11 +1041,12 @@ void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_g
  /**
   * @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
   * with no-inactive blocks (mesh with inactive blocks will need separate implementations)
-  * \param[in] global cell ID in x1-direction
-  * \param[in] global cell ID in x2-direction
-  * \param[out] global cell ID in 2D
-  * \param[out] global node ID of the node in left-bottom corner
-  * \param[out] global node ID of the node in left-top coner
+  * @param[in] Object of the wrapper mesh structure
+  * @param[in] global cell ID in x1-direction
+  * @param[in] global cell ID in x2-direction
+  * @param[out] global cell ID in 2D
+  * @param[out] global node ID of the node in left-bottom corner
+  * @param[out] global node ID of the node in left-top coner
   */
   KOKKOS_INLINE_FUNCTION
   void calc_global_cellID_and_nodeID_fullmesh(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node){
@@ -750,19 +1056,19 @@ void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_g
   }
 
 /**
-* @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
-* with no-inactive blocks (mesh with inactive blocks will need separate implementations)
-* \param[in] global cell ID in x1-direction
-* \param[in] global cell ID in x2-direction
-* \param[out] global cell ID in 2D
-* \param[out] global node ID of the node in left-bottom corner
-* \param[out] global node ID of the node in left-top coner
+* @brief Computes the gloabl cell ID and node ID in 2D
+* @param[in] Object of the wrapper mesh structure
+* @param[in] submesh ID in x1-direction
+* @param[in] submesh ID in x2-direction
+* @param[in] global cell ID in x1-direction
+* @param[in] global cell ID in x2-direction
+* @param[out] global cell ID in 2D
+* @param[out] global node ID of the node in left-bottom corner
+* @param[out] global node ID of the node in left-top coner
 */
 KOKKOS_INLINE_FUNCTION
 void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
                                     int *global_cell_2D, int *bottomleft_node, int *topleft_node){
-    // int nodeoffset_bottom = pumi_obj.mesh.nodeoffset(isubmesh,kcell_x2);
-    // int nodeoffset_top = pumi_obj.mesh.nodeoffset(isubmesh,kcell_x2+1);
     int icell_x2 = kcell_x2 - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
     int elemoffset = pumi_obj.mesh.offsets.elemoffset_start(isubmesh,jsubmesh) + icell_x2*pumi_obj.mesh.offsets.elemoffset_skip(jsubmesh);
     int fullmesh_elem = kcell_x1 + kcell_x2*pumi_obj.mesh.Nel_tot_x1;
@@ -781,12 +1087,17 @@ void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, in
     *topleft_node = fullmesh_elem + kcell_x2 + pumi_obj.mesh.Nel_tot_x1 + 1 - nodeoffset_top;
 }
 
-
+/**
+* @brief Computes the gloabl cell ID and node ID in 2D
+* @param[in] Object of the wrapper mesh structure
+* @param[in] submesh ID in x1-direction
+* @param[in] submesh ID in x2-direction
+* @param[in] global node ID in x1-direction
+* @param[in] global node ID in x2-direction
+* @return global 2D node ID
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int inp, int jnp){
-    // int nodeID = Jnp*(pumi_obj.mesh.Nel_tot_x1+1) + Inp;
-    // int jnp = Jnp - pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
-    // int nodeoffset = pumi_obj.mesh.nodeoffset(isubmesh,Jnp);
     int Inp = inp + pumi_obj.submesh_x1(isubmesh)()->Nel_cumulative;
     int Jnp = jnp + pumi_obj.submesh_x2(jsubmesh)()->Nel_cumulative;
     int nodeID = Jnp*(pumi_obj.mesh.Nel_tot_x1+1) + Inp;
@@ -802,12 +1113,26 @@ int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int inp, int j
     return nodeID-nodeoffset;
 }
 
+/**
+* @brief Computes the global node ID for nodes on a horizontal edge
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_global_nodeID_on_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
     int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID[iEdge]+inode;
     return nodeID;
 }
 
+/**
+* @brief Computes the global node ID immediate north of given node (for nodes on a horizontal edge)
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID of immediate northern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_north_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -818,6 +1143,13 @@ int calc_first_north_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, 
     return nodeID+nodeoffset;
 }
 
+/**
+* @brief Computes the global node ID second north of given node (for nodes on a horizontal edge)
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID of second northern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_second_north_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -830,6 +1162,13 @@ int calc_second_north_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge,
     return nodeID+nodeoffset;
 }
 
+/**
+* @brief Computes the global node ID immediate south of given node (for nodes on a horizontal edge)
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID of immediate southern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_south_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -840,6 +1179,13 @@ int calc_first_south_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, 
     return nodeID-nodeoffset;
 }
 
+/**
+* @brief Computes the global node ID second south of given node (for nodes on a horizontal edge)
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID of second southern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_second_south_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge, int inode){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -852,6 +1198,13 @@ int calc_second_south_global_nodeID_to_horizontal_edge(MBBL pumi_obj, int iEdge,
     return nodeID-nodeoffset;
 }
 
+/**
+* @brief Computes the global node ID for nodes on a vertical edge
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertical edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_global_nodeID_on_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
     int nodeID = pumi_obj.mesh.blkif.edge_first_nodeID(iEdge);
@@ -862,6 +1215,13 @@ int calc_global_nodeID_on_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
     return nodeID;
 }
 
+/**
+* @brief Computes the global node ID immediate north of given node (for nodes on a vertical edge)
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertical edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID of immediate northern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_north_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
     int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
@@ -879,6 +1239,13 @@ int calc_first_north_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, in
     }
 }
 
+/**
+* @brief Computes the global node ID immediate south of given node (for nodes on a vertical edge)
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertical edge ID
+* @param[in] edge-local node ID
+* @return global 2D node ID of immediate southern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_south_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, int inode){
     // int subID = pumi_obj.mesh.blkif.edge_subID(iEdge);
@@ -894,6 +1261,12 @@ int calc_first_south_global_nodeID_to_vertical_edge(MBBL pumi_obj, int iEdge, in
     }
 }
 
+/**
+* @brief Computes the global node ID immediate north of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of immediate northern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_north_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -903,6 +1276,12 @@ int calc_first_north_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,0);
 }
 
+/**
+* @brief Computes the global node ID second north node of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of second northern node to vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_second_north_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -912,6 +1291,12 @@ int calc_second_north_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,1);
 }
 
+/**
+* @brief Computes the global node ID immediate south of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of immediate southern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -922,6 +1307,12 @@ int calc_first_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,nel_blk-2);
 }
 
+/**
+* @brief Computes the global node ID second south node of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of second southern node to vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_second_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -932,26 +1323,56 @@ int calc_second_south_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return calc_global_nodeID_on_vertical_edge(pumi_obj,iEdge,nel_blk-3);
 }
 
+/**
+* @brief Computes the global node ID immediate east of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of immediate eastern node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_east_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_nodeID(iVert)+1;
 }
 
+/**
+* @brief Computes the global node ID second east node of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of second eastern node to vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_second_east_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_nodeID(iVert)+2;
 }
 
+/**
+* @brief Computes the global node ID immediate west of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of immediate western node
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_first_west_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_nodeID(iVert)-1;
 }
 
+/**
+* @brief Computes the global node ID second west node of given vertex node
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return global 2D node ID of second western node to vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int calc_second_west_global_nodeID_to_vertex(MBBL pumi_obj, int iVert){
     return pumi_obj.mesh.blkif.vert_nodeID(iVert)-2;
 }
 
+/**
+* @brief Computes the x1 submesh ID west of vertex
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return x1 submesh ID west of vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x1_submeshID_west_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -960,6 +1381,12 @@ int get_x1_submeshID_west_to_vertex(MBBL pumi_obj, int iVert){
     return im1;
 }
 
+/**
+* @brief Computes the x1 submesh ID east of vertex
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return x1 submesh ID east of vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x1_submeshID_east_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -968,6 +1395,12 @@ int get_x1_submeshID_east_to_vertex(MBBL pumi_obj, int iVert){
     return im1+1;
 }
 
+/**
+* @brief Computes the x2 submesh ID south of vertex
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return x2 submesh ID south of vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x2_submeshID_south_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -975,6 +1408,12 @@ int get_x2_submeshID_south_to_vertex(MBBL pumi_obj, int iVert){
     return jm1;
 }
 
+/**
+* @brief Computes the x2 submesh ID north of vertex
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertex ID
+* @return x2 submesh ID north of vertex
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x2_submeshID_north_to_vertex(MBBL pumi_obj, int iVert){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -982,6 +1421,12 @@ int get_x2_submeshID_north_to_vertex(MBBL pumi_obj, int iVert){
     return jm1+1;
 }
 
+/**
+* @brief Computes the x2 submesh ID north of horizontal edge
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @return x2 submesh ID north of horizontal edge
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x2_submeshID_north_to_horizontal_edge(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -989,6 +1434,12 @@ int get_x2_submeshID_north_to_horizontal_edge(MBBL pumi_obj, int iEdge){
     return jm1+1;
 }
 
+/**
+* @brief Computes the x2 submesh ID south of horizontal edge
+* @param[in] Object of the wrapper mesh structure
+* @param[in] horizontal edge ID
+* @return x2 submesh ID south of horizontal edge
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x2_submeshID_south_to_horizontal_edge(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -996,6 +1447,12 @@ int get_x2_submeshID_south_to_horizontal_edge(MBBL pumi_obj, int iEdge){
     return jm1;
 }
 
+/**
+* @brief Computes the x1 submesh ID east of vertical edge
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertical edge ID
+* @return x1 submesh ID north of vertical edge
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x1_submeshID_east_to_vertical_edge(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -1004,6 +1461,12 @@ int get_x1_submeshID_east_to_vertical_edge(MBBL pumi_obj, int iEdge){
     return im1+1;
 }
 
+/**
+* @brief Computes the x1 submesh ID east of horizontal edge
+* @param[in] Object of the wrapper mesh structure
+* @param[in] vertical edge ID
+* @return x1 submesh ID north of vertical edge
+*/
 KOKKOS_INLINE_FUNCTION
 int get_x1_submeshID_west_to_vertical_edge(MBBL pumi_obj, int iEdge){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -1012,6 +1475,21 @@ int get_x1_submeshID_west_to_vertical_edge(MBBL pumi_obj, int iEdge){
     return im1;
 }
 
+/**
+* @brief Perform particle push and return new coordinate
+* @param[in] Object of the wrapper mesh structure
+* @param[in] initial coordinate vector
+* @param[in] displacement vector
+* @param[in,out] x1-submesh ID
+* @param[in,out] x2-submesh ID
+* @param[in,out] x1-localcell ID
+* @param[in,out] x2-localcell ID
+* @param[out] is particle still in domain
+* @param[out] boundary edge ID crossed by particle
+* @param[out] fraction of push completed
+* @param[out] face ID thru which particle crossed the boundary
+* @return new position vector of particle
+*/
 KOKKOS_INLINE_FUNCTION
 Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
                    int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
