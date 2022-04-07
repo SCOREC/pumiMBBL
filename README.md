@@ -30,14 +30,20 @@ Ignore this for OpenMP build
 
 Load necessary modules:
 ```
-module load gcc/7.3.0-bt47fwr mpich/3.3-diz4f6i cmake/3.20.0 cuda/10.2
+module unuse /opt/scorec/spack/lmod/linux-rhel7-x86_64/Core
+module use /opt/scorec/spack/v0154_2/lmod/linux-rhel7-x86_64/Core
+module load \
+gcc/10.1.0 \
+openmpi \
+cmake/3.20.0  \
+cuda/11.4
 ```
 
 Building with GPU
 ```
 mkdir build-GPU
 cd build-GPU
-export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$kk
+export CMAKE_PREFIX_PATH=$kk/lib64/cmake/Kokkos:$CMAKE_PREFIX_PATH
 cmake ../pumiMBBL -DCMAKE_CXX_COMPILER=$kk_compiler -DCMAKE_INSTALL_PREFIX=$PWD/install # on GPU
 make -j 8
 make install
@@ -47,7 +53,7 @@ Building with OpenMP
 ```
 mkdir build-omp
 cd build-omp
-export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$kk
+export CMAKE_PREFIX_PATH=$kk/lib64/cmake/Kokkos:$CMAKE_PREFIX_PATH
 cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install # on OpenMP
 make -j 8
 make install
