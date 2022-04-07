@@ -6,7 +6,7 @@ namespace pumi {
 /**
  * @brief Reads the meshtype as string and converts it to unsigned int meshtype
  *
- * \param[in] mesh type in string format "uniform" or "minBL" or "maxBL"
+ * @param[in] mesh type in string format "uniform" or "minBL" or "maxBL"
  * \return unsigned int mesh type -- uniform=0x01 , minBL=0x02 and maxBL=0x04
  */
 unsigned int get_submesh_type(std::string meshtype_string){
@@ -37,9 +37,9 @@ unsigned int get_submesh_type(std::string meshtype_string){
 /**
  * @brief computes grading ratio using newton raphson
  *
- * \param[in] block Length
- * \param[in] smallest element size in the block
- * \param[in] number of elements in the block
+ * @param[in] block Length
+ * @param[in] smallest element size in the block
+ * @param[in] number of elements in the block
  * \return computed grading ratio
  */
 double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel){
@@ -66,7 +66,7 @@ double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel){
 /**
  * @brief Allocates memory for mesh inputs struct members
  *
- * \param[in] sum of number of submesh-blocks in each direction
+ * @param[in] sum of number of submesh-blocks in each direction
  */
 Mesh_Inputs* inputs_allocate(){
     Mesh_Inputs* pumi_inputs = new Mesh_Inputs;
@@ -76,7 +76,7 @@ Mesh_Inputs* inputs_allocate(){
 /**
  * @brief Frees up the alocated memory of mesh inputs struct members
  *
- * \param[in] mesh inputs struct pointer
+ * @param[in] mesh inputs struct pointer
  */
 void inputs_deallocate(Mesh_Inputs* pumi_inputs){
     delete pumi_inputs;
@@ -117,8 +117,8 @@ std::vector<double> read_elemsize(double xmin, double xmax, std::string elemsize
 /**
  * @brief Prints the all relevant 1D-mesh details
  *
- * \param[in] mesh object pointer
- * \param[in] host copy of x1-submesh object pointer
+ * @param[in] mesh object pointer
+ * @param[in] host copy of x1-submesh object pointer
  */
 void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
 
@@ -168,9 +168,9 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
 /**
  * @brief Prints the all relevant 2D-mesh details
  *
- * \param[in] mesh object pointer
- * \param[in] host copy of x1-submesh object pointer
- * \param[in] host copy of x2-submesh object pointer
+ * @param[in] mesh object pointer
+ * @param[in] host copy of x1-submesh object pointer
+ * @param[in] host copy of x2-submesh object pointer
  */
 void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
 
@@ -292,8 +292,8 @@ void print_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshH
  * @brief Prints node coordinates of 1D mesh to the terminal and also
  * writes the individual submesh coords to a file as well as
  * full mesh coordinates for all directions
- * \param[in] mesh object pointer
- * \param[in] CPU copy of x1-submesh object pointer
+ * @param[in] mesh object pointer
+ * @param[in] CPU copy of x1-submesh object pointer
  */
 void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Options pumi_options){
 
@@ -354,9 +354,9 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Mesh_Opti
  * @brief Prints node coordinates of 2D mesh to the terminal and also
  * writes the individual submesh coords to a file as well as
  * full mesh coordinates for all directions
- * \param[in] mesh object pointer
- * \param[in] CPU copy of x1-submesh object pointer
- * \param[in] CPU copy of x2-submesh object pointer
+ * @param[in] mesh object pointer
+ * @param[in] CPU copy of x1-submesh object pointer
+ * @param[in] CPU copy of x2-submesh object pointer
  */
 void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2, Mesh_Options pumi_options){
 
@@ -464,8 +464,8 @@ void print_mesh_nodes(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHo
 /**
  * @brief Verifies the computed mesh and submesh parameters and returns true if verified
  *
- * \param[in] mesh object pointer
- * \param[in] host copy of x1-submesh object pointer
+ * @param[in] mesh object pointer
+ * @param[in] host copy of x1-submesh object pointer
  */
 bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
 
@@ -564,9 +564,9 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1){
 /**
  * @brief Verifies the computed mesh and submesh parameters and returns true if verified
  *
- * \param[in] mesh object pointer
- * \param[in] host copy of x1-submesh object pointer
- * \param[in] host copy of x2-submesh object pointer
+ * @param[in] mesh object pointer
+ * @param[in] host copy of x1-submesh object pointer
+ * @param[in] host copy of x2-submesh object pointer
  */
 bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, SubmeshHostViewPtr h_submesh_x2){
 
@@ -747,9 +747,9 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
  * @brief Performs necessary submesh parameter calculations
  * and initiates the submesh object and returns the submesh object
  *
- * \param[in] pointer object to pumi inputs structure which containts
- * \param[in] object to structure containing user options for the mesh
- * \param[in] direction along which submesh object is being initialized
+ * @param[in] pointer object to pumi inputs structure which containts
+ * @param[in] object to structure containing user options for the mesh
+ * @param[in] direction along which submesh object is being initialized
  * \return object to SubmeshInit class
  */
 SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir){
@@ -1024,10 +1024,10 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
 /**
  * @brief Initiates the mesh and returns the final 1D-mesh object
  *
- * \param[in] pointer object to pumi inputs structure which containts
- * \param[in] object to structure containing user options for the mesh
- * \param[in] x1-submesh object pointer
- * \param[in] Copy of x1-submesh object pointer on CPU
+ * @param[in] pointer object to pumi inputs structure which containts
+ * @param[in] object to structure containing user options for the mesh
+ * @param[in] x1-submesh object pointer
+ * @param[in] Copy of x1-submesh object pointer on CPU
  * \return Final mesh object
  */
 Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1){
@@ -1062,12 +1062,12 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
 /**
  * @brief Initiates the mesh and returns the final 2D mesh object
  *
- * \param[in] pointer object to pumi inputs structure which containts
- * \param[in] object to structure containing user options for the mesh
- * \param[in] x1-submesh object pointer
- * \param[in] Copy of x1-submesh object pointer on CPU
- * \param[in] x2-submesh object pointer
- * \param[in] Copy of x2-submesh object pointer on CPU
+ * @param[in] pointer object to pumi inputs structure which containts
+ * @param[in] object to structure containing user options for the mesh
+ * @param[in] x1-submesh object pointer
+ * @param[in] Copy of x1-submesh object pointer on CPU
+ * @param[in] x2-submesh object pointer
+ * @param[in] Copy of x2-submesh object pointer on CPU
  * \return Final mesh object
  */
 Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1,
@@ -1141,10 +1141,10 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
 /**
 * @brief Class constructor.
 *
-* \param[in] Array of x1-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
-* \param[in] Array of x2-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
+* @param[in] Array of x1-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
+* @param[in] Array of x2-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
 */
 MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                          int Nx,
@@ -1486,10 +1486,10 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
 /**
 * @brief Class constructor.
 *
-* \param[in] Array of x1-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
-* \param[in] Array of x2-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
+* @param[in] Array of x1-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
+* @param[in] Array of x2-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
 */
 MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                    int Nx,
@@ -1827,8 +1827,8 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
 /**
 * @brief Class constructor.
 *
-* \param[in] Array of x1-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
+* @param[in] Array of x1-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
 */
 BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
                                int Nx){
@@ -1884,10 +1884,10 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
 /**
 * @brief Class constructor.
 *
-* \param[in] Array of x1-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
-* \param[in] Array of x2-submesh object pointers on host
-* \param[in] Number of x1-blocks in mesh
+* @param[in] Array of x1-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
+* @param[in] Array of x2-submesh object pointers on host
+* @param[in] Number of x1-blocks in mesh
 */
 BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
                                int Nx,
@@ -2160,12 +2160,12 @@ MBBL initialize_interface_nodeIDs(MBBL pumi_obj){
 
 /**
  * @brief intialize data stuctures in class for BST searches
- * \param[in] object to BlockInterface class
- * \param[in] Array of x1-submesh object pointers on host
- * \param[in] Number of x1-blocks in mesh
- * \param[in] Array of x2-submesh object pointers on host
- * \param[in] Number of x1-blocks in mesh
- * \param[in] 2D array of block activity
+ * @param[in] object to BlockInterface class
+ * @param[in] Array of x1-submesh object pointers on host
+ * @param[in] Number of x1-blocks in mesh
+ * @param[in] Array of x2-submesh object pointers on host
+ * @param[in] Number of x1-blocks in mesh
+ * @param[in] 2D array of block activity
  */
 void MeshBST::initialize_MeshBST(BlockInterface blkif,
                                     SubmeshHostViewPtr hc_submesh_x1,
@@ -2267,7 +2267,7 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
 /**
  * @brief intializes MBBL mesh from user inputs and options
  * @param[in] Object of the wrapper mesh structure
- * \param[in] object to structure containing user options for the mesh
+ * @param[in] object to structure containing user options for the mesh
  * @return  Object of the wrapper mesh structure
  */
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){

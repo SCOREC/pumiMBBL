@@ -5,9 +5,9 @@ namespace pumi {
 /**
  * @brief Returns the grading ratio along a queried direction about a queried node
  *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] direction along which grading ratio is needed
- * \param[in] global directional node ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] direction along which grading ratio is needed
+ * @param[in] global directional node ID
  * \return grading ratio about the node in the requested direction
  */
 double return_gradingratio(MBBL pumi_obj, int dir, int node){
@@ -79,10 +79,10 @@ double return_gradingratio(MBBL pumi_obj, int dir, int node){
 /**
  * @brief Returns the element size along a queried direction for a queried node/element
  *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] direction along which element-size is needed
- * \param[in] global directional node ID or element ID index
- * \param[in] relevant offset enum based on provied index
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] direction along which element-size is needed
+ * @param[in] global directional node ID or element ID index
+ * @param[in] relevant offset enum based on provied index
  * \return element size for the queried element in the queried direction
  */
 double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
@@ -136,8 +136,8 @@ double return_elemsize(MBBL pumi_obj, int dir, int index, int offset){
 /**
  * @brief Returns the element size along a queried direction for a queried node/element
  *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] global node IDs along x1-direction
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global node IDs along x1-direction
  * \return covolume for the requested node
  */
 double return_covolume(MBBL pumi_obj, int inode_x1){
@@ -166,9 +166,9 @@ double return_covolume(MBBL pumi_obj, int inode_x1){
  * @brief Returns the element size along a queried direction for a queried node/element
  * Only when all blocks are active
  *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] global node IDs along x1-direction
- * \param[in] global node IDs along x2-direction
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global node IDs along x1-direction
+ * @param[in] global node IDs along x2-direction
  * \return covolume for the requested node
  */
 double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
@@ -208,9 +208,9 @@ double return_covolume_fullmesh(MBBL pumi_obj, int inode_x1, int inode_x2){
 /**
  * @brief Returns the element size along a queried direction for a queried node/element
  *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] global node IDs along x1-direction
- * \param[in] global node IDs along x2-direction
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global node IDs along x1-direction
+ * @param[in] global node IDs along x2-direction
  * \return covolume for the requested node
  */
 double return_covolume(MBBL pumi_obj, int inode_x1, int inode_x2){
@@ -382,7 +382,7 @@ bool is_fullmesh(MBBL pumi_obj){
 /**
  * @brief Returns x1-coordinate of left end of the domain
  *
- * \param[in] Object of the wrapper mesh structure
+ * @param[in] Object of the wrapper mesh structure
  */
 double get_global_x1_min_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x1[1]->xmin;
@@ -391,7 +391,7 @@ double get_global_x1_min_coord(MBBL pumi_obj){
 /**
  * @brief Returns x1-coordinate of right end of the domain
  *
- * \param[in] Object of the wrapper mesh structure
+ * @param[in] Object of the wrapper mesh structure
  */
 double get_global_x1_max_coord(MBBL pumi_obj){
     int nsubmesh = pumi_obj.mesh.nsubmesh_x1;
@@ -401,7 +401,7 @@ double get_global_x1_max_coord(MBBL pumi_obj){
 /**
  * @brief Returns x2-coordinate of bottom end of the domain
  *
- * \param[in] Object of the wrapper mesh structure
+ * @param[in] Object of the wrapper mesh structure
  */
 double get_global_x2_min_coord(MBBL pumi_obj){
     return pumi_obj.host_submesh_x2[1]->xmin;
@@ -410,7 +410,7 @@ double get_global_x2_min_coord(MBBL pumi_obj){
 /**
  * @brief Returns x2-coordinate of top end of the domain
  *
- * \param[in] Object of the wrapper mesh structure
+ * @param[in] Object of the wrapper mesh structure
  */
 double get_global_x2_max_coord(MBBL pumi_obj){
     int nsubmesh = pumi_obj.mesh.nsubmesh_x2;
@@ -1641,13 +1641,13 @@ int get_num_block_edge_interior_nodes(MBBL pumi_obj){
  * and boundary entity dimension (boundary vertex (dim=0) or edge (dim=1)) and entity tag
  * of the boundary
  *
- * \param[in] Object of the wrapper mesh structure
- * \param[in] global node IDs along x1-direction
- * \param[in] global node IDs along x2-direction
- * \param[out] boolean value if node is on boundary
- * \param[out] boolean value if node is on active block
- * \param[out] integer value of boundary tag
- * \param[out] integer value for boundary dimension
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] global node IDs along x1-direction
+ * @param[in] global node IDs along x2-direction
+ * @param[out] boolean value if node is on boundary
+ * @param[out] boolean value if node is on active block
+ * @param[out] integer value of boundary tag
+ * @param[out] integer value for boundary dimension
  */
 void where_is_node(MBBL pumi_obj, int knode_x1, int knode_x2, bool* on_bdry, bool* in_domain, int* bdry_tag, int* bdry_dim){
 

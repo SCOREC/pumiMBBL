@@ -8,7 +8,7 @@ void check_is_pumi_working(){
 /**
  * @brief Prints the block skeleton (along with block edge tags and block vertex tags )
  *
- * \param[in] Object of the wrapper mesh structure
+ * @param[in] Object of the wrapper mesh structure
  */
 void print_mesh_skeleton(MBBL pumi_obj){
 

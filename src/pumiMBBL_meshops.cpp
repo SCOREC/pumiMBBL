@@ -94,10 +94,10 @@ void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int j
 /**
 * @brief Locate the submesh ID and local cell ID for a given x1-coordinate
 * Uses analytical formulae to locate the input coordinate
-* \param[in] Object of the wrapper mesh structure
-* \param[in] x1-coordinate to be located
-* \param[out] located x1-submesh ID
-* \param[out] located x1-localcell ID
+* @param[in] Object of the wrapper mesh structure
+* @param[in] x1-coordinate to be located
+* @param[out] located x1-submesh ID
+* @param[out] located x1-localcell ID
 */
 void locate_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int* submeshID, int *cellID){
     int isubmesh;
@@ -122,10 +122,10 @@ void locate_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int* submeshID, in
 /**
 * @brief Locate the submesh ID and local cell ID for a given x2-coordinate
 * Uses analytical formulae to locate the input coordinate
-* \param[in] Object of the wrapper mesh structure
-* \param[in] x2-coordinate to be located
-* \param[out] located x2-submesh ID
-* \param[out] located x2-localcell ID
+* @param[in] Object of the wrapper mesh structure
+* @param[in] x2-coordinate to be located
+* @param[out] located x2-submesh ID
+* @param[out] located x2-localcell ID
 */
 void locate_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int* submeshID, int *cellID){
     int isubmesh;
@@ -151,12 +151,12 @@ void locate_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int* submeshID, in
  * @brief Update the submesh ID and local cell ID for a given x1-coordinate
  * based on previous submesh and cell IDs.
  * Uses adjacency search to update the IDs
- * \param[in] Object of the wrapper mesh structure
- * \param[in] new x1-coordinate
- * \param[in] old x1-submesh ID
- * \param[in] old x1-localcell ID
- * \param[out] updated x1-submesh ID
- * \param[out] updated x1-localcell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] new x1-coordinate
+ * @param[in] old x1-submesh ID
+ * @param[in] old x1-localcell ID
+ * @param[out] updated x1-submesh ID
+ * @param[out] updated x1-localcell ID
  */
 void update_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
     *submeshID = prev_submeshID;
@@ -177,12 +177,12 @@ void update_submesh_and_cell_x1_host(MBBL pumi_obj, double q, int prev_submeshID
  * @brief Update the submesh ID and local cell ID for a given x2-coordinate
  * based on previous submesh and cell IDs.
  * Uses adjacency search to update the IDs
- * \param[in] Object of the wrapper mesh structure
- * \param[in] new x2-coordinate
- * \param[in] old x2-submesh ID
- * \param[in] old x2-localcell ID
- * \param[out] updated x2-submesh ID
- * \param[out] updated x2-localcell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] new x2-coordinate
+ * @param[in] old x2-submesh ID
+ * @param[in] old x2-localcell ID
+ * @param[out] updated x2-submesh ID
+ * @param[out] updated x2-localcell ID
  */
 void update_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID){
     *submeshID = prev_submeshID;
@@ -201,12 +201,12 @@ void update_submesh_and_cell_x2_host(MBBL pumi_obj, double q, int prev_submeshID
 /**
  * @brief Computes the partial weights (correspoding to node on the max-side i.e right side)
  * for a located particle coordinate and the global directional cell ID
- * \param[in] Object of the wrapper mesh structure
- * \param[in] x1-coordinate of the particle
- * \param[in] x1-submesh ID of the particle
- * \param[in] x1-localcell ID of the particle
- * \param[out] global cell ID in x1 direction
- * \param[out] partial weight
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-coordinate of the particle
+ * @param[in] x1-submesh ID of the particle
+ * @param[in] x1-localcell ID of the particle
+ * @param[out] global cell ID in x1 direction
+ * @param[out] partial weight
  */
 void calc_weights_x1_host(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_global_cell, double *Wgh2){
     pumi_obj.host_submesh_x1[isubmesh]->calc_weights_host(q, icell, x1_global_cell, Wgh2);
@@ -215,12 +215,12 @@ void calc_weights_x1_host(MBBL pumi_obj, double q, int isubmesh, int icell, int 
 /**
  * @brief Computes the partial weights (correspoding to node on the max-side i.e top side)
  * for a located particle coordinate and the global directional cell ID
- * \param[in] Object of the wrapper mesh structure
- * \param[in] x2-coordinate of the particle
- * \param[in] x2-submesh ID of the particle
- * \param[in] x2-localcell ID of the particle
- * \param[out] global cell ID in x2 direction
- * \param[out] partial weight
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-coordinate of the particle
+ * @param[in] x2-submesh ID of the particle
+ * @param[in] x2-localcell ID of the particle
+ * @param[out] global cell ID in x2 direction
+ * @param[out] partial weight
  */
  void calc_weights_x2_host(MBBL pumi_obj, double q, int isubmesh, int icell, int *x2_global_cell, double *Wgh2){
      pumi_obj.host_submesh_x2[isubmesh]->calc_weights_host(q, icell, x2_global_cell, Wgh2);
@@ -229,11 +229,11 @@ void calc_weights_x1_host(MBBL pumi_obj, double q, int isubmesh, int icell, int 
 /**
 * @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
 * with no-inactive blocks (mesh with inactive blocks will need separate implementations)
-* \param[in] global cell ID in x1-direction
-* \param[in] global cell ID in x2-direction
-* \param[out] global cell ID in 2D
-* \param[out] global node ID of the node in left-bottom corner
-* \param[out] global node ID of the node in left-top coner
+* @param[in] global cell ID in x1-direction
+* @param[in] global cell ID in x2-direction
+* @param[out] global cell ID in 2D
+* @param[out] global node ID of the node in left-bottom corner
+* @param[out] global node ID of the node in left-top coner
 */
 void calc_global_cellID_and_nodeID_fullmesh_host(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node){
   *global_cell_2D = kcell_x1 + kcell_x2*pumi_obj.mesh.Nel_tot_x1;
@@ -244,11 +244,11 @@ void calc_global_cellID_and_nodeID_fullmesh_host(MBBL pumi_obj, int kcell_x1, in
 /**
 * @brief Computes the gloabl cell ID and node ID in 2D for a full Mesh
 * with no-inactive blocks (mesh with inactive blocks will need separate implementations)
-* \param[in] global cell ID in x1-direction
-* \param[in] global cell ID in x2-direction
-* \param[out] global cell ID in 2D
-* \param[out] global node ID of the node in left-bottom corner
-* \param[out] global node ID of the node in left-top coner
+* @param[in] global cell ID in x1-direction
+* @param[in] global cell ID in x2-direction
+* @param[out] global cell ID in 2D
+* @param[out] global node ID of the node in left-bottom corner
+* @param[out] global node ID of the node in left-top coner
 */
 void calc_global_cellID_and_nodeID_host(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
                                     int *global_cell_2D, int *bottomleft_node, int *topleft_node){

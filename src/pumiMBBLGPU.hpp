@@ -79,17 +79,17 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] submesh min-side coords
-    * \param[in] submesh max-side coords
-    * \param[in] submesh number of elements
-    * \param[in] submesh smallest element size
-    * \param[in] submesh grading ratio
-    * \param[in] submesh mesh-type
-    * \param[in] submesh length
-    * \param[in] submesh preceding cumulative elements
-    * \param[in] submesh (r-1.0)/t0 value
-    * \param[in] submesh log(r) value
-    * \param[in] submesh BL coordinates (explicitly stored)
+    * @param[in] submesh min-side coords
+    * @param[in] submesh max-side coords
+    * @param[in] submesh number of elements
+    * @param[in] submesh smallest element size
+    * @param[in] submesh grading ratio
+    * @param[in] submesh mesh-type
+    * @param[in] submesh length
+    * @param[in] submesh preceding cumulative elements
+    * @param[in] submesh (r-1.0)/t0 value
+    * @param[in] submesh log(r) value
+    * @param[in] submesh BL coordinates (explicitly stored)
     */
     Submesh(double xmin_,
             double xmax_,
@@ -139,17 +139,17 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] submesh min-side coords
-    * \param[in] submesh max-side coords
-    * \param[in] submesh number of elements
-    * \param[in] submesh smallest element size
-    * \param[in] submesh grading ratio
-    * \param[in] submesh length
-    * \param[in] submesh preceding cumulative elements
-    * \param[in] submesh (r-1.0)/t0 value
-    * \param[in] submesh log(r) value
-    * \param[in] submesh node coordinates (explicitly stored)
-    * \param[in] submesh node coordinates (host copy)
+    * @param[in] submesh min-side coords
+    * @param[in] submesh max-side coords
+    * @param[in] submesh number of elements
+    * @param[in] submesh smallest element size
+    * @param[in] submesh grading ratio
+    * @param[in] submesh length
+    * @param[in] submesh preceding cumulative elements
+    * @param[in] submesh (r-1.0)/t0 value
+    * @param[in] submesh log(r) value
+    * @param[in] submesh node coordinates (explicitly stored)
+    * @param[in] submesh node coordinates (host copy)
     */
     Uniform_Submesh(double xmin_,
                     double xmax_,
@@ -311,16 +311,16 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] submesh min-side coords
-    * \param[in] submesh max-side coords
-    * \param[in] submesh number of elements
-    * \param[in] submesh smallest element size
-    * \param[in] submesh grading ratio
-    * \param[in] submesh length
-    * \param[in] submesh preceding cumulative elements
-    * \param[in] submesh (r-1.0)/t0 value
-    * \param[in] submesh log(r) value
-    * \param[in] submesh BL coordinates (explicitly stored)
+    * @param[in] submesh min-side coords
+    * @param[in] submesh max-side coords
+    * @param[in] submesh number of elements
+    * @param[in] submesh smallest element size
+    * @param[in] submesh grading ratio
+    * @param[in] submesh length
+    * @param[in] submesh preceding cumulative elements
+    * @param[in] submesh (r-1.0)/t0 value
+    * @param[in] submesh log(r) value
+    * @param[in] submesh BL coordinates (explicitly stored)
     */
     MinBL_Submesh(double xmin_,
                     double xmax_,
@@ -517,16 +517,16 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] submesh min-side coords
-    * \param[in] submesh max-side coords
-    * \param[in] submesh number of elements
-    * \param[in] submesh smallest element size
-    * \param[in] submesh grading ratio
-    * \param[in] submesh length
-    * \param[in] submesh preceding cumulative elements
-    * \param[in] submesh (r-1.0)/t0 value
-    * \param[in] submesh log(r) value
-    * \param[in] submesh BL coordinates (explicitly stored)
+    * @param[in] submesh min-side coords
+    * @param[in] submesh max-side coords
+    * @param[in] submesh number of elements
+    * @param[in] submesh smallest element size
+    * @param[in] submesh grading ratio
+    * @param[in] submesh length
+    * @param[in] submesh preceding cumulative elements
+    * @param[in] submesh (r-1.0)/t0 value
+    * @param[in] submesh log(r) value
+    * @param[in] submesh BL coordinates (explicitly stored)
     */
     MaxBL_Submesh(double xmin_,
                     double xmax_,
@@ -723,16 +723,16 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] submesh min-side coords
-    * \param[in] submesh max-side coords
-    * \param[in] submesh number of elements
-    * \param[in] submesh smallest element size
-    * \param[in] submesh grading ratio
-    * \param[in] submesh length
-    * \param[in] submesh preceding cumulative elements
-    * \param[in] submesh (r-1.0)/t0 value
-    * \param[in] submesh log(r) value
-    * \param[in] submesh BL coordinates (explicitly stored)
+    * @param[in] submesh min-side coords
+    * @param[in] submesh max-side coords
+    * @param[in] submesh number of elements
+    * @param[in] submesh smallest element size
+    * @param[in] submesh grading ratio
+    * @param[in] submesh length
+    * @param[in] submesh preceding cumulative elements
+    * @param[in] submesh (r-1.0)/t0 value
+    * @param[in] submesh log(r) value
+    * @param[in] submesh BL coordinates (explicitly stored)
     */
     Arbitrary_Submesh(double xmin_,
                     double xmax_,
@@ -964,16 +964,16 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] submesh min-side coords
-    * \param[in] submesh max-side coords
-    * \param[in] submesh number of elements
-    * \param[in] submesh smallest element size
-    * \param[in] submesh grading ratio
-    * \param[in] submesh length
-    * \param[in] submesh preceding cumulative elements
-    * \param[in] submesh (r-1.0)/t0 value
-    * \param[in] submesh log(r) value
-    * \param[in] submesh BL coordinates (explicitly stored)
+    * @param[in] submesh min-side coords
+    * @param[in] submesh max-side coords
+    * @param[in] submesh number of elements
+    * @param[in] submesh smallest element size
+    * @param[in] submesh grading ratio
+    * @param[in] submesh length
+    * @param[in] submesh preceding cumulative elements
+    * @param[in] submesh (r-1.0)/t0 value
+    * @param[in] submesh log(r) value
+    * @param[in] submesh BL coordinates (explicitly stored)
     */
     Unassigned_Submesh(double xmin_,
                     double xmax_,
@@ -1064,10 +1064,10 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] Array of x1-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
-    * \param[in] Array of x2-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x1-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x2-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
     */
     MeshOffsets(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 };
@@ -1100,7 +1100,7 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] Number of bdry faces
+    * @param[in] Number of bdry faces
     */
     MeshBdry(int Nbdry_faces_):Nbdry_faces(Nbdry_faces_){
         host_is_bdry_edge = NULL;
@@ -1113,10 +1113,10 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] Array of x1-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
-    * \param[in] Array of x2-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x1-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x2-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
     */
     MeshBdry(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 };
@@ -1157,18 +1157,18 @@ public:
     /**
     * @brief Class constructor.
     *
-    * \param[in] Array of x1-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x1-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
     */
     BlockInterface(SubmeshHostViewPtr , int);
 
     /**
     * @brief Class constructor.
     *
-    * \param[in] Array of x1-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
-    * \param[in] Array of x2-submesh object pointers on host
-    * \param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x1-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
+    * @param[in] Array of x2-submesh object pointers on host
+    * @param[in] Number of x1-blocks in mesh
     */
     BlockInterface(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 
@@ -1214,12 +1214,12 @@ public:
 
     /**
      * @brief intialize data stuctures in class for BST searches
-     * \param[in] object to BlockInterface class
-     * \param[in] Array of x1-submesh object pointers on host
-     * \param[in] Number of x1-blocks in mesh
-     * \param[in] Array of x2-submesh object pointers on host
-     * \param[in] Number of x1-blocks in mesh
-     * \param[in] 2D array of block activity
+     * @param[in] object to BlockInterface class
+     * @param[in] Array of x1-submesh object pointers on host
+     * @param[in] Number of x1-blocks in mesh
+     * @param[in] Array of x2-submesh object pointers on host
+     * @param[in] Number of x1-blocks in mesh
+     * @param[in] 2D array of block activity
      */
     void initialize_MeshBST(BlockInterface blkif, SubmeshHostViewPtr, int, SubmeshHostViewPtr, int, bool**);
 };
@@ -1260,10 +1260,10 @@ public:
 
     /**
     * @brief Constructor for 1D Mesh
-    * \param[in] number of x1-submesh blocks
-    * \param[in] total number of elements along x1-direction
-    * \param[in] Object to MeshBdry class
-    * \param[in] Object to BlockInterface class
+    * @param[in] number of x1-submesh blocks
+    * @param[in] total number of elements along x1-direction
+    * @param[in] Object to MeshBdry class
+    * @param[in] Object to BlockInterface class
     */
     Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
@@ -1283,18 +1283,18 @@ public:
          };
      /**
      * @brief Constructor for 2D Mesh
-     * \param[in] number of x1-submesh blocks
-     * \param[in] total number of elements along x1-direction
-     * \param[in] number of x2-submesh blocks
-     * \param[in] total number of elements along x2-direction
-     * \param[in] submesh activity info
-     * \param[in] submesh activity info (host copy)
-     * \param[in] Object to MeshOffsets class
-     * \param[in] Object to MeshBdry class
-     * \param[in] Object to BlockInterface class
-     * \param[in] Object to MeshBST class
-     * \param[in] total elements in mesh
-     * \param[in] total nodes in mesh
+     * @param[in] number of x1-submesh blocks
+     * @param[in] total number of elements along x1-direction
+     * @param[in] number of x2-submesh blocks
+     * @param[in] total number of elements along x2-direction
+     * @param[in] submesh activity info
+     * @param[in] submesh activity info (host copy)
+     * @param[in] Object to MeshOffsets class
+     * @param[in] Object to MeshBdry class
+     * @param[in] Object to BlockInterface class
+     * @param[in] Object to MeshBST class
+     * @param[in] total elements in mesh
+     * @param[in] total nodes in mesh
      */
      Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
@@ -1347,9 +1347,9 @@ struct MBBL{
 
     /**
     * @brief Constructor for 1D Wrapper structure
-    * \param[in] Mesh object in allocated in GPU
-    * \param[in] x1-submesh object in GPU
-    * \param[in] copy of x1-submesh object in CPU
+    * @param[in] Mesh object in allocated in GPU
+    * @param[in] x1-submesh object in GPU
+    * @param[in] copy of x1-submesh object in CPU
     */
     MBBL(Mesh mesh_,
          SubmeshDeviceViewPtr submesh_x1_,
@@ -1360,11 +1360,11 @@ struct MBBL{
 
     /**
     * @brief Constructor for 2D Wrapper structure
-    * \param[in] Mesh object in allocated in GPU
-    * \param[in] x1-submesh object in GPU
-    * \param[in] copy of x1-submesh object in CPU
-    * \param[in] x2-submesh object in GPU
-    * \param[in] copy of x2-submesh object in CPU
+    * @param[in] Mesh object in allocated in GPU
+    * @param[in] x1-submesh object in GPU
+    * @param[in] copy of x1-submesh object in CPU
+    * @param[in] x2-submesh object in GPU
+    * @param[in] copy of x2-submesh object in CPU
     */
     MBBL(Mesh mesh_,
          SubmeshDeviceViewPtr submesh_x1_,
