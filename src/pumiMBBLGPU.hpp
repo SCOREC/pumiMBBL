@@ -44,7 +44,7 @@ enum Meshtype{
     uniform    = 0x01, //!< Uniform mesh
     minBL      = 0x02, //!< geometrically graded BL mesh biased towards the min-size (i.e left-side or bottom-side)
     maxBL      = 0x04, //!< geometrically graded BL mesh biased towards the max-size (i.e right-side or top-side)
-    arbitrary  = 0x08,
+    arbitrary  = 0x08, //!< mesh with arbitrary element sizing
 };
 
 ///////// PUMI-MBBL-GPU Data-Structures ////////////////////////////////////////////////////
@@ -70,8 +70,8 @@ public:
 
     double r_by_t0; //!< value of (r-1.0)/t0 -- value needed in analytical cell-locate functions
     double log_r; //!< value of log(r) -- value needed in analtyical cell-locate functions
-    DoubleView BL_coords; //<! BL coords to be stored (optional) for BL blocks for faster particle search
-    double *host_BL_coords;
+    DoubleView BL_coords; //<! node coords to be stored for non-uniform blocks for faster particle search
+    double *host_BL_coords; //<! host copy of node coords to be stored for non-uniform blocks for faster particle search
     /**
     * @brief Default constructor.
     */
@@ -148,7 +148,8 @@ public:
     * \param[in] submesh preceding cumulative elements
     * \param[in] submesh (r-1.0)/t0 value
     * \param[in] submesh log(r) value
-    * \param[in] submesh BL coordinates (explicitly stored)
+    * \param[in] submesh node coordinates (explicitly stored)
+    * \param[in] submesh node coordinates (host copy)
     */
     Uniform_Submesh(double xmin_,
                     double xmax_,
@@ -163,6 +164,11 @@ public:
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,uniform,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
         if (q==this->xmax)
@@ -171,32 +177,68 @@ public:
             return (q - this->xmin)/this->t0;
     }
 
+    /**
+     * @brief updates local cell ID of given particle coordinate
+     * @note for uniform mesh update is same as locating particle
+     * @param[in] point coordinate to be located
+     * @param[in] previous local cell ID of particle
+     * @return upddated local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int update_cell(double q, int){
         return (q - this->xmin)/this->t0;
     }
 
+    /**
+     * @brief Computes element size inside a block
+     * @param[in] local cell ID for which elemetn size is needed
+     * @return Value of element size
+     */
     KOKKOS_INLINE_FUNCTION
     double elem_size(int){
         return this->t0;
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     KOKKOS_INLINE_FUNCTION
     void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = ((q - this->xmin) - local_cell*this->t0)/this->t0;
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Computes node coordinate inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     KOKKOS_INLINE_FUNCTION
     double node_coords(int inode) {
         return this->xmin + inode*this->t0;
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     KOKKOS_INLINE_FUNCTION
     double grading_ratio(int){
         return 1.0;
     }
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @note executable on host-only
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     int locate_cell_host(double q) {
         if (q==this->xmax)
             return this->Nel-1;
@@ -204,23 +246,57 @@ public:
             return (q - this->xmin)/this->t0;
     }
 
+    /**
+     * @brief updates local cell ID of given particle coordinate
+     * @note executable on host-only
+     * @param[in] point coordinate to be located
+     * @param[in] previous local cell ID of particle
+     * @return upddated local cell ID
+     */
     int update_cell_host(double q, int ) {
         return (q - this->xmin)/this->t0;
     }
 
+    /**
+     * @brief Computes element size inside a block
+     * @note executable on host-only
+     * @param[in] local cell ID for which elemetn size is needed
+     * @return Value of element size
+     */
     double elem_size_host(int ) {
         return this->t0;
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @note executable on host-only
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = ((q - this->xmin) - local_cell*this->t0)/this->t0;
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Computes node coordinate inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     double node_coords_host(int inode) {
         return this->xmin + inode*this->t0;
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     double grading_ratio_host(int){
         return 1.0;
     }
@@ -259,6 +335,11 @@ public:
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,minBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
         if (r != 1.0){
@@ -278,6 +359,13 @@ public:
         }
     }
 
+    /**
+     * @brief updates local cell ID of given particle coordinate
+     * @note for non-uniform mesh update is done with adjacency search on stored node coords
+     * @param[in] point coordinate to be located
+     * @param[in] previous local cell ID of particle
+     * @return upddated local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int update_cell(double q, int icell){
         while (q < this->BL_coords(icell)){
@@ -289,30 +377,56 @@ public:
         return icell;
     }
 
+    /**
+     * @brief Computes element size inside a block
+     * @param[in] local cell ID for which elemetn size is needed
+     * @return Value of element size
+     */
     KOKKOS_INLINE_FUNCTION
     double elem_size(int icell){
         return (this->BL_coords(icell+1)-this->BL_coords(icell));
-        // return this->t0*pow(this->r,icell);
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     KOKKOS_INLINE_FUNCTION
     void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->BL_coords(local_cell))/(this->BL_coords(local_cell+1)-this->BL_coords(local_cell));
-        // double r_pow_cell = pow(this->r, local_cell);
-        // *Wgh2 = (q - (this->xmin + (r_pow_cell-1.0)/this->r_by_t0))/(r_pow_cell*this->t0);
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Fetches node coordinate inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     KOKKOS_INLINE_FUNCTION
     double node_coords(int inode) {
         return this->BL_coords(inode);
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     KOKKOS_INLINE_FUNCTION
     double grading_ratio(int){
         return this->r;
     }
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @note executable on host-only
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     int locate_cell_host(double q) {
         if (r != 1.0){
             if (q==this->xmax){
@@ -331,6 +445,13 @@ public:
         }
     }
 
+    /**
+     * @brief updates local cell ID of given particle coordinate
+     * @note executable on host-only
+     * @param[in] point coordinate to be located
+     * @param[in] previous local cell ID of particle
+     * @return upddated local cell ID
+     */
     int update_cell_host(double q, int icell) {
         while (q < this->host_BL_coords[icell]){
             icell--;
@@ -341,19 +462,46 @@ public:
         return icell;
     }
 
+    /**
+     * @brief Computes element size inside a block
+     * @note executable on host-only
+     * @param[in] local cell ID for which elemetn size is needed
+     * @return Value of element size
+     */
     double elem_size_host(int icell) {
         return (this->host_BL_coords[icell+1]-this->host_BL_coords[icell]);
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @note executable on host-only
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Fetches node coordinate inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     double node_coords_host(int inode) {
         return this->host_BL_coords[inode];
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     double grading_ratio_host(int){
         return this->r;
     }
@@ -393,6 +541,11 @@ public:
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,maxBL,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
         if (r != 1.0){
@@ -412,6 +565,13 @@ public:
         }
     }
 
+    /**
+     * @brief updates local cell ID of given particle coordinate
+     * @note for non-uniform mesh update is done with adjacency search on stored node coords
+     * @param[in] point coordinate to be located
+     * @param[in] previous local cell ID of particle
+     * @return upddated local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int update_cell(double q, int icell){
         while (q < this->BL_coords(icell)){
@@ -423,31 +583,56 @@ public:
         return icell;
     }
 
+    /**
+     * @brief Computes element size inside a block
+     * @param[in] local cell ID for which elemetn size is needed
+     * @return Value of element size
+     */
     KOKKOS_INLINE_FUNCTION
     double elem_size(int icell){
         return (this->BL_coords(icell+1)-this->BL_coords(icell));
-        // return this->t0*pow(this->r,this->Nel-icell-1);
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     KOKKOS_INLINE_FUNCTION
     void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->BL_coords(local_cell))/(this->BL_coords(local_cell+1)-this->BL_coords(local_cell));
         *global_cell = local_cell + this->Nel_cumulative;
-        // local_cell = this->Nel-local_cell-1;
-        // double r_pow_cell = pow(this->r, local_cell);
-        // *Wgh2 = 1.0 - ((this->xmax - (r_pow_cell-1.0)/this->r_by_t0) - q)/(this->t0*r_pow_cell);
     }
 
+    /**
+     * @brief Fetches node coordinate inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     KOKKOS_INLINE_FUNCTION
     double node_coords(int inode) {
         return this->BL_coords(inode);
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     KOKKOS_INLINE_FUNCTION
     double grading_ratio(int){
         return 1.0/this->r;
     }
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @note executable on host-only
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     int locate_cell_host(double q) {
         if (r != 1.0){
             if (q==this->xmin){
@@ -466,6 +651,12 @@ public:
         }
     }
 
+    /**
+     * @brief Computes grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     int update_cell_host(double q, int icell) {
         while (q < this->host_BL_coords[icell]){
             icell--;
@@ -476,19 +667,46 @@ public:
         return icell;
     }
 
+    /**
+     * @brief Computes grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     double elem_size_host(int icell) {
         return (this->host_BL_coords[icell+1]-this->host_BL_coords[icell]);
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @note executable on host-only
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Fetches node coordinate inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     double node_coords_host(int inode) {
         return this->host_BL_coords[inode];
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     double grading_ratio_host(int){
         return 1.0/this->r;
     }
@@ -529,6 +747,13 @@ public:
                     double *host_BL_coords_):
                     Submesh(xmin_,xmax_,Nel_,t0_,r_,arbitrary,length_,Nel_cumulative_,r_by_t0_,log_r_,BL_coords_,host_BL_coords_){};
 
+    /**
+     * @brief binary search to locate local cell ID of given point
+     * @param[in] array of node coordinates
+     * @param[in] first index of window in which bst is performed
+     * @param[in] last index of window in which bst is performed
+     * @param[in] point coordinate to be located
+     */
     KOKKOS_INLINE_FUNCTION
     int bst_search(DoubleView arr, int first, int last, double val){
         int mid = (first+last)/2;
@@ -551,12 +776,24 @@ public:
         return -1;
     }
 
+    /**
+     * @brief Locates local cell ID of given point inside a block
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int locate_cell(double q){
         int iel = bst_search(this->BL_coords,0,this->Nel,q);
         return iel;
     }
 
+    /**
+     * @brief updates local cell ID of given particle coordinate
+     * @note for non-uniform mesh update is done with adjacency search on stored node coords
+     * @param[in] point coordinate to be located
+     * @param[in] previous local cell ID of particle
+     * @return upddated local cell ID
+     */
     KOKKOS_INLINE_FUNCTION
     int update_cell(double q, int icell){
         while (q < this->BL_coords(icell)){
@@ -568,23 +805,45 @@ public:
         return icell;
     }
 
+    /**
+     * @brief Computes element size inside a block
+     * @param[in] local cell ID for which elemetn size is needed
+     * @return Value of element size
+     */
     KOKKOS_INLINE_FUNCTION
     double elem_size(int icell){
         return (this->BL_coords(icell+1)-this->BL_coords(icell));
-        // return this->t0*pow(this->r,this->Nel-icell-1);
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     KOKKOS_INLINE_FUNCTION
     void calc_weights(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->BL_coords(local_cell))/(this->BL_coords(local_cell+1)-this->BL_coords(local_cell));
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Fetches node coordinate inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     KOKKOS_INLINE_FUNCTION
     double node_coords(int inode) {
         return this->BL_coords(inode);
     }
 
+    /**
+     * @brief Computes grading ration inside submesh block
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     KOKKOS_INLINE_FUNCTION
     double grading_ratio(int inode){
         double max = this->BL_coords(inode+1)-this->BL_coords(inode);
@@ -592,6 +851,14 @@ public:
         return max/min;
     }
 
+    /**
+     * @brief binary search to locate local cell ID of given point
+     * @note executable on host-only
+     * @param[in] array of node coordinates (host copy)
+     * @param[in] first index of window in which bst is performed
+     * @param[in] last index of window in which bst is performed
+     * @param[in] point coordinate to be located
+     */
     int bst_search_host(double* arr, int first, int last, double val){
         int mid = (first+last)/2;
 
@@ -613,11 +880,23 @@ public:
         return -1;
     }
 
+    /**
+     * @brief Locates local cell ID of given point inside a block thru binsary search
+     * @note executable on host-only
+     * @param[in] point coordinate to be located
+     * @return local cell ID
+     */
     int locate_cell_host(double q) {
         int iel = bst_search_host(this->host_BL_coords,0,this->Nel,q);
         return iel;
     }
 
+    /**
+     * @brief Computes grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     int update_cell_host(double q, int icell) {
         while (q < this->host_BL_coords[icell]){
             icell--;
@@ -628,19 +907,46 @@ public:
         return icell;
     }
 
+    /**
+     * @brief Computes grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     double elem_size_host(int icell) {
         return (this->host_BL_coords[icell+1]-this->host_BL_coords[icell]);
     }
 
+    /**
+     * @brief Computes linear 1D weights for gather/scatter operations and
+     *        directional global cell ID
+     * @note executable on host-only
+     * @param[in] point coordinate inside submesh block
+     * @param[in] local cell ID of point inside submesh block
+     * @param[out] directional global cell ID
+     * @param[out] linear 1D weight (correspoding to max-side node)
+     */
     void calc_weights_host(double q, int local_cell, int *global_cell, double *Wgh2){
         *Wgh2 = (q - this->host_BL_coords[local_cell])/(this->host_BL_coords[local_cell+1]-this->host_BL_coords[local_cell]);
         *global_cell = local_cell + this->Nel_cumulative;
     }
 
+    /**
+     * @brief Fetches node coordinate inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of node coordinate
+     */
     double node_coords_host(int inode) {
         return this->host_BL_coords[inode];
     }
 
+    /**
+     * @brief Fetches grading ration inside submesh block
+     * @note executable on host-only
+     * @param[in] local node ID inside block
+     * @return Value of grading ratio at given node
+     */
     double grading_ratio_host(int inode){
         double max = this->host_BL_coords[inode+1]-this->host_BL_coords[inode];
         double min = this->host_BL_coords[inode]-this->host_BL_coords[inode-1];
@@ -650,7 +956,7 @@ public:
 };
 
 /**
- * @brief MaxBL submesh class derived from submesh class
+ * @brief Unassigned submesh class derived from submesh class for padded blocks
  *
  */
 class Unassigned_Submesh : public Submesh{
@@ -724,6 +1030,11 @@ public:
 
 };
 
+/**
+ * @brief Mesh offsets class storing auxiliary data to compute node/element ID
+ *        for a 2D mesh with inactive submesh blocks
+ *
+ */
 class MeshOffsets{
 public:
     bool is_fullmesh;
@@ -732,43 +1043,65 @@ public:
     Kokkos::View<int**> nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset
     Kokkos::View<int**> nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset
     Kokkos::View<int**> nodeoffset_skip_top; //!< aux data structure to compute nodeoffset
-    Kokkos::View<int**> elemoffset_start; //!< aux data structure to compute elemtent offset
+    Kokkos::View<int**> elemoffset_start; //!< aux data structure to compute element offset
     Kokkos::View<int*> elemoffset_skip; //!< aux data structure to compute element offset
 
-    int** host_nodeoffset_start;
-    int** host_nodeoffset_skip_bot;
-    int** host_nodeoffset_skip_mid;
-    int** host_nodeoffset_skip_top;
-    int** host_elemoffset_start;
-    int* host_elemoffset_skip;
+    int** host_nodeoffset_start; //!< aux data structure to compute nodeoffset (host copy)
+    int** host_nodeoffset_skip_bot; //!< aux data structure to compute nodeoffset (host copy)
+    int** host_nodeoffset_skip_mid; //!< aux data structure to compute nodeoffset (host copy)
+    int** host_nodeoffset_skip_top; //!< aux data structure to compute nodeoffset (host copy)
+    int** host_elemoffset_start; //!< aux data structure to compute element offset (host copy)
+    int* host_elemoffset_skip; //!< aux data structure to compute element offset (host copy)
 
     int Nel_total; //!< Total active elements in domain
     int Nnp_total; //!< Total active nodes in domain
 
+    /**
+    * @brief Default Class constructor.
+    */
     MeshOffsets(){};
 
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] Array of x1-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    * \param[in] Array of x2-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    */
     MeshOffsets(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 };
-
+/**
+ * @brief Class to store classification information of mesh entities
+ *
+ */
 class MeshBdry{
 public:
 
     Kokkos::View<bool*> is_bdry_edge; //!< bool value stores if an edge is on boundary
-    Kokkos::View<Vector3*> bdry_edge_normal; //!< boundary normal direction
-    Kokkos::View<bool*> is_bdry_vert;
-    Kokkos::View<Vector3*> bdry_vert_normal;
-    Kokkos::View<int*> edge_to_face;
+    Kokkos::View<Vector3*> bdry_edge_normal; //!< boundary normal direction for each edge
+    Kokkos::View<bool*> is_bdry_vert; //!< bool value stores if an vertex is on boundary
+    Kokkos::View<Vector3*> bdry_vert_normal; //!< boundary normal direction for each vertex
+    Kokkos::View<int*> edge_to_face; //!< bdry face ID of first element on edge
 
-    bool* host_is_bdry_edge;
-    Vector3* host_bdry_edge_normal;
-    bool* host_is_bdry_vert;
-    Vector3* host_bdry_vert_normal;
-    int *host_edge_to_face;
+    bool* host_is_bdry_edge; //!< bool value stores if an edge is on boundary (host copy)
+    Vector3* host_bdry_edge_normal; //!< boundary normal direction for each edge (host copy)
+    bool* host_is_bdry_vert; //!< bool value stores if an vertex is on boundary (host copy)
+    Vector3* host_bdry_vert_normal; //!< boundary normal direction for each vertex (host copy)
+    int *host_edge_to_face; //!< bdry face ID of first element on edge  (host copy)
 
     int Nbdry_faces; //!< int value storing number of boundary element faces
 
+    /**
+    * @brief Default Class constructor.
+    */
     MeshBdry(){};
 
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] Number of bdry faces
+    */
     MeshBdry(int Nbdry_faces_):Nbdry_faces(Nbdry_faces_){
         host_is_bdry_edge = NULL;
         host_bdry_edge_normal = NULL;
@@ -777,71 +1110,125 @@ public:
         host_edge_to_face = NULL;
     };
 
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] Array of x1-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    * \param[in] Array of x2-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    */
     MeshBdry(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 };
 
+/**
+ * @brief Class to store informations regarding block interface entities
+ *
+ */
 class BlockInterface{
 public:
     // 1D
-    Kokkos::View<double*> if_x1_r;
-    Kokkos::View<int*> if_x1_node;
-    Kokkos::View<double*> if_x2_r;
-    Kokkos::View<int*> if_x2_node;
+    Kokkos::View<double*> if_x1_r; //!< x1-block-interface grading ratio
+    Kokkos::View<int*> if_x1_node; //!< x1-block-interface global x1-node ID
+    Kokkos::View<double*> if_x2_r; //!< x2-block-interface grading ratio
+    Kokkos::View<int*> if_x2_node; //!< x2-block-interface global x2-node ID
 
-    double *host_if_x1_r;
-    int *host_if_x1_node;
-    double *host_if_x2_r;
-    int *host_if_x2_node;
+    double *host_if_x1_r; //!< x1-block-interface grading ratio (host copy)
+    int *host_if_x1_node; //!< x1-block-interface global x1-node ID (host copy)
+    double *host_if_x2_r; //!< x2-block-interface grading ratio (host copy)
+    int *host_if_x2_node; //!< x2-block-interface global x2-node ID (host copy)
 
     // 2D
-    Kokkos::View<int*> vert_nodeID;
-    Kokkos::View<int*> vert_subID;
-    Kokkos::View<int*> edge_first_nodeID;
-    Kokkos::View<int*> edge_subID;
+    Kokkos::View<int*> vert_nodeID; //!< global node ID of vertex
+    Kokkos::View<int*> vert_subID; //!< flattedned active submesh ID to which vertex belongs to
+    Kokkos::View<int*> edge_first_nodeID; //!< global node ID of first node on edge
+    Kokkos::View<int*> edge_subID; //!< flattedned active submesh ID to which edge belongs to
 
-    int *host_vert_nodeID;
-    int *host_vert_subID;
-    int *host_edge_first_nodeID;
-    int *host_edge_subID;
+    int *host_vert_nodeID; //!< global node ID of vertex (host copy)
+    int *host_vert_subID; //!< flattedned active submesh ID to which vertex belongs to (host copy)
+    int *host_edge_first_nodeID; //!< global node ID of first node on edge (host copy)
+    int *host_edge_subID; //!< flattedned active submesh ID to which edge belongs to (host copy)
 
-    // Constructors
+    /**
+    * @brief Default Class constructor.
+    */
     BlockInterface(){};
 
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] Array of x1-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    */
     BlockInterface(SubmeshHostViewPtr , int);
 
+    /**
+    * @brief Class constructor.
+    *
+    * \param[in] Array of x1-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    * \param[in] Array of x2-submesh object pointers on host
+    * \param[in] Number of x1-blocks in mesh
+    */
     BlockInterface(SubmeshHostViewPtr , int, SubmeshHostViewPtr, int, bool**);
 
+    /**
+     * @brief sets global node IDs for vertex nodes and first nodes on edge
+     * @param[in] array of vertex node IDs
+     * @param[in] array of edge first node IDs
+     * @param[in] number of x1-blocks in mesh
+     * @param[in] number of x2-blocks in mesh
+     */
     void set_interface_nodeIDs(int *vert_nodeIDs, int *edge_first_nodeIDs, int Nx, int Ny);
 };
 
+/**
+ * @brief Class to store data structures needed to perform faster
+ *        binary search to locate active blocks to which different
+ *        classified nodes belong to
+ *
+ */
 class MeshBST{
 public:
-    int total_active_blocks;
-    int total_block_nodes;
-    int total_active_edges;
-    int total_edge_nodes;
+    int total_active_blocks; //!< total active blocks in domain
+    int total_block_nodes; //!< total active block-interior nodes
+    int total_active_edges; //!< total active edges in domain
+    int total_edge_nodes; //!< total active edge nodes
 
-    Kokkos::View<int*> active_blockID;
-    Kokkos::View<int*> block_nodes_cumulative;
-    Kokkos::View<int*> block_elems_cumulative;
-    Kokkos::View<int*> active_edgeID;
-    Kokkos::View<int*> edge_nodes_cumulative;
+    Kokkos::View<int*> active_blockID; //!< mapping b/w active block to flatened submesh ID
+    Kokkos::View<int*> block_nodes_cumulative; //!< total active block-interior nodes in all preceding active blocks
+    Kokkos::View<int*> block_elems_cumulative; //!< total active block elements in all preceding active blocks
+    Kokkos::View<int*> active_edgeID; //!< mapping b/w active edges to actual edge ID
+    Kokkos::View<int*> edge_nodes_cumulative; //!< total active edge nodes in all preceding active blocks
 
-    int* host_active_blockID;
-    int* host_block_nodes_cumulative;
-    int* host_block_elems_cumulative;
-    int* host_active_edgeID;
-    int* host_edge_nodes_cumulative;
+    int* host_active_blockID; //!< mapping b/w active block to flatened submesh ID
+    int* host_block_nodes_cumulative; //!< total active block-interior nodes in all preceding active blocks (host copy)
+    int* host_block_elems_cumulative; //!< total active block elements in all preceding active blocks (host copy)
+    int* host_active_edgeID; //!< mapping b/w active edges to actual edge ID (host copy)
+    int* host_edge_nodes_cumulative; //!< total active edge nodes in all preceding active blocks (host copy)
 
+    /**
+    * @brief Default Class constructor.
+    */
     MeshBST(){};
-    // MeshBST(SubmeshHostViewPtr, int, SubmeshHostViewPtr, int, bool**);
+
+    /**
+     * @brief intialize data stuctures in class for BST searches
+     * \param[in] object to BlockInterface class
+     * \param[in] Array of x1-submesh object pointers on host
+     * \param[in] Number of x1-blocks in mesh
+     * \param[in] Array of x2-submesh object pointers on host
+     * \param[in] Number of x1-blocks in mesh
+     * \param[in] 2D array of block activity
+     */
     void initialize_MeshBST(BlockInterface blkif, SubmeshHostViewPtr, int, SubmeshHostViewPtr, int, bool**);
 };
 
 /**
  * @brief Mesh class
  *
- * Object of this class can access all properties of the mesh and its submesh
+ * Object of this class can access all mesh-level properties and other
+ * stored auxiliary data structures
  */
 class Mesh{
 public:
@@ -852,12 +1239,12 @@ public:
     int Nel_tot_x2; //!< Total number of elements in x2-direction
 
     Kokkos::View<bool**> isactive; //!< 2D bool-array defining the activity of blocks
-    bool **host_isactive;
+    bool **host_isactive; //!< 2D bool-array defining the activity of blocks (host copy)
 
-    MeshOffsets offsets;
-    MeshBdry bdry;
-    BlockInterface blkif;
-    MeshBST bst;
+    MeshOffsets offsets; //!< Object to class MeshOffsets class
+    MeshBdry bdry; //!< Object to class MeshBdry class
+    BlockInterface blkif; //!< Object to class BlockInterface class
+    MeshBST bst; //!< Object to class MeshBST class
 
 
     int Nel_total; //!< Total active elements in domain
@@ -874,8 +1261,9 @@ public:
     /**
     * @brief Constructor for 1D Mesh
     * \param[in] number of x1-submesh blocks
-    * \param[in] pointer object for x1-submesh blocks
     * \param[in] total number of elements along x1-direction
+    * \param[in] Object to MeshBdry class
+    * \param[in] Object to BlockInterface class
     */
     Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
@@ -896,12 +1284,17 @@ public:
      /**
      * @brief Constructor for 2D Mesh
      * \param[in] number of x1-submesh blocks
-     * \param[in] pointer object for x1-submesh blocks
      * \param[in] total number of elements along x1-direction
      * \param[in] number of x2-submesh blocks
-     * \param[in] pointer object for x2-submesh blocks
      * \param[in] total number of elements along x2-direction
      * \param[in] submesh activity info
+     * \param[in] submesh activity info (host copy)
+     * \param[in] Object to MeshOffsets class
+     * \param[in] Object to MeshBdry class
+     * \param[in] Object to BlockInterface class
+     * \param[in] Object to MeshBST class
+     * \param[in] total elements in mesh
+     * \param[in] total nodes in mesh
      */
      Mesh(int nsubmesh_x1_,
          int Nel_tot_x1_,
@@ -984,129 +1377,6 @@ struct MBBL{
          submesh_x2(submesh_x2_),
          host_submesh_x2(host_submesh_x2_){};
 };
-
-KOKKOS_FUNCTION
-int locate_cell(DevicePointer<Submesh> submesh, double q);
-
-KOKKOS_FUNCTION
-int update_cell(DevicePointer<Submesh> submesh, double q, int icell);
-
-KOKKOS_FUNCTION
-double elem_size(DevicePointer<Submesh> submesh, int icell);
-
-KOKKOS_FUNCTION
-void calc_weights(DevicePointer<Submesh> submesh, double q, int local_cell, int *global_cell, double *Wgh2);
-
-KOKKOS_FUNCTION
-void locate_submesh_and_cell_x1(MBBL pumi_obj, double q, int* submeshID, int *cellID);
-
-KOKKOS_FUNCTION
-void locate_submesh_and_cell_x2(MBBL pumi_obj, double q, int* submeshID, int *cellID);
-
-KOKKOS_FUNCTION
-void update_submesh_and_cell_x1(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID);
-
-KOKKOS_FUNCTION
-void update_submesh_and_cell_x2(MBBL pumi_obj, double q, int prev_submeshID, int prev_cellID, int *submeshID, int *cellID);
-
-KOKKOS_FUNCTION
-void update_submesh_and_locate_cell_x1(MBBL pumi_obj, double q, int prev_submeshID, int *submeshID, int *cellID);
-
-KOKKOS_FUNCTION
-void update_submesh_and_locate_cell_x2(MBBL pumi_obj, double q, int prev_submeshID, int *submeshID, int *cellID);
-
-KOKKOS_FUNCTION
-void calc_weights_x1(MBBL pumi_obj, double q, int isubmesh, int icell, int *x1_global_cell, double *Wgh2);
-
-KOKKOS_FUNCTION
-void calc_weights_x2(MBBL pumi_obj, double q, int isubmesh, int icell, int *x2_global_cell, double *Wgh2);
-
-KOKKOS_FUNCTION
-void calc_global_cellID_and_nodeID_fullmesh(MBBL pumi_obj, int kcell_x1, int kcell_x2, int *global_cell_2D, int *bottomleft_node, int *topleft_node);
-
-KOKKOS_FUNCTION
-void calc_global_cellID_and_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int kcell_x1, int kcell_x2,
-                                    int *global_cell_2D, int *bottomleft_node, int *topleft_node);
-
-
-KOKKOS_FUNCTION
-int calc_global_nodeID(MBBL pumi_obj, int isubmesh, int jsubmesh, int Inp, int Jnp);
-
-KOKKOS_FUNCTION
-int calc_global_nodeID_on_horizontal_edge(MBBL pumi_obj, int iEdge, int inode);
-
-KOKKOS_FUNCTION
-int calc_global_nodeID_on_vertical_edge(MBBL pumi_obj, int iEdge, int inode);
-
-KOKKOS_FUNCTION
-Vector3 push_particle(MBBL pumi_obj, Vector3 q, Vector3 dq,
-                   int *isubmesh, int *jsubmesh, int *icell, int *jcell, bool *in_domain,
-                   int *bdry_hit, double *fraction_done, int *faceID_on_bdry);
-
-KOKKOS_FUNCTION
-void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq2,
-                    int *isubmesh, int *jsubmesh, int *icell, int *jcell,
-                    bool *in_domain, int *bdry_hit, int* fraction_done);
-
-KOKKOS_FUNCTION
-void get_directional_submeshID_and_cellID(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell);
-
-KOKKOS_FUNCTION
-void get_directional_interior_nodeIDs(MBBL pumi_obj, int isub, int jsub, int inode, int *inp, int *jnp);
-
-KOKKOS_FUNCTION
-bool is_block_active(MBBL pumi_obj, int isub, int jsub);
-
-KOKKOS_FUNCTION
-int get_x1_cellID(MBBL pumi_obj, int isub, int icell);
-
-KOKKOS_FUNCTION
-int get_x2_cellID(MBBL pumi_obj, int isub, int icell);
-
-KOKKOS_FUNCTION
-void flatten_submeshID_and_cellID(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID);
-
-KOKKOS_FUNCTION
-int get_num_x1_elems_in_submesh(MBBL pumi_obj, int isubmesh);
-
-KOKKOS_FUNCTION
-int get_num_x1_elems_before_submesh(MBBL pumi_obj, int isubmesh);
-
-KOKKOS_FUNCTION
-int get_num_x2_elems_in_submesh(MBBL pumi_obj, int isubmesh);
-
-KOKKOS_FUNCTION
-int get_num_x2_elems_before_submesh(MBBL pumi_obj, int isubmesh);
-
-KOKKOS_FUNCTION
-double get_x1_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
-
-KOKKOS_FUNCTION
-double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell);
-
-KOKKOS_FUNCTION
-int get_x1_nodeID_at_interface(MBBL pumi_obj, int isub);
-
-KOKKOS_FUNCTION
-int get_x2_nodeID_at_interface(MBBL pumi_obj, int isub);
-
-KOKKOS_FUNCTION
-double get_x1_gradingratio_at_interface(MBBL pumi_obj, int isub);
-
-KOKKOS_FUNCTION
-double get_x2_gradingratio_at_interface(MBBL pumi_obj, int isub);
-
-KOKKOS_FUNCTION
-double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub);
-
-KOKKOS_FUNCTION
-double get_x2_gradingratio_in_submesh(MBBL pumi_obj, int isub);
-
-KOKKOS_FUNCTION
-Vector3 get_edge_normal(MBBL pumi_obj, int iEdge);
-
-KOKKOS_FUNCTION
-Vector3 get_vert_normal(MBBL pumi_obj, int iVert);
 
 //For 1D and 2D tests ONLY -- NOT TO BE USED IN HPIC2
 class ParticleData{
