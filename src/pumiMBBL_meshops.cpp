@@ -2,6 +2,11 @@
 
 namespace pumi {
 
+/**
+* @brief Generate a random point in domain
+* @param[in] Object of the wrapper mesh structure
+* @return coordinate vector of point
+*/
 Vector3 get_rand_point_in_mesh_host(MBBL pumi_obj){
     if (pumi_obj.mesh.ndim == 1){
         double rand_x1 = (double) rand()/RAND_MAX;
@@ -53,6 +58,12 @@ Vector3 get_rand_point_in_mesh_host(MBBL pumi_obj){
     return q;
 }
 
+/**
+* @brief Check if point lies in domain
+* @param[in] Object of the wrapper mesh structure
+* @param[in] coordinate vector of point
+* @return true if point in domain, false otherwise
+*/
 bool is_point_in_mesh_host(MBBL pumi_obj, Vector3 q){
     if (pumi_obj.mesh.ndim == 1){
         double x1_min = get_global_x1_min_coord(pumi_obj);
@@ -86,6 +97,16 @@ bool is_point_in_mesh_host(MBBL pumi_obj, Vector3 q){
     return false;
 }
 
+/**
+ * @brief Computes flattened submesh ID and local cell ID from directional submesh IDs and local cell IDs
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1 block ID
+ * @param[in] x1 local cell ID
+ * @param[in] x2 block ID
+ * @param[in] x2 local cell ID
+ * @param[out] flattedned block ID
+ * @param[out] flattedned local cell ID
+ */
 void flatten_submeshID_and_cellID_host(MBBL pumi_obj, int isub, int icell, int jsub, int jcell, int* submeshID, int* cellID){
     *submeshID = (isub-1) + (jsub-1)*pumi_obj.mesh.nsubmesh_x1;
     *cellID = icell + jcell*pumi_obj.host_submesh_x1[isub]->Nel;
@@ -270,6 +291,16 @@ void calc_global_cellID_and_nodeID_host(MBBL pumi_obj, int isubmesh, int jsubmes
     *topleft_node = fullmesh_elem + kcell_x2 + pumi_obj.mesh.Nel_tot_x1 + 1 - nodeoffset_top;
 }
 
+/**
+ * @brief Computes directional block IDs and local cell IDs from flattened block and local cell ID
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] flattened block ID
+ * @param[in] flattened local cell ID
+ * @param[out] x1 block ID
+ * @param[out] x1 local cell ID
+ * @param[out] x2 block ID
+ * @param[out] x2 local cell ID
+ */
 void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int cellID, int* isub, int *icell, int* jsub, int *jcell){
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
@@ -277,6 +308,13 @@ void get_directional_submeshID_and_cellID_host(MBBL pumi_obj, int submeshID, int
     *icell = cellID - pumi_obj.host_submesh_x1[*isub]->Nel*(*jcell);
 }
 
+/**
+ * @brief Computes directional block IDs  flattened block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] flattened block ID
+ * @param[out] x1 block ID
+ * @param[out] x2 block ID
+ */
 void get_directional_submeshID_host(MBBL pumi_obj, int submeshID, int* isub, int* jsub){
     *jsub = submeshID/pumi_obj.mesh.nsubmesh_x1 + 1;
     *isub = submeshID - pumi_obj.mesh.nsubmesh_x1*(*jsub-1) + 1;
