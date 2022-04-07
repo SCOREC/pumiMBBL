@@ -70,13 +70,6 @@ double compute_grading_ratio(double BL_T, double BL_t0, int BL_Nel){
  */
 Mesh_Inputs* inputs_allocate(){
     Mesh_Inputs* pumi_inputs = new Mesh_Inputs;
-    // pumi_inputs->block_length_x1 = new double[nsubmeshes];
-    // pumi_inputs->block_length_x2 = new double[nsubmeshes];
-    // pumi_inputs->max_elem_size_x1 = new double[nsubmeshes];
-    // pumi_inputs->max_elem_size_x2 = new double[nsubmeshes];
-    // pumi_inputs->min_elem_size_x1 = new double[nsubmeshes];
-    // pumi_inputs->min_elem_size_x2 = new double[nsubmeshes];
-
     return pumi_inputs;
 }
 
@@ -86,12 +79,6 @@ Mesh_Inputs* inputs_allocate(){
  * \param[in] mesh inputs struct pointer
  */
 void inputs_deallocate(Mesh_Inputs* pumi_inputs){
-    // delete[] pumi_inputs->block_length_x1;
-    // delete[] pumi_inputs->block_length_x2;
-    // delete[] pumi_inputs->max_elem_size_x1;
-    // delete[] pumi_inputs->max_elem_size_x2;
-    // delete[] pumi_inputs->min_elem_size_x1;
-    // delete[] pumi_inputs->min_elem_size_x2;
     delete pumi_inputs;
 }
 
@@ -763,8 +750,7 @@ bool verify_mesh_params(Mesh pumi_mesh, SubmeshHostViewPtr h_submesh_x1, Submesh
  * \param[in] pointer object to pumi inputs structure which containts
  * \param[in] object to structure containing user options for the mesh
  * \param[in] direction along which submesh object is being initialized
- * \param[out] Host-copy of array of submeshes
- * \return Final mesh object pointer
+ * \return object to SubmeshInit class
  */
 SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, int dir){
     int nsubmesh = 0;
@@ -1039,9 +1025,10 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
  * @brief Initiates the mesh and returns the final 1D-mesh object
  *
  * \param[in] pointer object to pumi inputs structure which containts
+ * \param[in] object to structure containing user options for the mesh
  * \param[in] x1-submesh object pointer
  * \param[in] Copy of x1-submesh object pointer on CPU
- * \return Final mesh object pointer
+ * \return Final mesh object
  */
 Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1){
 
@@ -1076,11 +1063,12 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
  * @brief Initiates the mesh and returns the final 2D mesh object
  *
  * \param[in] pointer object to pumi inputs structure which containts
+ * \param[in] object to structure containing user options for the mesh
  * \param[in] x1-submesh object pointer
  * \param[in] Copy of x1-submesh object pointer on CPU
  * \param[in] x2-submesh object pointer
  * \param[in] Copy of x2-submesh object pointer on CPU
- * \return Final mesh object pointer
+ * \return Final mesh object
  */
 Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x1,
                             SubmeshDeviceViewPtr , SubmeshHostViewPtr hc_submesh_x2){
@@ -1150,7 +1138,14 @@ Mesh mesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_options, Submes
 
 }
 
-
+/**
+* @brief Class constructor.
+*
+* \param[in] Array of x1-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+* \param[in] Array of x2-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+*/
 MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
                          int Nx,
                          SubmeshHostViewPtr hc_submesh_x2,
@@ -1488,6 +1483,14 @@ MeshOffsets::MeshOffsets(SubmeshHostViewPtr hc_submesh_x1,
     delete[] nodeoffset;
 }
 
+/**
+* @brief Class constructor.
+*
+* \param[in] Array of x1-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+* \param[in] Array of x2-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+*/
 MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
                    int Nx,
                    SubmeshHostViewPtr hc_submesh_x2,
@@ -1821,7 +1824,12 @@ MeshBdry::MeshBdry(SubmeshHostViewPtr hc_submesh_x1,
     }
 }
 
-
+/**
+* @brief Class constructor.
+*
+* \param[in] Array of x1-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+*/
 BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
                                int Nx){
 
@@ -1873,6 +1881,14 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
     Kokkos::deep_copy(if_x1_node,h_if_x1_node);
 }
 
+/**
+* @brief Class constructor.
+*
+* \param[in] Array of x1-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+* \param[in] Array of x2-submesh object pointers on host
+* \param[in] Number of x1-blocks in mesh
+*/
 BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
                                int Nx,
                                SubmeshHostViewPtr hc_submesh_x2,
@@ -2045,6 +2061,13 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
 
 }
 
+/**
+ * @brief sets global node IDs for vertex nodes and first nodes on edge
+ * @param[in] array of vertex node IDs
+ * @param[in] array of edge first node IDs
+ * @param[in] number of x1-blocks in mesh
+ * @param[in] number of x2-blocks in mesh
+ */
 void BlockInterface::set_interface_nodeIDs(int *vert_nodeIDs,
                                            int *edge_first_nodeIDs,
                                            int Nx,
@@ -2069,6 +2092,11 @@ void BlockInterface::set_interface_nodeIDs(int *vert_nodeIDs,
 
 }
 
+/**
+ * @brief intialize all interface node IDs (for edge/vertex nodes)
+ * @param[in] Object of the wrapper mesh structure
+ * @return  Updated object of the wrapper mesh structure
+ */
 MBBL initialize_interface_nodeIDs(MBBL pumi_obj){
     int Nx = pumi_obj.mesh.nsubmesh_x1;
     int Ny = pumi_obj.mesh.nsubmesh_x2;
@@ -2130,6 +2158,15 @@ MBBL initialize_interface_nodeIDs(MBBL pumi_obj){
     return pumi_obj;
 }
 
+/**
+ * @brief intialize data stuctures in class for BST searches
+ * \param[in] object to BlockInterface class
+ * \param[in] Array of x1-submesh object pointers on host
+ * \param[in] Number of x1-blocks in mesh
+ * \param[in] Array of x2-submesh object pointers on host
+ * \param[in] Number of x1-blocks in mesh
+ * \param[in] 2D array of block activity
+ */
 void MeshBST::initialize_MeshBST(BlockInterface blkif,
                                     SubmeshHostViewPtr hc_submesh_x1,
                                     int Nx,
@@ -2227,6 +2264,12 @@ void MeshBST::initialize_MeshBST(BlockInterface blkif,
     total_edge_nodes = h_edge_nodes_cumulative(total_active_edges-1);
 }
 
+/**
+ * @brief intializes MBBL mesh from user inputs and options
+ * @param[in] Object of the wrapper mesh structure
+ * \param[in] object to structure containing user options for the mesh
+ * @return  Object of the wrapper mesh structure
+ */
 MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
     pumi::Mesh mesh;
     pumi::SubmeshInit x1_sub_obj;
@@ -2254,38 +2297,6 @@ MBBL initialize_MBBL_mesh(Mesh_Inputs* pumi_inputs, Mesh_Options pumi_options){
     }
     return pumi_obj;
 }
-// KOKKOS_INLINE_FUNCTION
-// void print_BL_coords(MeshDeviceViewPtr pumi_mesh, SubmeshDeviceViewPtr submesh_x1, SubmeshDeviceViewPtr submesh_x2){
-//     for (int isubmesh=0; isubmesh < pumi_mesh(0).nsubmesh_x1; isubmesh++){
-//         if (submesh_x1(isubmesh)()->meshtype & minBL){
-//             printf("\n");
-//             for (int i=0; i<=submesh_x1(isubmesh)()->Nel; i++){
-//                 printf("%2.4f\n",submesh_x1(isubmesh)()->BL_coords(i));
-//             }
-//         }
-//         if (submesh_x1(isubmesh)()->meshtype & maxBL){
-//             printf("\n");
-//             for (int i=0; i<=submesh_x1(isubmesh)()->Nel; i++){
-//                 printf("%2.4f\n",submesh_x1(isubmesh)()->BL_coords(i));
-//             }
-//         }
-//     }
-//
-//     for (int isubmesh=0; isubmesh < pumi_mesh(0).nsubmesh_x2; isubmesh++){
-//         if (submesh_x2(isubmesh)()->meshtype & minBL){
-//             printf("\n");
-//             for (int i=0; i<=submesh_x2(isubmesh)()->Nel; i++){
-//                 printf("%2.4f\n",submesh_x2(isubmesh)()->BL_coords(i));
-//             }
-//         }
-//         if (submesh_x2(isubmesh)()->meshtype & maxBL){
-//             printf("\n");
-//             for (int i=0; i<=submesh_x2(isubmesh)()->Nel; i++){
-//                 printf("%2.4f\n",submesh_x2(isubmesh)()->BL_coords(i));
-//             }
-//         }
-//     }
-// }
 
 
 } // namespace pumi
