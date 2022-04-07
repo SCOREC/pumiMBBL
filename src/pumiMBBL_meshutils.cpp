@@ -196,6 +196,11 @@ void print_mesh_skeleton(MBBL pumi_obj){
     }
 }
 
+/**
+ * @brief Prints the block-wise node IDs
+ *
+ * @param[in] Object of the wrapper mesh structure
+ */
 void print_blockwise_nodeIDs(MBBL pumi_obj){
     printf("\nPrinting NodeIDs in each active blocks\n" );
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -228,6 +233,11 @@ void print_blockwise_nodeIDs(MBBL pumi_obj){
     }
 }
 
+/**
+ * @brief Prints the node IDs on each active blocks
+ *
+ * @param[in] Object of the wrapper mesh structure
+ */
 void print_node_submeshID(MBBL pumi_obj){
     printf("\nPrinting NodeIDs in each active blocks\n" );
     int Nx = pumi_obj.mesh.nsubmesh_x1;
@@ -257,6 +267,11 @@ void print_node_submeshID(MBBL pumi_obj){
     }
 }
 
+/**
+ * @brief Prints the node IDs for entire mesh in physical order
+ *
+ * @param[in] Object of the wrapper mesh structure
+ */
 void print_fullmesh_nodeIDs(MBBL pumi_obj){
     int Nel_y = pumi_obj.mesh.Nel_tot_x2;
     int Nel_x = pumi_obj.mesh.Nel_tot_x1;
@@ -274,6 +289,11 @@ void print_fullmesh_nodeIDs(MBBL pumi_obj){
     }
 }
 
+/**
+ * @brief Prints the node IDs in ordered format to file
+ *
+ * @param[in] Object of the wrapper mesh structure
+ */
 void print_2D_node_coordinates(MBBL pumi_obj){
     int Nel_y = pumi_obj.mesh.Nel_tot_x2;
     int Nel_x = pumi_obj.mesh.Nel_tot_x1;
@@ -300,6 +320,11 @@ void print_2D_node_coordinates(MBBL pumi_obj){
     fclose(node_coords_file);
 }
 
+/**
+ * @brief Prints the element connectivity info in ordered format to file
+ *
+ * @param[in] Object of the wrapper mesh structure
+ */
 void print_2D_node_elem_connectivity(MBBL pumi_obj){
     int Nel_y = pumi_obj.mesh.Nel_tot_x2;
     int Nel_x = pumi_obj.mesh.Nel_tot_x1;
@@ -327,6 +352,13 @@ void print_2D_node_elem_connectivity(MBBL pumi_obj){
 
 }
 
+/**
+ * @brief Computes scalar field gradient
+ *
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] scalar field
+ * @return gradient vector
+ */
 Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
     int nnp_total = phi.extent(0);
     Vector3View phi_grad = Vector3View("phi_grad",nnp_total);
@@ -558,6 +590,13 @@ Vector3View compute_2D_field_gradient(MBBL pumi_obj, DoubleView phi){
     return phi_grad;
 }
 
+/**
+ * @brief Computes scalar field gradient
+ *
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] scalar field
+ * @return gradient vector
+ */
 Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
     int nnp_total = phi.extent(0);
     Vector3View phi_grad = Vector3View("phi_grad",nnp_total);
@@ -748,6 +787,13 @@ Vector3View compute_2D_field_gradient_v2(MBBL pumi_obj, DoubleView phi){
     return phi_grad;
 }
 
+/**
+ * @brief Computes scalar field gradient (only for full uniform single block mesh)
+ *
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] scalar field
+ * @return gradient vector
+ */
 Vector3View compute_2D_field_gradient_fulluniform(MBBL pumi_obj, DoubleView phi){
     int num_interior_nodes = (pumi_obj.mesh.Nel_tot_x1-1)*(pumi_obj.mesh.Nel_tot_x2-1);
     int num_boundary_nodes = (pumi_obj.mesh.Nel_tot_x1+1)*(pumi_obj.mesh.Nel_tot_x2+1)-num_interior_nodes;
@@ -821,6 +867,13 @@ Vector3View compute_2D_field_gradient_fulluniform(MBBL pumi_obj, DoubleView phi)
     return phi_grad;
 }
 
+/**
+ * @brief Computes density of give scalar field
+ *
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] scalar field
+ * @return density of scalar field 
+ */
 DoubleView compute_2D_field_density(MBBL pumi_obj, DoubleView Q){
     int nnp_total = Q.extent(0);
     DoubleView rho = DoubleView("Q-density",nnp_total);
