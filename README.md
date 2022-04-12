@@ -58,7 +58,21 @@ cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install # on OpenMP
 make -j 8
 make install
 ```
+## Documentation
 
+Building Doxygen Documentation
+```
+cd pumiMBBL/
+doxygen
+```
+HTML file `index.html` inside folder `html` will contain the generated code documentation
+
+Building Library Reference Documentation
+```
+cd pumiMBBL/doc
+pdflatex pumiMBBL-GPU.tex
+```
+PDF file `pumiMBBL-GPU.pdf` containing implemented mesh concepts and documentation will be generated
 
 ## test
 
