@@ -186,7 +186,10 @@ public:
      */
     KOKKOS_INLINE_FUNCTION
     int update_cell(double q, int){
-        return (q - this->xmin)/this->t0;
+        if (q==this->xmax)
+            return this->Nel-1;
+        else
+            return (q - this->xmin)/this->t0;
     }
 
     /**
@@ -254,7 +257,10 @@ public:
      * @return upddated local cell ID
      */
     int update_cell_host(double q, int ) {
-        return (q - this->xmin)/this->t0;
+        if (q==this->xmax)
+            return this->Nel-1;
+        else
+            return (q - this->xmin)/this->t0;
     }
 
     /**
