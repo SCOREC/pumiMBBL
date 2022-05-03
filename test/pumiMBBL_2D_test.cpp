@@ -134,6 +134,22 @@ int main( int argc, char* argv[] )
     //         printf("ID=%d  diff=%2.2e\n",i, fabs(phi_density(i)-phi_density_v2(i)));
     //     }
     // });
+    // int Nel_total = pumi_obj.mesh.Nel_total;
+    // Kokkos::parallel_for("print-density",1,KOKKOS_LAMBDA (const int){
+    //     for (int i=0; i<Nel_total; i++){
+    //         int kcell_x2 = i/pumi_obj.mesh.Nel_tot_x1;
+    //         int kcell_x1 = i - kcell_x2*pumi_obj.mesh.Nel_tot_x1;
+    //         int isub, jsub, icell, jcell;
+    //         pumi::get_x1_submeshID_and_localcellID_of_x1_elem(pumi_obj, kcell_x1, &isub, &icell);
+    //         pumi::get_x2_submeshID_and_localcellID_of_x2_elem(pumi_obj, kcell_x2, &jsub, &jcell);
+    //         double inode, jnode, dx1, dx2;
+    //         inode = pumi::get_x1_node_coord_in_submesh(pumi_obj, isub, icell);
+    //         jnode = pumi::get_x2_node_coord_in_submesh(pumi_obj, jsub, jcell);
+    //         dx1 = pumi::get_x1_elem_size_in_submesh(pumi_obj, isub, icell);
+    //         dx2 = pumi::get_x2_elem_size_in_submesh(pumi_obj, jsub, jcell);
+    //         printf("%1.4e %1.4e %1.4e %1.4e\n",inode,inode+dx1,jnode,jnode+dx2);
+    //     }
+    // });
 
     int N_part = 1000;
     int N_step = 10;

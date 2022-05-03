@@ -233,6 +233,30 @@ double get_x2_elem_size_in_submesh(MBBL pumi_obj, int isub, int icell){
     return elem_size(pumi_obj.submesh_x2(isub),icell);
 }
 
+/**
+ * @brief Fetches x1 node-coord of node in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x1-submesh ID
+ * @param[in] local x1 node ID in block
+ * @return x1 node coordinate of queried node
+ */
+KOKKOS_INLINE_FUNCTION
+double get_x1_node_coord_in_submesh(MBBL pumi_obj, int isub, int icell){
+    return node_coords(pumi_obj.submesh_x1(isub),icell);
+}
+
+/**
+ * @brief Fetches x2 node-coord of node in block
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] x2-submesh ID
+ * @param[in] local x2 node ID in block
+ * @return x1 node coordinate of queried node
+ */
+KOKKOS_INLINE_FUNCTION
+double get_x2_node_coord_in_submesh(MBBL pumi_obj, int isub, int icell){
+    return node_coords(pumi_obj.submesh_x2(isub),icell);
+}
+
 KOKKOS_INLINE_FUNCTION
 double get_x1_gradingratio_in_submesh(MBBL pumi_obj, int isub){
     if (pumi_obj.submesh_x1(isub)()-> meshtype & maxBL){
