@@ -47,6 +47,7 @@ export CMAKE_PREFIX_PATH=$kk/lib64/cmake/Kokkos:$CMAKE_PREFIX_PATH
 cmake ../pumiMBBL -DCMAKE_CXX_COMPILER=$kk_compiler -DCMAKE_INSTALL_PREFIX=$PWD/install # on GPU
 make -j 8
 make install
+ctest
 ```
 
 Building with OpenMP
@@ -57,6 +58,7 @@ export CMAKE_PREFIX_PATH=$kk/lib64/cmake/Kokkos:$CMAKE_PREFIX_PATH
 cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install # on OpenMP
 make -j 8
 make install
+ctest
 ```
 ## Documentation
 
@@ -74,12 +76,7 @@ pdflatex pumiMBBL-GPU.tex
 ```
 PDF file `pumiMBBL-GPU.pdf` containing implemented mesh concepts and documentation will be generated
 
-## unit-tests
-```
-ctest
-```
-
-## tests (particle push and field operation)
+## pseudo particle push tests
 
 ```
 ./install/bin/pumiMBBL1D_Demo # for 1D particle tracking test
