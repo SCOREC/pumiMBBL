@@ -61,21 +61,24 @@ make install
 ctest
 ```
 
-Building with spack package manager
+## Building with [spack](https://github.com/spack/spack) package manager
 ```
 # Configuring spack environment
 # One time step -- Create spack environment <env_name> as
 # spack env create <env_name>
-# Examples,
+
 spack env create pumimbbl_serial # for serial build
 spack env create pumimbbl_omp # for openmp build
 spack env create pumimbbl_cuda # for cuda build
+
 # Activate environment
 spack env activate <env_name>
+
 # One time step -- Add necessary dependency for build
 spack add kokkos # for serial build
 spack add kokkos +openmp # for openmp build
 spack add kokkos +cuda +cuda_lambda +wrapper cuda_arch=XX # for cuda build, ensure correct value for XX
+
 # One time step -- Install package
 spack install
 
