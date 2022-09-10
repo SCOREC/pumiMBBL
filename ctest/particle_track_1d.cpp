@@ -54,7 +54,7 @@ int main( int argc, char* argv[] )
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
             Partdata(ipart) = pumi::ParticleData(q1,dq1,isub,icell,true,-1);
         });
-        Kokkos::parallel_for("particle-push-test-0", N_part, KOKKOS_LAMBDA (const int ipart) {
+        Kokkos::parallel_for("particle-push", N_part, KOKKOS_LAMBDA (const int ipart) {
             int isub, icell, kcell_x1;
             double q1 = Partdata(ipart).x1;
             double dq1 = Partdata(ipart).x2;
@@ -72,14 +72,12 @@ int main( int argc, char* argv[] )
                 isub = -1;
                 icell = -1;
                 Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,false,exit_faceID);
-                // printf("q1=%2.3f isub=%d, icell=%d, exitface=%d status=%d\n",q1,isub,icell,exit_faceID,false );
             }
             else {
                 pumi::update_submesh_and_cell_x1(pumi_obj, q1, isub, icell, &isub, &icell);
                 pumi::calc_weights_x1(pumi_obj, q1, isub, icell, &kcell_x1, &Wgh2_x1);
                 Wgh1_x1 = 1.0-Wgh2_x1;
                 Partdata(ipart) = pumi::ParticleData(q1,0.0,isub,icell,true,-1,Wgh1_x1,Wgh2_x1,0.0,0.0);
-                // printf("q1=%2.3f isub=%d, icell=%d, exitface=%d status=%d\n",q1,isub,icell,-1,true );
             }
 
         });
