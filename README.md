@@ -74,9 +74,14 @@ pdflatex pumiMBBL-GPU.tex
 ```
 PDF file `pumiMBBL-GPU.pdf` containing implemented mesh concepts and documentation will be generated
 
-## test
+## unit-tests
+```
+ctest
+```
+
+## tests (particle push and field operation)
 
 ```
-./install/bin/pumiMBBL1D_Demo # for 1D test
-./install/bin/pumiMBBL2D_Demo # for 2D test
+./install/bin/pumiMBBL1D_Demo # for 1D particle tracking test
+./install/bin/pumiMBBL2D_Demo # for 2D particle tracking test
 ```
