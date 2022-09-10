@@ -60,6 +60,52 @@ make -j 8
 make install
 ctest
 ```
+
+Building with spack package manager
+```
+# Configuring spack environment
+# One time step -- Create spack environment <env_name> as
+# spack env create <env_name>
+# Examples,
+spack env create pumimbbl_serial # for serial build
+spack env create pumimbbl_omp # for openmp build
+spack env create pumimbbl_cuda # for cuda build
+# Activate environment
+spack env activate <env_name>
+# One time step -- Add necessary dependency for build
+spack add kokkos # for serial build
+spack add kokkos +openmp # for openmp build
+spack add kokkos +cuda +cuda_lambda +wrapper cuda_arch=XX # for cuda build, ensure correct value for XX
+# One time step -- Install package
+spack install
+
+# Building pumiMBBL with spack
+
+# For serial pumiMBBL build
+spack activate pumimbbl_serial
+mkdir build-serial
+cd build-serial
+cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install
+make -j install
+ctest
+
+# For openMP pumiMBBL build
+spack activate pumimbbl_omp
+mkdir build-omp
+cd build-omp
+cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install
+make -j install
+ctest
+
+# For cuda pumiMBBL build
+spack activate pumimbbl_cuda
+mkdir build-cuda
+cd build-cuda
+cmake ../pumiMBBL -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_CXX_COMPILER=nvcc_wrapper
+make -j install
+ctest
+```
+
 ## Documentation
 
 Building Doxygen Documentation
