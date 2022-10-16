@@ -126,6 +126,9 @@ public:
     virtual double node_coords_host(int) {return -999.0;}
     virtual double grading_ratio_host(int) {return -999.0;}
 
+    KOKKOS_INLINE_FUNCTION
+    virtual ~Submesh(){};
+
 };
 
 using SubmeshDeviceViewPtr = Kokkos::View<DevicePointer<Submesh>*>; //!< Pointer to array of Submesh objects (in device space) poniting to address of derived class
@@ -1065,7 +1068,14 @@ public:
     /**
     * @brief Default Class constructor.
     */
-    MeshOffsets(){};
+    MeshOffsets(){
+        host_nodeoffset_start = nullptr;
+        host_nodeoffset_skip_bot = nullptr;
+        host_nodeoffset_skip_mid = nullptr;
+        host_nodeoffset_skip_top = nullptr;
+        host_elemoffset_start = nullptr;
+        host_elemoffset_skip = nullptr;
+    };
 
     /**
     * @brief Class constructor.
@@ -1109,11 +1119,11 @@ public:
     * @param[in] Number of bdry faces
     */
     MeshBdry(int Nbdry_faces_):Nbdry_faces(Nbdry_faces_){
-        host_is_bdry_edge = NULL;
-        host_bdry_edge_normal = NULL;
-        host_is_bdry_vert = NULL;
-        host_bdry_vert_normal = NULL;
-        host_edge_to_face = NULL;
+        host_is_bdry_edge = nullptr;
+        host_bdry_edge_normal = nullptr;
+        host_is_bdry_vert = nullptr;
+        host_bdry_vert_normal = nullptr;
+        host_edge_to_face = nullptr;
     };
 
     /**
@@ -1216,7 +1226,13 @@ public:
     /**
     * @brief Default Class constructor.
     */
-    MeshBST(){};
+    MeshBST(){
+        host_active_blockID = nullptr;
+        host_block_nodes_cumulative = nullptr;
+        host_block_elems_cumulative = nullptr;
+        host_active_edgeID = nullptr;
+        host_edge_nodes_cumulative = nullptr;
+    };
 
     /**
      * @brief intialize data stuctures in class for BST searches
@@ -1280,6 +1296,7 @@ public:
          Nel_tot_x1(Nel_tot_x1_),
          bdry(bdry_),
          blkif(blkif_){
+             host_isactive = nullptr;
              Nel_total = Nel_tot_x1_;
              Nnp_total = Nel_tot_x1_+1;
              nsubmesh_x2 = 0;
@@ -1362,7 +1379,9 @@ struct MBBL{
          SubmeshHostViewPtr host_submesh_x1_):
          mesh(mesh_),
          submesh_x1(submesh_x1_),
-         host_submesh_x1(host_submesh_x1_){};
+         host_submesh_x1(host_submesh_x1_){
+             host_submesh_x2 = nullptr;
+         };
 
     /**
     * @brief Constructor for 2D Wrapper structure
@@ -1481,4 +1500,5 @@ public:
 #include "pumiMBBL_meshops.hpp"
 #include "pumiMBBL_meshutils.hpp"
 #include "pumiMBBLGPU_impl.hpp"
+#include "pumiMBBL_finalize.hpp"
 #endif
