@@ -116,15 +116,12 @@ public:
             BL_coords(BL_coords_),
             host_BL_coords(host_BL_coords_){};
 
-    virtual int locate_cell_host(double ) { return -1; }
-    virtual int update_cell_host(double , int) { return -1; }
-    virtual double elem_size_host(int ) { return -999.0; }
-    virtual void calc_weights_host(double , int , int *global_cell, double *Wgh2){
-        *global_cell = -1;
-        *Wgh2 = -999.0;
-    }
-    virtual double node_coords_host(int) {return -999.0;}
-    virtual double grading_ratio_host(int) {return -999.0;}
+    virtual int locate_cell_host(double ) = 0;
+    virtual int update_cell_host(double , int) = 0;
+    virtual double elem_size_host(int ) = 0;
+    virtual void calc_weights_host(double , int , int *global_cell, double *Wgh2) = 0;
+    virtual double node_coords_host(int) = 0;
+    virtual double grading_ratio_host(int) = 0;
 
     KOKKOS_INLINE_FUNCTION
     virtual ~Submesh(){};
