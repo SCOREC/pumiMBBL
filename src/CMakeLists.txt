@@ -6,6 +6,7 @@ set(HEADERS
   pumiMBBL_meshops.hpp
   pumiMBBL_meshutils.hpp
   pumiMBBL_initiate.hpp
+  pumiMBBL_finalize.hpp
 )
 
 set(SOURCES
@@ -13,6 +14,7 @@ set(SOURCES
   pumiMBBL_meshinfo.cpp
   pumiMBBL_meshops.cpp
   pumiMBBL_meshutils.cpp
+  pumiMBBL_finalize.cpp
 )
 
 add_library (pumiMBBL-core ${SOURCES})
