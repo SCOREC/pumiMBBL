@@ -127,6 +127,7 @@ int main( int argc, char* argv[] )
         if (exitface != 1) test_passed = false;
         if (status) test_passed = false;
 
+        pumi::free_mbbl(pumi_obj);
     }
     Kokkos::finalize();
 

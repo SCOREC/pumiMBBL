@@ -81,6 +81,8 @@ int main( int argc, char* argv[] )
         if (isub != 3) test_passed = false;
         if (icell != 3) test_passed = false;
 
+        pumi::free_mbbl(pumi_obj);
+
     }
     Kokkos::finalize();
 

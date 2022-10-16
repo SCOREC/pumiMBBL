@@ -39,7 +39,7 @@ int main( int argc, char* argv[] )
         char coord_filename[30];
         sprintf(coord_filename,"arb-x2-elemsize.dat");
         coord_file = fopen(coord_filename,"w");
-        for (int i=0; i<es.size(); i++){
+        for (int i=0; i< (int) es.size(); i++){
             fprintf(coord_file, "%.16e \n", es[i]);
         }
         fclose(coord_file);
@@ -189,6 +189,8 @@ int main( int argc, char* argv[] )
         if (icell != 33) test_passed = false;
         if (exitface != 35) test_passed = false;
         if (status) test_passed = false;
+
+        pumi::free_mbbl(pumi_obj);
 
     }
     Kokkos::finalize();
