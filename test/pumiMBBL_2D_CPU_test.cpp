@@ -129,7 +129,7 @@ int main( int argc, char* argv[] )
         }
         printf("Total number of particle pushes executed in Test-0 = %d\n",num_push );
     }
-
+    pumi::free_mbbl(pumi_obj);
   }
   Kokkos::finalize();
 

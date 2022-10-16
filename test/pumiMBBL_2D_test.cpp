@@ -336,6 +336,7 @@ int main( int argc, char* argv[] )
     //         printf("edge-%2d -- isbdry-%d\n",i,pumi_obj.mesh.bdry.is_bdry_edge(i) );
     //     }
     // });
+    pumi::free_mbbl(pumi_obj);
 
 
   }

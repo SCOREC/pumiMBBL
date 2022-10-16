@@ -148,6 +148,7 @@ int main( int argc, char* argv[] )
     }
 
     // print_partdata(Partdata, N_part);
+    pumi::free_mbbl(pumi_obj);
 
   }
   Kokkos::finalize();
