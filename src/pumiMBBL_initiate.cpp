@@ -797,7 +797,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
         type = unassigned;
         xlength = 1000.0*total_length;
         DoubleView BLcoords;
-        double *host_BLcoords = NULL;
+        double *host_BLcoords = nullptr;
         // padding submesh to min-side
         xmax = pumi_inputs->domain_x1_min;
         xmin = xmax - xlength;
@@ -823,7 +823,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
         type = unassigned;
         xlength = 1000.0*total_length;
         DoubleView BLcoords;
-        double *host_BLcoords = NULL;
+        double *host_BLcoords = nullptr;
         // padding submesh to min-side
         xmax = pumi_inputs->domain_x2_min;
         xmin = xmax - xlength;
@@ -904,7 +904,7 @@ SubmeshInit submesh_initialize(Mesh_Inputs *pumi_inputs, Mesh_Options pumi_optio
             t0 = xlength/Nel;
             r_t0_ratio = (r-1.0)/t0;
             logr = log(r);
-            host_BLcoords = NULL;
+            host_BLcoords = nullptr;
 
             Uniform_Submesh tmp_obj(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
             Uniform_Submesh *tmp_obj_host = new Uniform_Submesh(xmin,xmax,Nel,t0,r,xlength,Nel_cumulative,r_t0_ratio,logr,BLcoords,host_BLcoords);
@@ -1835,6 +1835,12 @@ BlockInterface::BlockInterface(SubmeshHostViewPtr hc_submesh_x1,
 
     host_if_x1_r = new double[Nx-1];
     host_if_x1_node = new int[Nx+1];
+    host_if_x2_r = nullptr;
+    host_if_x2_node = nullptr;
+    host_vert_nodeID = nullptr;
+    host_vert_subID = nullptr;
+    host_edge_first_nodeID = nullptr;
+    host_edge_subID = nullptr;
 
     if_x1_r = Kokkos::View<double*> ("interface_x1_grading", Nx-1);
     if_x1_node = Kokkos::View<int*> ("interface_x1_node", Nx+1);
