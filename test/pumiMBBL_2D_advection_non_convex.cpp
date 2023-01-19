@@ -1,5 +1,6 @@
 #include "pumiMBBLGPU.hpp"
 #include <stdio.h>
+#include <Kokkos_Random.hpp>
 void parse_inputs(int argc, char* argv[], pumi::Mesh_Inputs *pumi_inputs);
 void print_parsed_inputs(pumi::Mesh_Inputs *pumi_inputs);
 void print_usage();
@@ -187,6 +188,8 @@ int main( int argc, char* argv[] )
     // Kokkos::View<double*[10]> velocity_history("velocity_history", N_step);
     // Kokkos::View<double*[10]>::HostMirror h_velocity_history("host velocity history",N_step);
 
+    Kokkos::Random_XorShift64_Pool<> random_pool(12345);
+
     if (test0){
         printf("push-test-0\n");
         printf("prescribed velocity profile\n");
@@ -264,10 +267,17 @@ int main( int argc, char* argv[] )
                     pumi::Vector3 qnew = pumi::push_particle(pumi_obj, pumi::Vector3(q1,q2,0.0), pumi::Vector3(dq1,dq2,0.0), &isub, &jsub, &icell, &jcell,
                                         &in_domain, &bdry_hit, &fraction_done, &bdry_faceID);
                     if (!in_domain){
-                        q1 = qnew[0];
-                        q2 = qnew[1];
+                        auto generator = random_pool.get_state();
+                        double qx = generator.drand(0.,0.);
+                        double qy = generator.drand(1.,2.);
+                        random_pool.free_state(generator);
+
+                        q1 = qx;
+                        q2 = qy;
+                        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+                        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
                         pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                        Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false,bdry_faceID);
+                        Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
                     }
                     else{
                         q1 = qnew[0];
