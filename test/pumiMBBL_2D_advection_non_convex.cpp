@@ -293,7 +293,7 @@ int main( int argc, char* argv[] )
                         double rand_x = generator.drand(0.,1.);
 
                         int bin = 0;
-                        for(int j = 1; j < N_el_inlet; ++j){
+                        for(int j = 0; j < N_el_inlet; ++j){
                             if(bin_x < bins(j)) break;
                             bin = j;
                         }

@@ -292,13 +292,13 @@ int main( int argc, char* argv[] )
                                         &in_domain, &bdry_hit, &fraction_done, &bdry_faceID);
                     if (!in_domain){
                         auto generator = random_pool.get_state();
-                         double bin_x = generator.drand(0.,1.);
+                        double bin_x = generator.drand(0.,1.);
                         double rand_x = generator.drand(0.,1.);
 
                         int bin = 0;
-                        for(int j = 1; j < N_el_inlet; ++j){
-                            if(bin_x < bins(j)) break;
+                        for(int j = 0; j < N_el_inlet; ++j){
                             bin = j;
+                            if(bin_x < bins(j)) break;
                         }
                         double qx = 0;
                         double qy;
