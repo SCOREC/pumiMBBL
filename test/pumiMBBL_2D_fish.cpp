@@ -153,32 +153,51 @@ int main( int argc, char* argv[] )
 
     int N_part = 500;
     int N_step = 300;
+    int n_part_in = 20; // number of ptcls to introduce each time step
+    int m = 1;
+    int N_part_buffer = N_part + N_step*n_part_in*m;
     // Kokkos::View<double**> part_coords("particle-coordinates",N_part,4);
-    Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part);
+    Kokkos::View<pumi::ParticleData*> Partdata("particle-data",N_part_buffer);
 
     
-    int n_part_in = 10; // number of ptcls to introduce each time step
+    
     int distribution = 1; // particle inlet distribution (0 - uniform, 1 - quadratic)
     double inlet_min = 1;
     double inlet_max = 3;
 
-    int N_el_inlet = 10;
-    Kokkos::View<double*> bins("bins",N_el_inlet);
-    Kokkos::View<double*>::HostMirror h_bins("h_bins",N_el_inlet);
-    for(int j = 0; j<N_el_inlet;j++){
-        double x = (j+1)/(double)N_el_inlet;
-        if(distribution == 0){
-            h_bins(j) = x;
-        }
-        else if(distribution == 1){
-            h_bins(j) = 6*(x*x/2-x*x*x/3);
-        }
+    int N_bins_inlet = 10;
+    int num_inlets = 2;
+    Kokkos::View<double*[2]> bins("bins",N_bins_inlet);
+    Kokkos::View<double*[2]>::HostMirror h_bins = Kokkos::create_mirror_view(bins);
+    for(int j = 0; j<N_bins_inlet;j++){
+        double x = (j+1)/(double)N_bins_inlet;
+        h_bins(j,0) = x;
+        h_bins(j,1) = 6*(x*x/2-x*x*x/3);
+        
     }
-    std::cout << h_bins(0) << "\t" << h_bins(1) << "\t" << h_bins(2) << "\t" << h_bins(3) << "\t" << h_bins(4) << std::endl;
     Kokkos::deep_copy(bins,h_bins);
 
+    Kokkos::View<double*[6]> inlets("inlets",num_inlets);
+    Kokkos::View<double*[6]>::HostMirror h_inlets = Kokkos::create_mirror_view(inlets);
+    //stores data for particle inlets
+    //[ orientation (0 for x1 tangent, 1 for x2 tanget), x_min, x_max, loc (coordinate for other axis), distribution,num_per_step]
+    // for(int j = 0; j<num_inlets;++j){
+    //     h_inlets(j,0) = 1; // orientation
+    //     h_inlets(j,1) = 1; //x_min
+    //     h_inlets(j,2) = 3; //x_max
+    //     h_inlets(j,3) = 0; //loc of other coord
+    //     h_inlets(j,4) = 1; //distribution
+    //     h_inlets(j,5) = 10; //num_per_step
+    // }
 
+    h_inlets(0,0) = 1;  h_inlets(1,0) = 0; // orientation
+    h_inlets(0,1) = 1;  h_inlets(1,1) = 1; //x_min
+    h_inlets(0,2) = 3;  h_inlets(1,2) = 2; //x_max
+    h_inlets(0,3) = 0;  h_inlets(1,3) = 2; //loc of other coord
+    h_inlets(0,4) = 1;  h_inlets(1,4) = 0; //distribution
+    h_inlets(0,5) = 10; h_inlets(1,5) = 10; //num_per_step
 
+    Kokkos::deep_copy(inlets,h_inlets);
 
     bool test0 = true;
     bool test1 = false;
@@ -217,32 +236,38 @@ int main( int argc, char* argv[] )
     if (test0){
         printf("push-test-0\n");
         printf("prescribed velocity profile\n");
-        for (int ipart=0; ipart<N_part; ipart++){
+        for (int ipart=0; ipart<N_part_buffer; ipart++){
             pumi::Vector3 q = pumi::get_rand_point_in_mesh_host(pumi_obj);
             h_Partdata(ipart) = pumi::ParticleData(q[0],q[1]);
         }
 
         Kokkos::deep_copy(Partdata, h_Partdata);
 
-        Kokkos::parallel_for("particle-locate-0", N_part, KOKKOS_LAMBDA (int ipart) {
+        Kokkos::parallel_for("particle-locate-0", N_part_buffer, KOKKOS_LAMBDA (int ipart) {
             int isub, jsub, icell, jcell, submeshID, cellID;
             double q1 = Partdata(ipart).x1;
             double q2 = Partdata(ipart).x2;
             pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
             pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-            Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
+            if(ipart < N_part){
+                Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
+            }
+            else{
+                Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false,-1);
+
+            }
         });
         Kokkos::deep_copy(h_Partdata,Partdata);
         // write2file(h_Partdata, N_part, 0);
 
         Kokkos::Profiling::pushRegion("push_test_0");
         for (int istep=0; istep<N_step; istep++){
-            for (int p=0; p<N_part; p++){
+            for (int p=0; p<N_part_buffer; p++){
                 bool part_active = h_Partdata(p).part_active;
                 num_push += part_active;
             }
-            Kokkos::parallel_for("particle-push-test-0", N_part, KOKKOS_LAMBDA (int ipart) {
+            Kokkos::parallel_for("particle-push-test-0", N_part_buffer, KOKKOS_LAMBDA (int ipart) {
                 bool part_active = Partdata(ipart).part_active;
                 if (part_active){
                     int isub, jsub, icell, jcell, kcell_x1, kcell_x2, submeshID, cellID,bdry_hit,bdry_faceID;
@@ -291,33 +316,10 @@ int main( int argc, char* argv[] )
                     pumi::Vector3 qnew = pumi::push_particle(pumi_obj, pumi::Vector3(q1,q2,0.0), pumi::Vector3(dq1,dq2,0.0), &isub, &jsub, &icell, &jcell,
                                         &in_domain, &bdry_hit, &fraction_done, &bdry_faceID);
                     if (!in_domain){
-                        auto generator = random_pool.get_state();
-                        double bin_x = generator.drand(0.,1.);
-                        double rand_x = generator.drand(0.,1.);
-
-                        int bin = 0;
-                        for(int j = 0; j < N_el_inlet; ++j){
-                            bin = j;
-                            if(bin_x < bins(j)) break;
-                        }
-                        double qx = 0;
-                        double qy;
-                        if(bin == 0){
-                            qy = rand_x*bins(0);
-                        }
-                        else{
-                            qy = rand_x*(bins(bin)-bins(bin-1)) + bins(bin-1);
-                        }
-                        random_pool.free_state(generator);
-
-                        qy = qy*(inlet_max-inlet_min) + inlet_min;
-
-                        q1 = qx;
-                        q2 = qy;
-                        pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
-                        pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+                        q1 = qnew[0];
+                        q2 = qnew[1];
                         pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-                        Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
+                        Partdata(ipart) = pumi::ParticleData(q1,q2,submeshID,cellID,false,bdry_faceID);
                     }
                     else{
                         q1 = qnew[0];
@@ -332,9 +334,61 @@ int main( int argc, char* argv[] )
                     }
 
                 }
+
+                // Introduce new particles here (introduce into their own memory range)
+                if(ipart < n_part_in){
+                    int isub, jsub, icell, jcell, kcell_x1, kcell_x2, submeshID, cellID,bdry_hit,bdry_faceID;
+                    double q1 = 0;
+                    double q2 = 0;
+                    auto generator = random_pool.get_state();
+                    double bin_x = generator.drand(0.,1.);
+                    double rand_x = generator.drand(0.,1.);
+
+                    int cum_num_in = 0;
+                    for(int k = 0; k < num_inlets; ++k){
+                        cum_num_in += inlets(k,5);
+                        if(ipart < cum_num_in){
+                            int d = inlets(k,4);
+
+                            int bin = 0;
+                            for(int j = 0; j < N_bins_inlet; ++j){
+                                bin = j;
+                                if(bin_x < bins(j,d)) break;
+                            }
+                            double qx;
+                            double qy;
+                            double p;
+                            if(bin == 0){
+                                p = rand_x*bins(0,d);
+                            }
+                            else{
+                                p = rand_x*(bins(bin,d)-bins(bin-1,d)) + bins(bin-1,d);
+                            }
+                            random_pool.free_state(generator);
+
+                            p = p*(inlets(k,2)-inlets(k,1)) + inlets(k,1);
+
+                            if(inlets(k,0)){
+                                q1 = inlets(k,3);
+                                q2 = p;
+                            }
+                            else{
+                                q1 =p;
+                                q2 = inlets(k,3);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    pumi::locate_submesh_and_cell_x1(pumi_obj, q1, &isub, &icell);
+                    pumi::locate_submesh_and_cell_x2(pumi_obj, q2, &jsub, &jcell);
+                    pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
+                    Partdata(ipart + N_part + istep*n_part_in) = pumi::ParticleData(q1,q2,submeshID,cellID,true,-1);
+                }
             });
             Kokkos::deep_copy(h_Partdata,Partdata);
-            write2file(h_Partdata, N_part, istep);
+            write2file(h_Partdata, N_part_buffer, istep);
         }
         Kokkos::Profiling::popRegion();
 
