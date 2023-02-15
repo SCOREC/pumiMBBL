@@ -2,6 +2,8 @@
 #define pumiMBBLGPU_impl_hpp
 
 #include "pumiMBBLGPU.hpp"
+#include <Kokkos_Random.hpp>
+
 
 namespace pumi {
 
@@ -2273,6 +2275,66 @@ void push_particle_v2(MBBL pumi_obj, double q1, double q2, double dq1, double dq
     }
 
 }
+
+// /**
+// * @brief Generate a random point in domain
+// * @param[in] Object of the wrapper mesh structure
+// * @return coordinate vector of point
+// */
+// KOKKOS_INLINE_FUNCTION
+// Vector3 get_rand_point_in_mesh(MBBL pumi_obj){
+//     Kokkos::Random_XorShift64_Pool<> random_pool(12345);
+//     auto generator = random_pool.get_state();
+
+//     if (pumi_obj.mesh.ndim == 1){
+//         double x1_min = get_global_x1_min_coord(pumi_obj); //needs to be swapped for a device implementation
+//         double x1_max = get_global_x1_max_coord(pumi_obj);
+//         double q1 = generator.drand(x1_min,x1_max);
+//         random_pool.free_state(generator);
+
+//         Vector3 q = Vector3(q1,0.0,0.0);
+//         return q;
+//     }
+//     else if (pumi_obj.mesh.ndim == 2){
+//         bool part_set = false;
+//         double x1_min = get_global_x1_min_coord(pumi_obj);
+//         double x1_max = get_global_x1_max_coord(pumi_obj);
+//         double x2_min = get_global_x2_min_coord(pumi_obj);
+//         double x2_max = get_global_x2_max_coord(pumi_obj);
+//         double q1, q2;
+//         while (!part_set){
+//             q1 = generator.drand(x1_min,x1_max);
+//             q2 = generator.drand(x2_min,x2_max);
+
+//             int isub=0;
+//             int jsub=0;
+
+//             for (int i=1; i<=pumi_obj.mesh.nsubmesh_x1; i++){
+//                 if (pumi_obj.host_submesh_x1[i]->xmin < q1 && pumi_obj.host_submesh_x1[i]->xmax > q1){ //may need to be swapped for device implementation
+//                     isub = i;
+//                     break;
+//                 }
+//             }
+//             for (int j=1; j<=pumi_obj.mesh.nsubmesh_x2; j++){
+//                 if (pumi_obj.host_submesh_x2[j]->xmin < q2 && pumi_obj.host_submesh_x2[j]->xmax > q2){
+//                     jsub = j;
+//                     break;
+//                 }
+//             }
+//             if (pumi_obj.mesh.host_isactive[isub][jsub]){
+//                 part_set = true;
+//             }
+//         }
+//         // std::vector<double> q = {q1,q2,0.0};
+//         random_pool.free_state(generator);
+//         Vector3 q = Vector3(q1,q2,0.0);
+//         return q;
+//     }
+//     // std::vector<double> q = {-999.0,-999.0,-999.0};
+//     random_pool.free_state(generator);
+//     Vector3 q = Vector3(-999.0,-999.0,-999.0);
+//     return q;
+// }
 
 } // namespace pumi
 

@@ -104,7 +104,8 @@ int main( int argc, char* argv[] )
     */
     int N_part_initial = 500; //initial number of ptcls in domain
     int N_part_current = N_part_initial; //total num ptcls in simulation so far (increments on time step)
-    int n_part_in = 0; // number of ptcls to introduce each time step
+    int n_part_in_volumetric = 10;
+    int n_part_in = n_part_in_volumetric; // number of ptcls to introduce each time step
     for(int i = 0; i < num_inlets; i++){
         n_part_in += h_inlets(i,5);
     }
@@ -232,6 +233,22 @@ int main( int argc, char* argv[] )
             }
         }); 
 
+        // Kokkos::parallel_for("volumetric particle source", n_part_in_volumetric, KOKKOS_LAMBDA (int ipart){
+        //     int isub, jsub, icell, jcell, submeshID, cellID;
+        //     double qx1 = 0;
+        //     double qx2 = 0;
+
+        //     pumi::Vector3 q = pumi::get_rand_point_in_mesh(pumi_obj);
+        //     qx1 = q[0];
+        //     qx2 = q[1];
+
+        //     //locate newly initialized particle
+        //     pumi::locate_submesh_and_cell_x1(pumi_obj, qx1, &isub, &icell);
+        //     pumi::locate_submesh_and_cell_x2(pumi_obj, qx2, &jsub, &jcell);
+        //     pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
+        //     Partdata(ipart + N_part_current) = pumi::ParticleData(qx1,qx2,submeshID,cellID,true,-1);
+        // });
+
         Kokkos::parallel_for("particle initialization", n_part_in, KOKKOS_LAMBDA (int ipart) {
             // Introduce new particles here (introduce into their own memory range)
             int isub, jsub, icell, jcell, submeshID, cellID;
@@ -276,7 +293,7 @@ int main( int argc, char* argv[] )
             pumi::locate_submesh_and_cell_x1(pumi_obj, qx1, &isub, &icell);
             pumi::locate_submesh_and_cell_x2(pumi_obj, qx2, &jsub, &jcell);
             pumi::flatten_submeshID_and_cellID(pumi_obj,isub,icell,jsub,jcell,&submeshID,&cellID);
-            Partdata(ipart + N_part_current) = pumi::ParticleData(qx1,qx2,submeshID,cellID,true,-1);
+            Partdata(ipart + n_part_in_volumetric + N_part_current) = pumi::ParticleData(qx1,qx2,submeshID,cellID,true,-1);
         });
         Kokkos::fence(); //synchronization step
         Kokkos::deep_copy(h_Partdata,Partdata);
