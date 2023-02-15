@@ -868,6 +868,165 @@ Vector3View compute_2D_field_gradient_fulluniform(MBBL pumi_obj, DoubleView phi)
 }
 
 /**
+ * @brief Computes scalar field gradient (only for convex mesh)
+ *
+ * @param[in] Object of the wrapper mesh structure
+ * @param[in] scalar field
+ * @return gradient vector
+ */
+Vector3View compute_2D_field_gradient_convex(MBBL pumi_obj, DoubleView phi){
+    int num_interior_nodes = (pumi_obj.mesh.Nel_tot_x1-1)*(pumi_obj.mesh.Nel_tot_x2-1);
+    int num_boundary_nodes = (pumi_obj.mesh.Nel_tot_x1+1)*(pumi_obj.mesh.Nel_tot_x2+1)-num_interior_nodes;
+    int num_x1_nodes = pumi_obj.mesh.Nel_tot_x1+1;
+    int num_x2_nodes = pumi_obj.mesh.Nel_tot_x2+1;
+
+    int nnp_total = num_x1_nodes*num_x2_nodes;
+    Vector3View phi_grad = Vector3View("phi_grad",nnp_total);
+
+    Kokkos::parallel_for(
+        "ConvexMesh2D::gradientNodalScalarField::interior_nodes",
+        Kokkos::MDRangePolicy<Kokkos::Rank<2>>({1, 1}, {num_x1_nodes-1, num_x2_nodes-1}),
+        KOKKOS_LAMBDA (const int inode, const int jnode)
+    {
+        int isub,jsub,inp,jnp;
+        double dx1_max,dx1_min,dx2_max,dx2_min;
+        //global index for gradient storage
+        int gnode = inode + jnode * num_x1_nodes;
+        int inode_east,inode_west,inode_north,inode_south;
+        inode_east = gnode+1;
+        inode_west = gnode-1;
+        inode_north = gnode+num_x1_nodes; //(convex mesh)
+        inode_south = gnode-num_x1_nodes;
+
+        //handling of block interior vs domain interior but block edge
+        get_x1_submeshID_and_localcellID_of_x1_node(pumi_obj,inode,&isub,&inp);
+        get_x2_submeshID_and_localcellID_of_x2_node(pumi_obj,jnode,&jsub,&jnp);
+        int num_np_x1,num_np_x2;
+        num_np_x1 = get_num_x1_elems_in_submesh(pumi_obj,isub) + 1; // + 1 for number of node points from elements
+        num_np_x2 = get_num_x2_elems_in_submesh(pumi_obj,jsub) + 1;
+        // get directional indices so can get element sizes
+        
+        //handle x1 direction
+        if(inp > 0 && inp < num_np_x1 - 1){
+            // find element sizes: dx1_i,dx1_{i-1}, dx2_i,dx2_{i-1} for use in stencil
+            dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
+            dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+        }
+        else if(inp == 0){
+            //look to left submesh
+            int num_x1_subm1 = get_num_x1_elems_in_submesh(pumi_obj,isub-1);
+            dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
+            dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub-1,num_x1_subm1-1);
+        }
+        else if(inp == num_np_x1 -1){
+            // look to right submesh
+            dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+            dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub+1,0);
+        }
+
+        //handle x2 direction
+        if(jnp > 0 && jnp < num_np_x2){
+            // find element sizes: dx1_i,dx1_{i-1}, dx2_i,dx2_{i-1} for use in stencil
+            dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
+            dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+        }
+        else if(jnp == 0){
+            //look to below submesh
+            int num_x2_subm1 = get_num_x2_elems_in_submesh(pumi_obj,jsub-1);
+            dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
+            dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub-1,num_x2_subm1-1);
+        }
+        else if(jnp == num_np_x2 -1){
+            //n look to above submesh
+            dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+            dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub+1,0);
+        }
+
+        //gradient calculation based on the calculated values for adjacent element sizes
+        phi_grad(gnode)[0] = - (phi(inode_east) - phi(inode_west))/(dx1_min+dx1_max);
+        phi_grad(gnode)[1] = - (phi(inode_north) - phi(inode_south))/(dx2_min+dx2_max);
+    });
+
+    Kokkos::parallel_for(
+        "ConvexMesh2D::gradientNodalScalarField::boundary_nodes",
+        num_boundary_nodes,
+        KOKKOS_LAMBDA (const int boundary_node)
+    {
+        //ASSUMES EVERY SUBMESH IS AT LEAST 2X2 ELEMENTS
+
+        short north_flag = boundary_node / (num_x1_nodes + 2*num_x2_nodes - 4);
+        short south_flag = (boundary_node / num_x1_nodes) == 0;
+
+        int inode = 0;
+        int jnode = 0;
+        if (south_flag) {
+            inode = boundary_node;
+        } else if (north_flag) {
+            inode = boundary_node + num_interior_nodes - num_x1_nodes*(num_x2_nodes - 1);
+            jnode = num_x2_nodes - 1;
+        } else {
+            inode = ((boundary_node - num_x1_nodes) % 2) * (num_x1_nodes - 1);
+            jnode =  (boundary_node - num_x1_nodes) / 2 + 1;
+        }
+
+        // Need to find the global index corresponding to this boundary node
+        int gnode = inode + jnode * num_x1_nodes;
+
+        // need to find what submesh node is in to get element sizes
+        int isub,jsub,inp,jnp;
+        get_x1_submeshID_and_localcellID_of_x1_node(pumi_obj,inode,&isub,&inp);
+        get_x2_submeshID_and_localcellID_of_x2_node(pumi_obj,jnode,&jsub,&jnp);
+        
+        int num_elem_x1 = get_num_x1_elems_in_submesh(pumi_obj,isub); 
+        int num_elem_x2 = get_num_x2_elems_in_submesh(pumi_obj,jsub);
+        double dx1_max,dx1_min,dx2_max,dx2_min,r,dx1,dx2;
+
+        // x1 dir grad calc
+        if (inode == 0) { // west
+            r = get_x1_gradingratio_in_submesh(pumi_obj,isub,1);
+            dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,0);
+            phi_grad(gnode)[0] = -( (1.0+r)*(1.0+r)*phi(gnode+1) - phi(gnode+2)
+                                        - r*(r+2.0)*phi(gnode) ) / (r*(r+1.0)*dx1);
+        }
+        else if (inode == num_x1_nodes-1) { // east
+            r = get_x1_gradingratio_in_submesh(pumi_obj,isub,num_elem_x1-1);
+            r = 1.0/r;
+            dx1 = get_x1_elem_size_in_submesh(pumi_obj,isub,num_elem_x1-1);
+            phi_grad(gnode)[0] = -( -(1.0+r)*(1.0+r)*phi(gnode-1) + phi(gnode-2) 
+                                        + r*(r+2.0)*phi(gnode) ) / (r*(r+1.0)*dx1);
+        }
+        else { // central
+            dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
+            dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+            phi_grad(gnode)[0] = -( phi(gnode+1) - phi(gnode-1) ) / (dx1_max + dx1_min);
+        }
+
+        // x2 dir grad calc
+        if (south_flag) { // south
+            r = get_x2_gradingratio_in_submesh(pumi_obj,jsub,1);
+            dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,0);
+            phi_grad(gnode)[1] = -( (1.0+r)*(1.0+r)*phi(gnode+num_x1_nodes) - phi(gnode+2*num_x1_nodes) - r*(r+2.0)*phi(gnode) ) /
+                                            (r*(r+1.0)*dx2);
+        }
+        else if (north_flag) { // north
+            r = get_x2_gradingratio_in_submesh(pumi_obj,jsub,num_elem_x2-1);
+            r = 1.0/r;
+            dx2 = get_x2_elem_size_in_submesh(pumi_obj,jsub,num_elem_x2-1);
+            phi_grad(gnode)[1] = -( -(1.0+r)*(1.0+r)*phi(gnode-num_x1_nodes) + phi(gnode-2*num_x1_nodes) + r*(r+2.0)*phi(gnode) )/
+                                        (r*(r+1.0)*dx2);
+        }
+        else { //central
+            dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
+            dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+            phi_grad(gnode)[1] = -( phi(gnode+num_x1_nodes) - phi(gnode-num_x1_nodes) ) / (dx2_max+dx2_min) ;
+        }
+    });
+    Kokkos::fence();
+
+    return phi_grad;
+}
+
+/**
  * @brief Computes density of give scalar field
  *
  * @param[in] Object of the wrapper mesh structure
