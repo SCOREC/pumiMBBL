@@ -996,8 +996,23 @@ Vector3View compute_2D_field_gradient_convex(MBBL pumi_obj, DoubleView phi){
                                         + r*(r+2.0)*phi(gnode) ) / (r*(r+1.0)*dx1);
         }
         else { // central
-            dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
-            dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+            //need to add submesh boundary handling
+            if(inp > 0 && inp < num_elem_x1){
+                dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
+                dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+            }
+            else if(inp == 0){
+                //look to left submesh
+                int num_x1_subm1 = get_num_x1_elems_in_submesh(pumi_obj,isub-1);
+                dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp);
+                dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub-1,num_x1_subm1-1);
+            }
+            else{
+                // look to right submesh
+                dx1_max = get_x1_elem_size_in_submesh(pumi_obj, isub, inp-1);
+                dx1_min = get_x1_elem_size_in_submesh(pumi_obj, isub+1,0);
+            }
+
             phi_grad(gnode)[0] = -( phi(gnode+1) - phi(gnode-1) ) / (dx1_max + dx1_min);
         }
 
@@ -1016,8 +1031,20 @@ Vector3View compute_2D_field_gradient_convex(MBBL pumi_obj, DoubleView phi){
                                         (r*(r+1.0)*dx2);
         }
         else { //central
-            dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
-            dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+            if(jnp > 0 && jnp < num_elem_x2){
+                dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
+                dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+            }
+            else if(jnp == 0){
+                int num_x2_subm1 = get_num_x2_elems_in_submesh(pumi_obj,jsub-1);
+                dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp);
+                dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub-1,num_x2_subm1-1);
+            }
+            else{
+                //n look to above submesh
+                dx2_max = get_x2_elem_size_in_submesh(pumi_obj, jsub, jnp-1);
+                dx2_min = get_x2_elem_size_in_submesh(pumi_obj, jsub+1,0);
+            }
             phi_grad(gnode)[1] = -( phi(gnode+num_x1_nodes) - phi(gnode-num_x1_nodes) ) / (dx2_max+dx2_min) ;
         }
     });
